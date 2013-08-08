@@ -1,0 +1,22 @@
+Per selezionare un solo indirizzo e-mail dell'account dalla lista delle revisioni, bisogna modificare modules/Emails/Emails.php
+
+function get_to_emailids
+.
+.
+.
+	$field_lists = $_REQUEST["field_lists"];
+	if($module=='Inspections') $field_lists = 8; // metterci field id degli account che corrisponde con l'indirizzo e-mail
+.
+.
+.
+	$query = 'select distinct '.$table_prefix.'_inspections.accountid as crmid,accountname as entityname, '.$columnlists.'  from '.$table_prefix.'_inspections inner join '.$table_prefix.'_crmentity on '.$table_prefix.'_crmentity.crmid='.$table_prefix.'_inspections.inspectionsid inner join '.$table_prefix.'_inspectionscf on '.$table_prefix.'_inspectionscf.inspectionsid = '.$table_prefix.'_inspections.inspectionsid inner join '.$table_prefix.'_account on '.$table_prefix.'_inspections.accountid = '.$table_prefix.'_account.accountid where '.$table_prefix.'_crmentity.deleted=0 and accountname IS NOT NULL AND (ltrim('.$table_prefix.'_account.email1) is not null) AND  '.$table_prefix.'_crmentity.crmid in ('. generateQuestionMarks($crmids) .')';
+
+	
+	
+Per generazione file xls bisogna
+ - implmentare modules/Inspections/ExportRecords.php copiando da include/utils/ExportRecords.php
+ - Aggiungere template modules/Inspections/ExportRecords.tpl copiandolo da ExportRecords.tpl
+ - implementare modules/Inspections/record_export.js
+ - update_insp_06.php per le traduzioni delle label del template
+ - implmentare modules/Inspections/Inspections.php funzione create_export_query
+ - implmentare modules/Inspections/ExportInspectionsAjax.php per l'export vero e proprio
