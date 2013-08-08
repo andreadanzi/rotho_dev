@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>img{ height: 100px; float: left; }</style>
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="https://raw.github.com/douglascrockford/JSON-js/master/json2.js"></script>
+<script type='text/javascript' src='vtwsclib/third-party/js/md5.js'></script>
+</head>
+<body>
+<form name="Consulenze" action="http://crm.rothoblaas.com/modules/Webforms/capture.php" method="post" accept-charset="utf-8">
+	<p>
+		<input type="hidden" name="publicid" value="77798ddca44df9411651328cd09942fa"></input>
+		<input type="hidden" name="name" value="Consulenze"></input>
+	</p>
+											<p>
+				<label>Email</label>
+															<input type="text" value="" id="email" name="email" required="true"></input>
+												</p>
+									<p>
+				<label>Nome</label>
+															<input type="text" value="" id="firstname" name="firstname" required="true"></input>
+												</p>
+											<p>
+				<label>Telefono</label>
+															<input type="text" value="" id="phone"  name="phone" required="true"></input>
+												</p>
+											<p>
+				<label>Cognome</label>
+															<input type="text" value="" id="lastname"  name="lastname" required="true"></input>
+												</p>
+											<p>
+				<label>Societa`</label>
+															<input type="text" value="" id="company"  name="company" required="true"></input>
+												</p>
+								<input type="hidden" value="" name="leadsource"></input>
+											<p>
+				<label>Via</label>
+															<input type="text" value="" id="lane"  name="lane" required="true"></input>
+												</p>
+											<p>
+				<label>CAP</label>
+															<input type="text" value=""  id="code"  name="code" required="true"></input>
+												</p>
+											<p>
+				<label>Citta`</label>
+															<input type="text" value=""  id="city"  name="city" required="true"></input>
+												</p>
+											<p>
+				<label>Descrizione</label>
+															<input type="text" value="" name="description" required="true"></input>
+												</p>
+				<p>
+		<input type="submit" value="Submit" ></input>
+	</p>
+</form>
+
+<div id="result">
+</div>
+<script>
+var mainemail="";
+var accesskey = 'BLmHQc0IvDXC665o'; // Q6lTTOYiYRQBUcy - wOJ5wTYEeXimLcyd - 4Axe9MA8WFm0QHX5
+var myusername = 'webweb'; // andreadanzi - web - admin
+var endPointUrl = "http://crm.rothoblaas.com/webservice.php"; // localhost:8040 - localhost:8040 - crm.rothoblaas.com
+var main_sessionName = '';
+(function() {
+	var getparams = {operation:"getchallenge",username:myusername};
+	$.get(endPointUrl, getparams, afterChallenge);
+	$('#email').focusout(function() {
+		mainemail = $('#email').val();
+		alert('Handler for .change() called email='+mainemail);
+		$('#firstname').val("");
+		$('#lastname').val("");
+		$('#lane').val("");
+		$('#city').val("");
+		$('#code').val("");
+		$('#company').val("");
+		$('#phone').val("");
+		var queryLeads = "select * from Leads where email='"+mainemail+"';";
+		var getdata = {
+				'operation' : 'query',
+				'sessionName'  : main_sessionName,
+				'query' : queryLeads
+			};
+		$.get(endPointUrl, getdata, afterQuery);
+	});
+})();
+function afterChallenge(data){
+    //decode the json encode response from the server.
+	
+    //operation was successful get the token from the reponse.
+    if(data['success']==false)
+        //handle the failure case.
+        alert('getchallengefailed:'+data['error']['errorMsg']);
+
+    //login successful extract sessionId and userId from LoginResult so it can used for further calls.
+    var challengeToken = data['result']['token']; 
+    var serverTime = data['result']['serverTime']; 
+    var expireTime = data['result']['expireTime']; 
+	var postdata = {
+			'operation' : 'login',
+			'username'  : myusername,
+			'accessKey' : hex_md5(challengeToken + accesskey)
+		};
+	$.post(endPointUrl, postdata, afterLogin);
+}
+function afterLogin(data){
+    //operation was successful get the token from the reponse.
+    if(data['success']==false)
+        //handle the failure case.
+        alert('login failed:'+data['error']['errorMsg']);
+
+    //login successful extract sessionId and userId from LoginResult so it can used for further calls.
+    var sessionName = data['result']['sessionName']; 
+    var userId = data['result']['userId']; 
+	main_sessionName = sessionName;
+}
+function afterQuery(data){
+	//operation was successful get the token from the reponse.
+    if(data['success']==false)
+        //handle the failure case.
+        alert('afterQuery failed:'+data['error']['errorMsg']);
+
+    //login successful extract sessionId and userId from LoginResult so it can used for further calls.
+    var retObjects  = data['result']; 
+	for(var i=0;i<retObjects.length;i++)
+	{
+		alert('Abbiamo trovato una corrispondenza tra la tua email e una registrazione presente nel nostro DB');
+		$('#firstname').val(retObjects[i].firstname);
+		$('#lastname').val(retObjects[i].lastname);
+		$('#lane').val(retObjects[i].lane);
+		$('#city').val(retObjects[i].city);
+		$('#code').val(retObjects[i].code);
+		$('#company').val(retObjects[i].company);
+		$('#phone').val(retObjects[i].phone);
+		break;
+	}
+}
+</script>
+</body>
+</html>
