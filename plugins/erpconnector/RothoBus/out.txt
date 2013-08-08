@@ -1,0 +1,44 @@
+
+ ---------------- Starting RothoBus
+Processing uid = 38 with email marzio@sartorel.it
+
+----------------------_find_entities_by_email STARTS------------------------
+----------------------_find_entities_by_email ENDS------------------------
+Trying inserting Lead with email = marzio@sartorel.itSetting firstname=marzio 
+Setting lastname=sartorel 
+Setting email=marzio@sartorel.it 
+Setting phone= 
+Setting mobile= 
+Setting website= 
+Setting lane= 
+Setting company=marzio sartorel 
+Setting city= 
+Setting code= 
+Setting state= 
+Setting country= 
+Setting description= 
+Setting fax= 
+Setting leadstatus=Held 
+Setting leadsource=RothoSafe 
+Setting assigned_user_id=167 
+Setting smownerid=167 
+Setting cf_747=56_safe 
+Setting cf_808=1373644435 
+creating event for id=805177 with activitysubject = Registrazione: marzio sartorel - marzio@sartorel.itcreated event with id=805178Processing uid = 150801 with email felicemariadalessio@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=113877
+found leadid=805051
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=113877 Add Event to crmid=In entity_objects found key=Leads count=1 
+ Add Event to id=805051 Add Event to crmid=Processing uid = 158877 with email sabino.civileng@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=805053
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=805053 Add Event to crmid=
+----------------------TOTAL TIME------------------------
+time of import : 2 s  | 0 m 2 s   
+----------------------TOTAL TIME------------------------

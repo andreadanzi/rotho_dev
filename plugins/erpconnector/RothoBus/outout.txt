@@ -1,0 +1,265 @@
+
+ ---------------- Starting RothoBus
+Processing uid = 12722 with email luciano.mengoli@menpor.it
+
+----------------------_find_entities_by_email STARTS------------------------
+----------------------_find_entities_by_email ENDS------------------------
+Trying inserting Lead with email = luciano.mengoli@menpor.itSetting firstname=Luciano 
+Setting lastname=Mengoli 
+Setting email=luciano.mengoli@menpor.it 
+Setting phone=0426665049 
+Setting mobile= 
+Setting website= 
+Setting lane=Don G. sambo, 6 
+Setting company=Studio tecnico di ingegneria 
+Setting city=Rosolina 
+Setting code=45010 
+Setting state=RO 
+Setting country=IT 
+Setting description=id 139
+richiesta Software download rothofixing
+software Software Rothoeng 2.0 
+Setting fax= 
+Setting leadstatus=Held 
+Setting leadsource=Download 
+Setting assigned_user_id=167 
+Setting smownerid=167 
+Setting cf_747=139_ 
+Setting cf_808=1374167200 
+Setting cf_761= 
+Processing uid = 27431 with email mirko.trapasso@alice.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=236053
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=236053 Add Event to crmid=Processing uid = 57902 with email federicafm@libero.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=652425
+found accountid=115348
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=2 
+ Add Event to id=652425 Add Event to crmid= Add Event to id=115348 Add Event to crmid=Processing uid = 96263 with email alessio.spata@libero.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=650191
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=650191 Add Event to crmid=Processing uid = 118950 with email luca.rob@hotmail.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=547216
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=547216 Add Event to crmid=Processing uid = 148134 with email musco.antonio@libero.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=866565
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=866565 Add Event to crmid=Processing uid = 158880 with email marcello.delzotto@tiscali.it
+
+----------------------_find_entities_by_email STARTS------------------------
+----------------------_find_entities_by_email ENDS------------------------
+Trying inserting Lead with email = marcello.delzotto@tiscali.itSetting firstname=Marcello 
+Setting lastname=Del Zotto 
+Setting email=marcello.delzotto@tiscali.it 
+Setting phone=3401060443 
+Setting mobile= 
+Setting website= 
+Setting lane=San Rocco 18 
+Setting company=Ingegnere Civile 
+Setting city=Sesto al Reghena 
+Setting code=33079 
+Setting state=PN 
+Setting country=IT 
+Setting description=id 139
+richiesta Software download rothofixing
+software Software Rothoeng 2.0 
+Setting fax= 
+Setting leadstatus=Held 
+Setting leadsource=Download 
+Setting assigned_user_id=167 
+Setting smownerid=167 
+Setting cf_747=139_ 
+Setting cf_808=1373723195 
+Setting cf_761= 
+Processing uid = 158893 with email simone_ginelli@hotmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=846763
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=846763 Add Event to crmid=Processing uid = 158894 with email bladegpa@yahoo.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=846767
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=846767 Add Event to crmid=Processing uid = 158895 with email studiotecnico@tecnowood.info
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=21379
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=21379 Add Event to crmid=Processing uid = 158896 with email ects44@ects.fr
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=848739
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=848739 Add Event to crmid=Processing uid = 158897 with email bonfanti.giuliano@virgilio.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found contactid=848689
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Contacts count=1 
+ Add Event to id=848689 Add Event to crmid=In entity_objects found key=Accounts count=1 
+ Add Event to id=10501 Add Event to crmid=Processing uid = 158898 with email ing.deantoniis@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=848685
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=848685 Add Event to crmid=Processing uid = 158899 with email prgbianco@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=848683
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=848683 Add Event to crmid=Processing uid = 158900 with email gerd.schenk@a1.net
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=848729
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=848729 Add Event to crmid=Processing uid = 158902 with email alancossu@tiscali.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=848675
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=848675 Add Event to crmid=Processing uid = 158903 with email giampaologuerzoni@aigarcstudio.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=848681
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=848681 Add Event to crmid=Processing uid = 158904 with email thierry.sahores@cobet.fr
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=848958
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=848958 Add Event to crmid=Processing uid = 158906 with email fatma.bazan@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=849376
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=849376 Add Event to crmid=Processing uid = 158907 with email ldc.mail@alice.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=857445
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=857445 Add Event to crmid=Processing uid = 158908 with email francescoducato@hotmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found accountid=857443
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Accounts count=1 
+ Add Event to id=857443 Add Event to crmid=Processing uid = 158909 with email pippo@plutotest.it
+
+----------------------_find_entities_by_email STARTS------------------------
+----------------------_find_entities_by_email ENDS------------------------
+Trying inserting Lead with email = pippo@plutotest.itSetting firstname=Pippo 
+Setting lastname=Pluto 
+Setting email=pippo@plutotest.it 
+Setting phone=+399393993 
+Setting mobile= 
+Setting website= 
+Setting lane=dei Glavasi 
+Setting company=Test 
+Setting city=Plutandia 
+Setting code=888888 
+Setting state=VR 
+Setting country=IT 
+Setting description=id 440
+vat 00202022020
+tax pppplt998djk9999
+companyphone +39993993939333
+companymail plutotest@plutotest.it
+date 18 set 2013 - 20 set 2013
+formula IT Corso +  2 cene + 3 pernottamenti / costo 615,00
+code RFCAC 
+Setting fax= 
+Setting leadstatus=Qualified 
+Setting leadsource=Corso 
+Setting assigned_user_id=167 
+Setting smownerid=167 
+Setting cf_747=440_ 
+Setting cf_808=1374216974 
+Setting cf_761= 
+Processing uid = 158912 with email davvul@libero.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=864560
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=864560 Add Event to crmid=Processing uid = 158913 with email eros.brotto@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=865696
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=865696 Add Event to crmid=Processing uid = 158914 with email studio.ing@hotmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=866566
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=866566 Add Event to crmid=Processing uid = 158915 with email oronzodiciaula@live.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=867409
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=867409 Add Event to crmid=Processing uid = 158916 with email alejolip@gmail.com
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=867648
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=867648 Add Event to crmid=Processing uid = 158917 with email info@tettinegri.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found contactid=302344
+found leadid=867649
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Contacts count=1 
+ Add Event to id=302344 Add Event to crmid=In entity_objects found key=Accounts count=1 
+ Add Event to id=293654 Add Event to crmid=In entity_objects found key=Leads count=1 
+ Add Event to id=867649 Add Event to crmid=Processing uid = 158918 with email studio.dapra@libero.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=868060
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=868060 Add Event to crmid=Processing uid = 158919 with email alexrus@alice.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=868061
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=868061 Add Event to crmid=Processing uid = 158920 with email ing.marziomorini@libero.it
+
+----------------------_find_entities_by_email STARTS------------------------
+found leadid=868074
+----------------------_find_entities_by_email ENDS------------------------
+In entity_objects found key=Leads count=1 
+ Add Event to id=868074 Add Event to crmid=
+----------------------TOTAL TIME------------------------
+time of import : 5 s  | 0 m 5 s   
+----------------------TOTAL TIME------------------------
