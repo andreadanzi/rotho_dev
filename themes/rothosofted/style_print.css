@@ -1,0 +1,23 @@
+/* ANYTHEME - PRINTING */
+
+
+/* crmv@27236 */
+#winMax {
+    display:none;
+}
+
+#winMaxImg {
+    display:none;
+}
+
+div#orange {
+	display:none;
+}
+
+div#vte_menu {
+	position: absolute;
+	width:100%;
+	top: 0px;
+	left: 0px;
+}
+/* crmv@27236e */
