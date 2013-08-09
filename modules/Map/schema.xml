@@ -1,0 +1,28 @@
+<?xml version='1.0'?>
+<schema>
+	<tables>
+		<table>
+			<name>vtiger_map</name>
+			<sql><![CDATA[CREATE TABLE `vtiger_map` (
+  `mapid` int(11) DEFAULT NULL,
+  `state` varchar(100) NOT NULL,
+  `city` varchar(100) NOT NULL,
+  `postalCode` varchar(100) NOT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `street` varchar(250) DEFAULT NULL,
+  `map_type` varchar(250) DEFAULT NULL,
+  `map_value` float(10,6) NOT NULL DEFAULT '0.000000',
+  `lat` float(10,6) NOT NULL,
+  `lng` float(10,6) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8]]></sql>
+		</table>
+		<table>
+			<name>vtiger_mapcf</name>
+			<sql><![CDATA[CREATE TABLE `vtiger_mapcf` (
+  `mapid` int(11) NOT NULL,
+  `cf_616` varchar(23) DEFAULT '',
+  PRIMARY KEY (`mapid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8]]></sql>
+		</table>
+	</tables>
+</schema>

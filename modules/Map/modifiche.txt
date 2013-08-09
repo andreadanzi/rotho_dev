@@ -1,0 +1,19 @@
+getResults che è in lib/utils.inc.php crea la query e passa tutto a getResult
+
+getResult che è in lib/utils.inc.php esegue la query sul DB e poi chiama per ogni elemento getGeoCode
+
+24.03.2012 => in lib/utils.inc.php aggiunta la colonna type nella getResults per tutte e 4 le entità ( ocio al cf_614 per Account, aggiunto il campo type nell'array delle getResult
+24.03.2012 => in lib/utils.inc.php nella funzione printResultLayer aggiunto il campo type
+24.03.2012 => schema.xml aggiunta la colonna type e value_map
+24.03.2012=> js/gm.js modificata la funzione getDescription aggiungendo type e di conseguenza in setupResultMarkers è stato passato il nuovo parametro
+24.03.2012=> js/gm.js modificata addMarker aggiungendo il tipo e la gestione dei custom marker
+
+26.03.2012 => in lib/utils.inc.php aggiunta la colonna value su tutte le entità valorizzata per ora a 0 (zero)
+26.03.2012 => in lib/utils.inc.php aggiunta la query su Sales Order nella quale il valore è dato dalla somma del totale (total). In alternativa si potrebbe prendere il subtotal (senza IVA e trasporto).
+26.03.2012=> js/gm.js modificata la funzione getDescription aggiungendo map_value
+26.03.2012=> index.php, aggiunta la Select dei SalesOrder
+26.03.2012=> js/gm.js aggiunto markerCluster 
+26.03.2012=> index.php, aggiunta il link a markerclusterer.js
+
+29.03.2012=> schema.xml, aggiunta la tabella vriger_mapcf
+
