@@ -1,5 +1,29 @@
 /* danzi.tn@201308091917 */
 
+tr.pointRow_Corsi {
+	background: url("img/blu.png") repeat-x scroll center bottom #DDDCDD;
+}
+
+tr.pointRow_Download {
+	background: url("img/orange.png") repeat-x scroll center bottom #DDDCDD;
+}
+
+tr.pointRow_Consulenze {
+	background: url("img/green.png") repeat-x scroll center bottom #DDDCDD;
+}
+
+tr.pointRow_Affiliazione {
+	background: url("img/rosa.png") repeat-x scroll center bottom #DDDCDD;
+}
+
+tr.pointRow_Opportunita {
+	background: url("img/red.png") repeat-x scroll center bottom #DDDCDD;
+}
+
+.show_points {
+	cursor:pointer;
+}
+
 .showpoints_hidden {
 	background: url("img/inner.gif") repeat-x scroll center bottom #DDDCDD;
 	border-color: #DEDEDE;
@@ -36,6 +60,7 @@
 .pointVal {
 	text-align:right;
 	font-style:italic;
+	padding-right: 8px;
 }
 
 .pointGrp {
@@ -49,6 +74,7 @@
 .pointValSum {
 	text-align:right;
 	font-weight:bold;
+	padding-right: 8px;
 }
 
 .pointGrpSum {
@@ -59,4 +85,19 @@
 
 .pointCat {
 
+}
+
+.pointCatHead {
+	font-weight:bold;
+	font-size:12px;
+}
+
+.pointGrpHead {
+	font-weight:bold;
+	font-size:12px;
+}
+
+.pointValHead {
+	font-weight:bold;
+	font-size:12px;
 }

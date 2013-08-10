@@ -1,12 +1,6 @@
 <?php
 /* +**********************************************************************************
- * The contents of this file are subject to the vtiger CRM Public License Version 1.0
- * ("License"); You may not use this file except in compliance with the License
- * The Original Code is:  vtiger CRM Open Source
- * The Initial Developer of the Original Code is vtiger.
- * Portions created by vtiger are Copyright (C) vtiger.
- * Portions created by CRMVILLAGE.BIZ are Copyright (C) CRMVILLAGE.BIZ.
- * All Rights Reserved.
+danzi.tn@201308101358
  * ********************************************************************************** */
 // Switch the working directory to base
 // chdir(dirname(__FILE__) . '/../..');
@@ -106,7 +100,7 @@ class AccRatingClass {
 			{
 				// if($log_active) echo "accountid = ".$row['accountid']."\n";
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
-				$account_rating_table[$row['accountid']]['Consulenze'][$row['prog_rating_title']] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Opportunita'][$row['prog_rating_title']] += intval($row['prog_rating_value']);
 				$import_result['records_updated']+=1;
 			}
 			foreach($account_rating as $key=>$val) {
@@ -152,7 +146,7 @@ class AccRatingClass {
 	}
 	
 	private function _update_account_table() {
-		global $adb;
+		global $adb, $table_prefix;
 		$sql = "UPDATE VTEACC
 				SET 
 				VTEACC.points = VTEACCSUM.sum_valore

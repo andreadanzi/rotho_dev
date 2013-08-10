@@ -21,8 +21,8 @@ switch($sdk_mode) {
 //		break;
 	case 'list':
 		if (!empty($sdk_value)) {
-		  $value = '<div onclick="return show_points(this, \'showpoints\','.$sdk_value.','.$recordId.',\'showpoints_'.$recordId.'\')"><span align="left" >'.$sdk_value.'</span>&nbsp;&times;&nbsp;<span align="left" ><img border="0" src="'.$imgdir.'star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span></div>';
-		  $value .= '<div onclick="return show_points(this, \'showpoints\','.$sdk_value.','.$recordId.',\'showpoints_'.$recordId.'\')" id="showpoints_'.$recordId.'" class="showpoints_hidden">'.$sdk_value.'</div>';
+		  $value = '<div class="show_points" onclick="show_points(this, \'showpoints\','.$sdk_value.','.$recordId.',\'showpoints_'.$recordId.'\');"><span align="left" >'.$sdk_value.'</span>&nbsp;&times;&nbsp;<span align="left" ><img border="0" src="'.$imgdir.'star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span></div>';
+		  $value .= '<div id="showpoints_'.$recordId.'" class="showpoints_hidden">'.$sdk_value.'</div>';
 		} else {
 			$value = '';
 		}

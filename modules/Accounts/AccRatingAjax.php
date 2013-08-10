@@ -1,11 +1,6 @@
 <?php
 /*+**********************************************************************************
- * The contents of this file are subject to the vtiger CRM Public License Version 1.0
- * ("License"); You may not use this file except in compliance with the License
- * The Original Code is:  vtiger CRM Open Source
- * The Initial Developer of the Original Code is vtiger.
- * Portions created by vtiger are Copyright (C) vtiger.
- * All Rights Reserved.
+
  ************************************************************************************/
 //danzi.tn@201308091803
 
@@ -34,13 +29,14 @@ $sql = "SELECT
 		temp_acc_ratings.categoria, sumvalore";
 $result = $adb->pquery($sql,array($recordid));
 echo "<table id='pointstable'><tbody>";
+echo "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Rating']}</td></tr>";
 $totsumvalore = 0;
 while($row=$adb->fetchByAssoc($result))
 {
 	$totsumvalore += $row['sumvalore'];
-	echo "<tr class='pointRow'><td class='pointCat'>".$row['categoria']."</td><td class='pointGrp'>".$row['gruppo']." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
+	echo "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".$row['gruppo']." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
 }
-echo "<tr class='pointRowSum'><td class='pointCatSum'></td><td class='pointGrpSum'>Punteggio Totale=</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
+echo "<tr class='pointRowSum'><td class='pointCatSum'><button class='small' type='button' onclick=\"return show_points(this, 'showpoints','{$totsumvalore}','{$recordid}','showpoints_{$recordid}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
 echo "</tbody></table>";
 
 ?>
