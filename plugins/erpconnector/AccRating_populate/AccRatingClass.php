@@ -126,8 +126,8 @@ class AccRatingClass {
 		$create_sql = "IF NOT EXISTS (select * from sysobjects where name='temp_acc_ratings' and xtype='U')
 							CREATE TABLE temp_acc_ratings (
 								accountid INT NULL,
-								categoria VARCHAR(50) NULL,
-								gruppo VARCHAR(50) NULL,
+								categoria VARCHAR(100) NULL,
+								gruppo VARCHAR(255) NULL,
 								valore INT NULL,
 								insdatetime DATETIME NULL
 							)";

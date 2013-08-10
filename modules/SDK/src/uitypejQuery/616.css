@@ -1,0 +1,62 @@
+/* danzi.tn@201308091917 */
+
+.showpoints_hidden {
+	background: url("img/inner.gif") repeat-x scroll center bottom #DDDCDD;
+	border-color: #DEDEDE;
+    border-style: solid;
+    border-width: 1px;
+    color: #000000;
+    padding: 8px;
+	display:none;
+	position:absolute;
+	top:70%;
+	left:50%;
+	margin:-150px 0 0 -200px;
+}
+
+.showpoints_display {
+	background: url("img/inner.gif") repeat scroll center bottom #DDDCDD;
+	border-color: #DEDEDE;
+    border-style: solid;
+    border-width: 1px;
+    color: #000000;
+    padding: 8px;
+	display:block;
+	position:absolute;
+	top:70%;
+	left:50%;
+	margin:-150px 0 0 -200px;
+	box-shadow: 10px 10px 5px #888888;
+}
+
+.pointRow {
+
+}
+
+.pointVal {
+	text-align:right;
+	font-style:italic;
+}
+
+.pointGrp {
+
+}
+
+.pointRowSum {
+	
+}
+
+.pointValSum {
+	text-align:right;
+	font-weight:bold;
+}
+
+.pointGrpSum {
+	text-align:right;
+	font-weight:bold;
+	font-style:italic;
+}
+
+.pointCat {
+
+}
