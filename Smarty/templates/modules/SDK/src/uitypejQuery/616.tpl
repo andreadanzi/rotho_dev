@@ -3,7 +3,7 @@
 		<td width=25% class="dvtCellInfo" align="left">
 			&nbsp;<span id ="dtlview_{$keyfldname}">
 			{if $keyval neq ''}
-			  <span  onclick="return show_points(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}')" align="left" >{$keyval}&nbsp;&times;&nbsp;</span>
+			  <span class="show_points" onclick="show_points(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}');" align="left" >{$keyval}&nbsp;&times;&nbsp;</span>
 			{/if}
 			<span align="left" ><img  id="opener"  src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
 
@@ -16,7 +16,7 @@
 		<td width="25%" class="dvtCellInfo" align="left" id="mouseArea_{$label}" onmouseover="hndMouseOver({$keyid},'{$label}');" onmouseout="fnhide('crmspanid');">
 			&nbsp;&nbsp;<span id="dtlview_{$keyfldname}">
 			{if $keyval neq ''}
-			  <span align="left"  onclick="return show_points(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}')" >{$keyval}&nbsp;&times;&nbsp;</span>
+			  <span align="left" class="show_points" onclick="show_points(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}');" >{$keyval}&nbsp;&times;&nbsp;</span>
 			{/if}
 			<span align="left" ><img id="opener" src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
 			</span>

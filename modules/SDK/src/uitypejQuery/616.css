@@ -33,7 +33,7 @@ tr.pointRow_Opportunita {
     padding: 8px;
 	display:none;
 	position:absolute;
-	top:70%;
+	top:220px;
 	left:50%;
 	margin:-150px 0 0 -200px;
 }
@@ -47,7 +47,7 @@ tr.pointRow_Opportunita {
     padding: 8px;
 	display:block;
 	position:absolute;
-	top:70%;
+	top:340px;
 	left:50%;
 	margin:-150px 0 0 -200px;
 	box-shadow: 10px 10px 5px #888888;
