@@ -52,13 +52,15 @@ class WebsiteClass {
 		$this->import_result['records_updated']=0;
 		$maxtimestamp_tt_address = $this->_get_maxtimestamp_tt_address();
 		if($this->log_active) echo "_get_maxtimestamp_tt_address returns ".$maxtimestamp_tt_address."\n";
+		$maxuid_tt_address = $this->_get_maxuid_tt_address();
+		if($this->log_active) echo "_get_maxuid_tt_address returns ".$maxuid_tt_address."\n";
 		$maxtimestamp_fe_users = $this->_get_maxtimestamp_fe_users();
 		if($this->log_active) echo "_get_maxtimestamp_fe_users returns ".$maxtimestamp_fe_users."\n";
 		$maxtimestamp_safe_tt_address = $this->_get_maxtimestamp_safe_tt_address();
 		if($this->log_active) echo "_get_maxtimestamp_safe_tt_address returns ".$maxtimestamp_safe_tt_address."\n";
 		$sql_fe_users = $this->_get_sql_fe_users($maxtimestamp_fe_users);
 		if($this->log_active) echo "_get_sql_fe_users returns ".$sql_fe_users."\n";
-		$sql_tt_address = $this->_get_sql_tt_address($maxtimestamp_tt_address);
+		$sql_tt_address = $this->_get_sql_tt_address($maxuid_tt_address);
 		if($this->log_active) echo "_get_sql_tt_address returns ".$sql_tt_address."\n";
 		$sql_safe_tt_address = $this->_get_sql_safe_tt_address($maxtimestamp_safe_tt_address);
 		if($this->log_active) echo "_get_sql_safe_tt_address returns ".$sql_safe_tt_address."\n";
@@ -94,6 +96,21 @@ class WebsiteClass {
 			$max_timestamp = $row['max_timestamp'];
 		}	
 		return $max_timestamp;
+	}
+	
+	
+	private function _get_maxuid_tt_address() {
+		global $adb,$table_prefix;
+		$max_uid = "";
+		$sql = "SELECT CASE  WHEN  MAX(".$this->temp_web.".uid ) IS NULL THEN 0 ELSE MAX(".$this->temp_web.".uid )  END as max_uid
+				FROM ".$this->temp_web."
+				WHERE uid is not null";
+		if($this->log_active) echo "_get_maxuid_tt_address sql = ".$sql."\n";
+		$wsresult = $adb->query($sql);
+		while($row = $adb->fetchByAssoc($wsresult)) {
+			$max_uid = $row['max_uid'];
+		}	
+		return $max_uid;
 	}
 	
 	private function _get_maxtimestamp_fe_users() {
@@ -150,7 +167,7 @@ class WebsiteClass {
 		return $sql;
 	}
 	
-	private function _get_sql_tt_address($max_timestamp) {
+	private function _get_sql_tt_address($max_uid) {
 		$sql = "select 
 				".$this->website_tableweb.".uid,
 				".$this->website_tableweb.".pid,
@@ -184,7 +201,7 @@ class WebsiteClass {
 				".$this->website_tableweb."
 				JOIN pages on pages.uid = ".$this->website_tableweb.".pid and pages.deleted=0
 				where ".$this->website_tableweb.".deleted=0
-				and ".$this->website_tableweb.".tstamp  > " . $max_timestamp . "  order by ".$this->website_tableweb.".uid ";
+				and ".$this->website_tableweb.".uid  > " . $max_uid . "  order by ".$this->website_tableweb.".uid ";
 		$this->_build_insert($this->website_dbweb, $this->website_tableweb,$sql,$this->temp_web);
 		return $sql;
 	}
