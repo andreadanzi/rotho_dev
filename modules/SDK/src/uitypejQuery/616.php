@@ -34,7 +34,7 @@ switch($sdk_mode) {
 		{
 			if($bFirst) {
 				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead' colspan=3>{$row['account_no']}-{$row['accountname']}</td></tr>";
-				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Rating']}</td></tr>";
+				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Points']}</td></tr>";
 				$bFirst = false;
 			}
 			$totsumvalore += $row['sumvalore'];
@@ -55,7 +55,7 @@ switch($sdk_mode) {
 		{
 			if($bFirst) {
 				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead' colspan=3>{$row['account_no']}-{$row['accountname']}</td></tr>";
-				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Rating']}</td></tr>";
+				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Points']}</td></tr>";
 				$bFirst = false;
 			}
 			$totsumvalore += $row['sumvalore'];
