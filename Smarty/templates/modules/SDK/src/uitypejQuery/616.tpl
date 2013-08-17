@@ -1,55 +1,29 @@
 {if $sdk_mode eq 'detail'}
-	{if $keyreadonly eq 99}
-		<td width=25% class="dvtCellInfo" align="left">
-			&nbsp;<span id ="dtlview_{$keyfldname}">
+	<td width=25% class="dvtCellInfo" align="left">
+		&nbsp;<span id ="dtlview_{$keyfldname}">
 			{if $keyval neq ''}
-			  <span class="show_points" onclick="show_points(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}');" align="left" >{$keyval}&nbsp;&times;&nbsp;</span>
+			  <span class="show_points" onclick="show_points_loaded(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}');" align="left" >{$keyval}&nbsp;&times;&nbsp;</span>
 			{/if}
 			<span align="left" ><img  id="opener"  src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
-
-			</span>
-			<div id="showpoints_{$ID}" class="showpoints_hidden"    >
-				{$keyval}
-			</div>
-		</td>
-	{else}
-		<td width="25%" class="dvtCellInfo" align="left" id="mouseArea_{$label}" onmouseover="hndMouseOver({$keyid},'{$label}');" onmouseout="fnhide('crmspanid');">
-			&nbsp;&nbsp;<span id="dtlview_{$keyfldname}">
-			{if $keyval neq ''}
-			  <span align="left" class="show_points" onclick="show_points(this, 'showpoints','{$keyval}','{$ID}','showpoints_{$ID}');" >{$keyval}&nbsp;&times;&nbsp;</span>
-			{/if}
-			<span align="left" ><img id="opener" src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
-			</span>
-			<div id="showpoints_{$ID}" class="showpoints_hidden"    >
-				{$keyval}
-			</div>
-		</td>
-	{/if}
+		</span>
+		<div id="showpoints_{$ID}" class="showpoints_hidden"    >
+			{$INNER_POINTS}
+		</div>
+	</td>
 {elseif $sdk_mode eq 'edit'}
-	{if $readonly eq 99}
-		<td width=20% class="dvtCellLabel" align=right>
-			<font color="red">*</font>{$fldlabel}
-		</td>
-		<td width=30% align=left class="dvtCellInfo">
-			<span class="show_points" onclick="show_points(this, 'showpoints','{$fldvalue}','{$ID}','showpoints_{$ID}');" align="left" ><input   type="hidden" name="{$keyfldname}" tabindex="{$vt_tab}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox >{$fldvalue}</span>
-			<span>&nbsp;&times;&nbsp;</span>
-		    <span align="left" ><img src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
-			<div id="showpoints_{$ID}" class="showpoints_hidden"   >
-				{$fldvalue}
-			</div>
-		</td>
-	{elseif $readonly eq 100}
+	{if $readonly eq 100}
 		<input type="hidden" name="{$keyfldname}" tabindex="{$vt_tab}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox >
 	{else}
 		<td width=20% class="dvtCellLabel" align=right>
 			<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$keyfldname}_mass_edit_check" id="{$keyfldname}_mass_edit_check" class="small">{/if}
 		</td>
-		<td width=30% align=left class="dvtCellInfo"
-			<span class="show_points" onclick="show_points(this, 'showpoints','{$fldvalue}','{$ID}','showpoints_{$ID}');" align="left" ><input style="width:49%;" type="text" name="{$keyfldname}" tabindex="{$vt_tab}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'"></span>
-			<span>&nbsp;&times;&nbsp;</span>
-			<span align="left" ><img src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
+		<td width=30% align=left class="dvtCellInfo">
+			&nbsp;<span id ="dtlview_{$keyfldname}">
+				<span class="show_points" onclick="show_points_loaded(this, 'showpoints','{$fldvalue}','{$ID}','showpoints_{$ID}');" align="left" >{$fldvalue}&nbsp;&times;&nbsp;</span>
+				<span align="left" ><img  id="opener" src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
+			</span>
 			<div id="showpoints_{$ID}" class="showpoints_hidden"   >
-				{$fldvalue}
+				{$INNER_POINTS}
 			</div>
 		</td>
 	{/if}

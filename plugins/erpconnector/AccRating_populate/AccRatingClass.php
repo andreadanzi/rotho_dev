@@ -1,6 +1,12 @@
 <?php
 /* +**********************************************************************************
-danzi.tn@201308101358
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.0
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is:  vtiger CRM Open Source
+ * The Initial Developer of the Original Code is vtiger.
+ * Portions created by vtiger are Copyright (C) vtiger.
+ * Portions created by CRMVILLAGE.BIZ are Copyright (C) CRMVILLAGE.BIZ.
+ * All Rights Reserved.
  * ********************************************************************************** */
 // Switch the working directory to base
 // chdir(dirname(__FILE__) . '/../..');
@@ -120,8 +126,8 @@ class AccRatingClass {
 		$create_sql = "IF NOT EXISTS (select * from sysobjects where name='temp_acc_ratings' and xtype='U')
 							CREATE TABLE temp_acc_ratings (
 								accountid INT NULL,
-								categoria VARCHAR(100) NULL,
-								gruppo VARCHAR(255) NULL,
+								categoria VARCHAR(50) NULL,
+								gruppo VARCHAR(50) NULL,
 								valore INT NULL,
 								insdatetime DATETIME NULL
 							)";
@@ -146,7 +152,7 @@ class AccRatingClass {
 	}
 	
 	private function _update_account_table() {
-		global $adb, $table_prefix;
+		global $adb;
 		$sql = "UPDATE VTEACC
 				SET 
 				VTEACC.points = VTEACCSUM.sum_valore
@@ -314,11 +320,11 @@ class AccRatingClass {
 					WHEN ".$table_prefix."_potential.amount >= 100000 THEN 6
 				END as prog_rating_value,
 				CASE 
-					WHEN ".$table_prefix."_potential.amount < 10000 THEN '&lt; 10K'  
-					WHEN ".$table_prefix."_potential.amount >= 10000 AND ".$table_prefix."_potential.amount < 20000 THEN '&gt; 10K'  
-					WHEN ".$table_prefix."_potential.amount >= 20000 AND ".$table_prefix."_potential.amount < 50000 THEN '&gt; 20K'  
-					WHEN ".$table_prefix."_potential.amount >= 50000 AND ".$table_prefix."_potential.amount < 100000 THEN '&gt; 50K'  
-					WHEN ".$table_prefix."_potential.amount >= 100000 THEN '&gt; 100K'  
+					WHEN ".$table_prefix."_potential.amount < 10000 THEN '< 10K'  
+					WHEN ".$table_prefix."_potential.amount >= 10000 AND ".$table_prefix."_potential.amount < 20000 THEN '> 10K'  
+					WHEN ".$table_prefix."_potential.amount >= 20000 AND ".$table_prefix."_potential.amount < 50000 THEN '> 20K'  
+					WHEN ".$table_prefix."_potential.amount >= 50000 AND ".$table_prefix."_potential.amount < 100000 THEN '> 50K'  
+					WHEN ".$table_prefix."_potential.amount >= 100000 THEN '> 100K'  
 				END as prog_rating_title
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0

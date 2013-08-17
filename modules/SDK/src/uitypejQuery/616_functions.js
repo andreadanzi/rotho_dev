@@ -9,8 +9,6 @@ function show_points(obj, divid,points,id,showdiv) {
 	}
 	else {
 		var use_worklow = getFile("index.php?module=Accounts&action=AccountsAjax&parenttab=Marketing&file=AccRatingAjax&mode=ajax&points="+points+"&recordid="+id+"&ajxaction=DETAILVIEW");
-		// alert(use_worklow );
-		// fnvshobj(obj, 'showpoints_'+id);
 		var e = document.getElementById(showdiv);
 		if(e.className  == 'showpoints_display') {
 			e.innerHTML = '';
@@ -24,13 +22,33 @@ function show_points(obj, divid,points,id,showdiv) {
 			e.style.width = t.clientWidth + 8;
 		}
 	}
-	// fnvshobj(obj, divid);
 }
 
+
+function show_points_loaded(obj, divid,points,id,showdiv) {
+	if (id == "" || id == ";" || id == 'null' || id == 0)
+	{
+		alert(alert_arr.SELECT);
+		return false;
+	}
+	else {
+		var e = document.getElementById(showdiv);
+		if(e.className  == 'showpoints_display') {
+			e.className  = 'showpoints_hidden';
+		}
+		else {
+			e.className  = 'showpoints_display';
+			var t = document.getElementById('pointstable');
+			e.style.height = t.clientHeight + 8;
+			e.style.width = t.clientWidth + 8;
+		}
+	}
+}
 
 function show_points_formload(points,id,parenttab,use_worklow) {
 	
 }
+
 
 /*
 
