@@ -38,9 +38,9 @@ switch($sdk_mode) {
 				$bFirst = false;
 			}
 			$totsumvalore += $row['sumvalore'];
-			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".$row['gruppo']." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
+			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".htmlspecialchars_decode($row['gruppo'])." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
 		}
-		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
+		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
 		$html_str .= "</tbody></table>";
 		$smarty->assign("INNER_POINTS", $html_str);
 		$label_fld[] = getTranslatedString($fieldlabel,$module);
@@ -59,9 +59,9 @@ switch($sdk_mode) {
 				$bFirst = false;
 			}
 			$totsumvalore += $row['sumvalore'];
-			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".$row['gruppo']." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
+			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".htmlspecialchars_decode($row['gruppo'])." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
 		}
-		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
+		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
 		$html_str .= "</tbody></table>";
 		$smarty->assign("INNER_POINTS", $html_str);
 		$editview_label[] = getTranslatedString($fieldlabel, $module_name);
