@@ -251,7 +251,8 @@ class WebsiteClass {
 		$retsql .= " (".implode(", ", array_keys($this->mapping[$source_table])).")";
 		$retsql .= " VALUES ";
 		$conn = mysql_connect($this->website_host, $this->website_usr, $this->website_pwd);
-		mysql_select_db($website_db);
+		mysql_select_db($website_db, $conn);
+		mysql_set_charset('UTF8',$conn);
 		$wsresult = mysql_query($sql);
 		$values_array = array();
 		while($row = mysql_fetch_assoc($wsresult)) {
