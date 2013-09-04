@@ -100,6 +100,12 @@ class RelationsHandler extends VTEventHandler {
 				elseif($focus->column_fields['relation_name'] == 'lbl_rel_has_pres') {
 						$newRel->column_fields['relation_name']='lbl_rel_pres_of';
 				}
+				elseif($focus->column_fields['relation_name'] == 'Montatore back') {
+						$newRel->column_fields['relation_name']='Montatore per';
+				}
+				elseif($focus->column_fields['relation_name'] == 'Montatore per') {
+						$newRel->column_fields['relation_name']='Montatore back';
+				}
 				else {
 					$newRel->column_fields['relation_name']=$focus->column_fields['relation_name'];
 				}
