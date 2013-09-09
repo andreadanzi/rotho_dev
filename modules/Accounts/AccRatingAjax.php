@@ -32,6 +32,20 @@ $sql = "SELECT
 		".$table_prefix."_account.account_no
 		ORDER BY 
 		temp_acc_ratings.categoria, sumvalore";
+// danzi.tn@20130909		
+$sql_visit = "SELECT 'Visitreport' as categoria, 
+      ".$table_prefix."_visitreport.visitreportid,
+      ".$table_prefix."_visitreport.visitreport_no,
+      ".$table_prefix."_visitreport.visitdate
+		from 
+		 temp_acc_ratings 
+		Join ".$table_prefix."_account ON ".$table_prefix."_account.accountid = temp_acc_ratings.accountid
+		JOIN ".$table_prefix."_visitreport ON ".$table_prefix."_visitreport.accountid = temp_acc_ratings.accountid
+		JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_visitreport.visitreportid and ".$table_prefix."_crmentity.deleted = 0
+		WHERE temp_acc_ratings.accountid = ?
+		ORDER BY 
+		".$table_prefix."_visitreport.visitdate DESC";
+// danzi.tn@20130909 e
 $result = $adb->pquery($sql,array($recordid));
 echo "<table id='pointstable'><tbody>";
 $totsumvalore = 0;
@@ -46,6 +60,18 @@ while($row=$adb->fetchByAssoc($result))
 	$totsumvalore += $row['sumvalore'];
 	echo "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".$row['gruppo']." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
 }
+// danzi.tn@20130909
+$novisite=true;
+$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
+$result_visit = $adb->pquery($sql_visit,array($recordid));
+while($row_visit=$adb->fetchByAssoc($result_visit))
+{
+	$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
+	$novisite=false;
+	break;
+}
+echo $html_visite;
+// danzi.tn@20130909e
 echo "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points(this, 'showpoints','{$totsumvalore}','{$recordid}','showpoints_{$recordid}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
 echo "</tbody></table>";
 

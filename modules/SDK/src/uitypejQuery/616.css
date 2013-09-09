@@ -20,6 +20,16 @@ tr.pointRow_Opportunita {
 	background: url("img/red.png") repeat-x scroll center bottom #DDDCDD;
 }
 
+tr.pointRow_NoVisitreport {
+	background-color: red;
+	text-decoration:underline;
+	color: #ffffff;
+}
+
+tr.pointRow_Visitreport {
+	background: url("img/green.png") repeat-x scroll center bottom #DDDCDD;
+}
+
 .show_points {
 	cursor:pointer;
 }
