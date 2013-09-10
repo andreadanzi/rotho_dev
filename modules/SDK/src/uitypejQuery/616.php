@@ -24,7 +24,7 @@ $sql = "SELECT
 		ORDER BY 
 		temp_acc_ratings.categoria, sumvalore";
 // danzi.tn@20130909		
-$sql_visit = "SELECT 
+$sql_visit = "SELECT DISTINCT 
 	  'Visitreport' as categoria, 
       vtiger_visitreport.visitreportid,
       vtiger_visitreport.visitreport_no,
@@ -35,6 +35,7 @@ $sql_visit = "SELECT
 		JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid
 		JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_visitreport.visitreportid and vtiger_crmentity.deleted = 0
 		WHERE temp_acc_ratings.accountid = ?
+		AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( year, -1,GETDATE())  AND  GETDATE() )
 		ORDER BY 
 		vtiger_visitreport.visitdate DESC";
 // danzi.tn@20130909e

@@ -33,7 +33,7 @@ $sql = "SELECT
 		ORDER BY 
 		temp_acc_ratings.categoria, sumvalore";
 // danzi.tn@20130909		
-$sql_visit = "SELECT 'Visitreport' as categoria, 
+$sql_visit = "SELECT DISTINCT 'Visitreport' as categoria, 
       ".$table_prefix."_visitreport.visitreportid,
       ".$table_prefix."_visitreport.visitreport_no,
       ".$table_prefix."_visitreport.visitdate
@@ -42,7 +42,8 @@ $sql_visit = "SELECT 'Visitreport' as categoria,
 		Join ".$table_prefix."_account ON ".$table_prefix."_account.accountid = temp_acc_ratings.accountid
 		JOIN ".$table_prefix."_visitreport ON ".$table_prefix."_visitreport.accountid = temp_acc_ratings.accountid
 		JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_visitreport.visitreportid and ".$table_prefix."_crmentity.deleted = 0
-		WHERE temp_acc_ratings.accountid = ?
+		WHERE temp_acc_ratings.accountid = ? 
+		AND ( ".$table_prefix."_visitreport.visitdate BETWEEN DATEADD( year, -1,GETDATE())  AND  GETDATE() )
 		ORDER BY 
 		".$table_prefix."_visitreport.visitdate DESC";
 // danzi.tn@20130909 e
