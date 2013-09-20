@@ -215,6 +215,19 @@ class AccRatingClass {
 	
 	private function _update_account_table() {
 		global $adb, $table_prefix;
+		// danzi.tn@20130920 - mettere a 0 tutti gli account che non sono più in temp_acc_ratings
+		$sql = "UPDATE 
+				".$table_prefix."_account
+				SET ".$table_prefix."_account.points = 0
+				from 
+				".$table_prefix."_account
+				join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid and ".$table_prefix."_crmentity.deleted=0
+				left join temp_acc_ratings on temp_acc_ratings.accountid = ".$table_prefix."_account.accountid
+				where
+				".$table_prefix."_account.points > 0 AND
+				temp_acc_ratings.accountid IS NULL";
+		$adb->query($sql);
+		// danzi.tn@20130920 e
 		$sql = "UPDATE VTEACC
 				SET 
 				VTEACC.points = VTEACCSUM.sum_valore
