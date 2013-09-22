@@ -7,6 +7,7 @@ $imgdir = 'modules/SDK/src/uitypejQuery/img/';
 $sql = "SELECT
 		temp_acc_ratings.categoria,
 		temp_acc_ratings.gruppo,
+		temp_acc_ratings.eventdatetime,
 		sum(temp_acc_ratings.valore) as sumvalore,
 		vtiger_account.accountname,
 		vtiger_account.account_no
@@ -19,10 +20,11 @@ $sql = "SELECT
 		group by 
 		temp_acc_ratings.categoria,
 		temp_acc_ratings.gruppo,
+		temp_acc_ratings.eventdatetime,
 		vtiger_account.accountname,
 		vtiger_account.account_no
 		ORDER BY 
-		temp_acc_ratings.categoria, sumvalore";
+		temp_acc_ratings.categoria,temp_acc_ratings.eventdatetime, sumvalore";
 // danzi.tn@20130909		
 $sql_visit = "SELECT DISTINCT 
 	  'Visitreport' as categoria, 
@@ -35,7 +37,7 @@ $sql_visit = "SELECT DISTINCT
 		JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid
 		JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_visitreport.visitreportid and vtiger_crmentity.deleted = 0
 		WHERE temp_acc_ratings.accountid = ?
-		AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( year, -1,GETDATE())  AND  GETDATE() )
+		AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, -4,GETDATE())  AND  GETDATE() )
 		ORDER BY 
 		vtiger_visitreport.visitdate DESC";
 // danzi.tn@20130909e
@@ -51,27 +53,27 @@ switch($sdk_mode) {
 		while($row=$adb->fetchByAssoc($result))
 		{
 			if($bFirst) {
-				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead' colspan=3>{$row['account_no']}-{$row['accountname']}</td></tr>";
-				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Points']}</td></tr>";
+				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead' colspan=4>{$row['account_no']}-{$row['accountname']}</td></tr>";
+				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointGrpHead'>{$app_strings['date']}</td><td class='pointValHead'>{$mod_strings['Points']}</td></tr>";
 				$bFirst = false;
 			}
 			$totsumvalore += $row['sumvalore'];
-			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".htmlspecialchars_decode($row['gruppo'])." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
+			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".htmlspecialchars_decode($row['gruppo'])." </td><td class='pointGrp'>".htmlspecialchars_decode($row['eventdatetime'])." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
 		}
 		// danzi.tn@20130909
 		$novisite=true;
-		$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
+		$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'></td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
 		$result_visit = $adb->pquery($sql_visit,array($focus->id));
 		while($row_visit=$adb->fetchByAssoc($result_visit))
 		{
-			$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
+			$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'></td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
 			$novisite=false;
 			break;
 		}
 		$html_str .= $html_visite;
 		$smarty->assign("NO_VISITE", $novisite);
 		// danzi.tn@20130909e
-		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
+		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'></td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
 		$html_str .= "</tbody></table>";
 		$smarty->assign("INNER_POINTS", $html_str);
 		$label_fld[] = getTranslatedString($fieldlabel,$module);
@@ -85,27 +87,27 @@ switch($sdk_mode) {
 		while($row=$adb->fetchByAssoc($result))
 		{
 			if($bFirst) {
-				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead' colspan=3>{$row['account_no']}-{$row['accountname']}</td></tr>";
-				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointValHead'>{$mod_strings['Points']}</td></tr>";
+				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead' colspan=4>{$row['account_no']}-{$row['accountname']}</td></tr>";
+				$html_str .= "<tr class='pointRowSum'><td class='pointCatHead'>{$app_strings['Category']}</td><td class='pointGrpHead'>{$app_strings['LBL_ACTIVITY_TYPE']}</td><td class='pointGrpHead'>{$app_strings['date']}</td><td class='pointValHead'>{$mod_strings['Points']}</td></tr>";
 				$bFirst = false;
 			}
 			$totsumvalore += $row['sumvalore'];
-			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".htmlspecialchars_decode($row['gruppo'])." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
+			$html_str .= "<tr class='pointRow_".$row['categoria']."'><td class='pointCat'>".$mod_strings[$row['categoria']]."</td><td class='pointGrp'>".htmlspecialchars_decode($row['gruppo'])." </td><td class='pointGrp'>".htmlspecialchars_decode($row['eventdatetime'])." </td><td class='pointVal'>".$row['sumvalore']."</td></tr>";
 		}
 		// danzi.tn@20130909
 		$novisite=true;
-		$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
+		$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'></td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
 		$result_visit = $adb->pquery($sql_visit,array($focus->id));
 		while($row_visit=$adb->fetchByAssoc($result_visit))
 		{
-			$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
+			$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'> </td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
 			$novisite=false;
 			break;
 		}
 		$html_str .= $html_visite;
 		$smarty->assign("NO_VISITE", $novisite);
 		// danzi.tn@20130909e
-		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
+		$html_str .= "<tr class='pointRowSum'><td class='pointCatSum'><button class='small show_points' type='button' onclick=\"return show_points_loaded(this, 'showpoints','{$totsumvalore}','{$focus->id}','showpoints_{$focus->id}')\">{$app_strings['LBL_CLOSE']}</button> </td><td class='pointGrpSum'></td><td class='pointGrpSum'>{$app_strings['LBL_TOTAL']}</td><td class='pointValSum'>".$totsumvalore."</td></tr>";
 		$html_str .= "</tbody></table>";
 		$smarty->assign("INNER_POINTS", $html_str);
 		$editview_label[] = getTranslatedString($fieldlabel, $module_name);

@@ -16,6 +16,7 @@ $temp_table = "temp_acc_ratings";
 $ratingField = 'cf_927'; // dev=>cf_891 rotho_prod=>cf_927
 $codiceCorsoTargetField = 'cf_1006'; // dev=>cf_887 rotho_prod=>cf_1006
 $codiceCorsoCampagnaField = 'cf_742'; // dev=>cf_886 rotho_prod=>cf_742
+$dataCorsoCampagnaField = 'cf_745'; // dev=>cf_886 rotho_prod=>cf_742
 $codiceFatturazioneCorsoField = 'cf_759'; // dev=>cf_892 rotho_prod=>cf_759
 $codiceCategoriaField = 'cf_762'; // dev=>cf_799 rotho_prod=>cf_762
 $tipoAffiliazioneField = 'cf_1178'; // dev=>cf_893 rotho_prod=>cf_1178

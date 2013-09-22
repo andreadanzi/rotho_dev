@@ -24,6 +24,7 @@ class AccRatingClass {
 	var $_ratingField = '';
 	var $_codiceCorsoTargetField = '';
 	var $_codiceCorsoCampagnaField = '';
+	var $_dataCorsoCampagnaField = '';
 	var $_codiceFatturazioneCorsoField = '';
 	var $_codiceCategoriaField = '';
 	var $_tipoAffiliazioneField = '';
@@ -33,12 +34,13 @@ class AccRatingClass {
 		$this->entity_id = $id;
 	}
 	
-	function setVars($p_log_active, $p_ratingField, $p_codiceCorsoTargetField,$p_codiceCorsoCampagnaField, $p_codiceFatturazioneCorsoField,$p_codiceCategoriaField,$p_tipoAffiliazioneField, $p_map_corsi )
+	function setVars($p_log_active, $p_ratingField, $p_codiceCorsoTargetField,$p_codiceCorsoCampagnaField, $p_codiceFatturazioneCorsoField,$p_codiceCategoriaField,$p_tipoAffiliazioneField, $p_map_corsi , $p_dataCorsoCampagnaField)
 	{
 		$this->_log_active = $p_log_active;
 		$this->_ratingField = $p_ratingField;
 		$this->_codiceCorsoTargetField = $p_codiceCorsoTargetField;
 		$this->_codiceCorsoCampagnaField = $p_codiceCorsoCampagnaField;
+		$this->_dataCorsoCampagnaField = $p_dataCorsoCampagnaField;
 		$this->_codiceFatturazioneCorsoField = $p_codiceFatturazioneCorsoField;
 		$this->_codiceCategoriaField = $p_codiceCategoriaField;
 		$this->_tipoAffiliazioneField = $p_tipoAffiliazioneField;
@@ -47,11 +49,12 @@ class AccRatingClass {
 	
 	function __construct()
 	{
-		global $log_active, $ratingField, $codiceCorsoTargetField, $codiceCorsoCampagnaField, $codiceCategoriaField, $tipoAffiliazioneField, $codiceFatturazioneCorsoField,  $map_corsi;
+		global $log_active, $ratingField, $codiceCorsoTargetField, $codiceCorsoCampagnaField,$dataCorsoCampagnaField, $codiceCategoriaField, $tipoAffiliazioneField, $codiceFatturazioneCorsoField,  $map_corsi;
 		$this->_log_active = $log_active;
 		$this->_ratingField = $ratingField;
 		$this->_codiceCorsoTargetField = $codiceCorsoTargetField;
 		$this->_codiceCorsoCampagnaField = $codiceCorsoCampagnaField;
+		$this->_dataCorsoCampagnaField = $dataCorsoCampagnaField;
 		$this->_codiceFatturazioneCorsoField = $codiceFatturazioneCorsoField;
 		$this->_codiceCategoriaField = $codiceCategoriaField;
 		$this->_tipoAffiliazioneField = $tipoAffiliazioneField;
@@ -80,14 +83,14 @@ class AccRatingClass {
 			$result = $adb->query($query);
 			while($row=$adb->fetchByAssoc($result))
 			{
-				// if($this->_log_active) echo "accountid = ".$row['accountid']."\n";
+				// gestire prog_rating_date così com'è, cioè valore stringa
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
 				if($row['codice_fatturazione'] == 'ND') {
-					$account_rating_table[$row['accountid']]['Download'][$row['campaignname']] += intval($row['prog_rating_value']);
+					$account_rating_table[$row['accountid']]['Download'][$row['campaignname']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				} else {
 					if( array_key_exists($row['codice_fatturazione'],$this->_map_corsi) ) $keycorsi = $this->_map_corsi[$row['codice_fatturazione']];
 					else $keycorsi = $row['codice_fatturazione'];
-					$account_rating_table[$row['accountid']]['Corsi'][$keycorsi] += intval($row['prog_rating_value']);
+					$account_rating_table[$row['accountid']]['Corsi'][$keycorsi][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				}
 				$import_result['records_updated']+=1;
 			}			
@@ -99,8 +102,9 @@ class AccRatingClass {
 			while($row=$adb->fetchByAssoc($result))
 			{
 				// if($this->_log_active) echo "accountid = ".$row['accountid']."\n";
+				// gestire prog_rating_date come data e convertirlo in stringa per utente
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
-				$account_rating_table[$row['accountid']]['Consulenze'][$row['consulenza_title']] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Consulenze'][$row['consulenza_title']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				$import_result['records_updated']+=1;
 			}
 			
@@ -117,22 +121,23 @@ class AccRatingClass {
 			{
 				$delimiter = " |##| ";
 				$pieces = explode($delimiter, $row['tipo_affiliazione']);
+				// gestire prog_rating_date come data e convertirlo in stringa per utente
 				foreach($pieces as $piece) {
 					if( trim($piece) == "ARCA Tecnico Corso Base" ){ 
 						$account_rating[$row['accountid']] += 2;
-						$account_rating_table[$row['accountid']]['Affiliazione']['ARCA Tecnico Corso Base'] += 2;
+						$account_rating_table[$row['accountid']]['Affiliazione']['ARCA Tecnico Corso Base'][$row['prog_rating_date']] += 2;
 					}
 					if( trim($piece) == "ARCA Progettista" ) { 
 						$account_rating[$row['accountid']] += 1;
-						$account_rating_table[$row['accountid']]['Affiliazione']['ARCA Progettista']  += 1;
+						$account_rating_table[$row['accountid']]['Affiliazione']['ARCA Progettista'][$row['prog_rating_date']]  += 1;
 					}
 					if( trim($piece) == "ZEPHIR" ) { 
 						$account_rating[$row['accountid']] += 2;
-						$account_rating_table[$row['accountid']]['Affiliazione']['ZEPHIR'] += 2;
+						$account_rating_table[$row['accountid']]['Affiliazione']['ZEPHIR'][$row['prog_rating_date']] += 2;
 					}
 					if( trim($piece) == "CASA CLIMA" ) { 
 						$account_rating[$row['accountid']] += 2;
-						$account_rating_table[$row['accountid']]['Affiliazione']['CASA CLIMA'] += 2;
+						$account_rating_table[$row['accountid']]['Affiliazione']['CASA CLIMA'][$row['prog_rating_date']] += 2;
 					}
 				}
 				// if($this->_log_active) echo "accountid = ".$row['accountid']."\n";
@@ -145,8 +150,9 @@ class AccRatingClass {
 			while($row=$adb->fetchByAssoc($result))
 			{
 				// if($this->_log_active) echo "accountid = ".$row['accountid']."\n";
+				// gestire prog_rating_date come data e convertirlo in stringa per utente
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
-				$account_rating_table[$row['accountid']]['Opportunita'][$row['prog_rating_title']] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Opportunita'][$row['prog_rating_title']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				$import_result['records_updated']+=1;
 			}
 			// OPPORTUNITA CHIUSE VINTE
@@ -156,8 +162,9 @@ class AccRatingClass {
 			while($row=$adb->fetchByAssoc($result))
 			{
 				// if($this->_log_active) echo "accountid = ".$row['accountid']."\n";
+				// gestire prog_rating_date come data e convertirlo in stringa per utente
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
-				$account_rating_table[$row['accountid']]['Opportunita'][$row['prog_rating_title']] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Opportunita'][$row['prog_rating_title']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				$import_result['records_updated']+=1;
 			}
 			// PUNTEGGIO MANUALE
@@ -167,8 +174,9 @@ class AccRatingClass {
 			while($row=$adb->fetchByAssoc($result))
 			{
 				// if($this->_log_active) echo "accountid = ".$row['accountid']."\n";
+				// gestire prog_rating_date come data e convertirlo in stringa per utente
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
-				$account_rating_table[$row['accountid']]['Input Points'][' '] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Input Points'][' '][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				$import_result['records_updated']+=1;
 			}
 			foreach($account_rating as $key=>$val) {
@@ -189,9 +197,10 @@ class AccRatingClass {
 							CREATE TABLE temp_acc_ratings (
 								accountid INT NULL,
 								categoria VARCHAR(50) NULL,
-								gruppo VARCHAR(50) NULL,
+								gruppo VARCHAR(255) NULL,
 								valore INT NULL,
-								insdatetime DATETIME NULL
+								insdatetime DATETIME NULL,
+								eventdatetime VARCHAR(255) NULL
 							)";
 		$adb->query($create_sql);
 		$delete_sql= "delete from temp_acc_ratings " .( $this->entity_id > 0 ? " WHERE accountid = ".$this->entity_id : "" );
@@ -201,13 +210,15 @@ class AccRatingClass {
 	private function _insert_temp_table($account_rating_table) {
 		global $adb;
 		$sql = "INSERT INTO temp_acc_ratings ";
-		$sql .= "(accountid,categoria,gruppo,valore,insdatetime)";
-		$sql .= " VALUES (?,?,?,?,GETDATE())";
+		$sql .= "(accountid,categoria,gruppo,valore,eventdatetime,insdatetime)";
+		$sql .= " VALUES (?,?,?,?,?,GETDATE())";
 		foreach($account_rating_table as $key=>$val) {
 			foreach($val as $type_key=>$type_val) {
-				foreach($type_val as $type_val_key=>$type_val_val) {
-					if($this->_log_active) echo "$key;$type_key;$type_val_key;$type_val_val\n";
-					$adb->pquery($sql,array($key,$type_key,$type_val_key,$type_val_val));
+				foreach($type_val as $type_val_key=>$type_val_date) {
+					foreach($type_val_date as $type_val_date_key=>$type_val_val) {
+						if($this->_log_active) echo "$key;$type_key;$type_val_key;$type_val_date_key;$type_val_val\n";
+						$adb->pquery($sql,array($key,$type_key,$type_val_key,$type_val_val,$type_val_date_key));
+					}
 				}
 			}
 		}
@@ -293,6 +304,7 @@ class AccRatingClass {
 			".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
 			".$table_prefix."_campaign.campaignname,
 			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField." as codice_corso_campagna,
+			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField." as prog_rating_date,
 			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." as codice_fatturazione, -- Per i download = 'ND'
 			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RHCA') THEN 2  ELSE 1 END as prog_rating_value ,
 			count(*) as targetsum
@@ -320,6 +332,7 @@ class AccRatingClass {
 			".$table_prefix."_account.rating,
 			".$table_prefix."_accountscf.".$this->_ratingField.",
 			".$table_prefix."_campaign.campaignname,
+			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField.",
 			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField.",
 			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField.",
 			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RHCA') THEN 2  ELSE 1 END
@@ -338,6 +351,7 @@ class AccRatingClass {
 				".$table_prefix."_consulenza.product_cat, 
 				".$table_prefix."_account.rating,
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
+				consulenza_crmentity.modifiedtime as prog_rating_date,
 				2 as prog_rating_value
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
@@ -359,7 +373,8 @@ class AccRatingClass {
 				".$table_prefix."_account.accountname,
 				".$table_prefix."_account.rating,
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
-				".$table_prefix."_accountscf.".$this->_tipoAffiliazioneField." as tipo_affiliazione
+				".$table_prefix."_accountscf.".$this->_tipoAffiliazioneField." as tipo_affiliazione,
+				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
@@ -402,7 +417,8 @@ class AccRatingClass {
 					WHEN ".$table_prefix."_potential.amount >= 20000 AND ".$table_prefix."_potential.amount < 50000 THEN ".$table_prefix."_potential.potentialname + ' (> 20K)'  
 					WHEN ".$table_prefix."_potential.amount >= 50000 AND ".$table_prefix."_potential.amount < 100000 THEN ".$table_prefix."_potential.potentialname + ' (> 50K)'  
 					WHEN ".$table_prefix."_potential.amount >= 100000 THEN ".$table_prefix."_potential.potentialname + ' (> 100K)'  
-				END as prog_rating_title
+				END as prog_rating_title,
+				potential_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
@@ -433,7 +449,8 @@ class AccRatingClass {
 				".$table_prefix."_potential.potentialid,
 				".$table_prefix."_potential.potential_no,
 				".$table_prefix."_potential.amount,
-				1 as prog_rating_value 
+				1 as prog_rating_value ,
+				potential_crmentity.createdtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
@@ -460,7 +477,8 @@ class AccRatingClass {
 				".$table_prefix."_account.accountname,
 				".$table_prefix."_account.rating,
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
-				".$table_prefix."_account.input_points as prog_rating_value 
+				".$table_prefix."_account.input_points as prog_rating_value ,
+				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
