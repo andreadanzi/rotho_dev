@@ -8,4 +8,28 @@ Verificare che tutti i codici delle picklist siano conformi a quelle di _test (A
 
 Verificare che in produzione le tabelle web_temp_ siano allineate per quanto riguarda il campo imported
 
+web_temp_fe_users prod
+max timestamp 1380201023
+max uid 178
+
+web_temp_fe_users _test
+max timestamp 1380201300
+max uid 178
+
+web_temp_tt_address prod
+max timestamp 1380291812
+max uid 159365
+
+web_temp_tt_address _test
+max timestamp 1380291812
+max uid 159365
+
+web_temp_safe_tt_address prod
+max timestamp NULL
+max uid NULL
+
+web_temp_safe_tt_address _test
+max timestamp 1379681895
+max uid 74
+
 Verificare che i codici dei corsi in produzione siano uguali a quelli in _test, sia per leads, che per target e campagne

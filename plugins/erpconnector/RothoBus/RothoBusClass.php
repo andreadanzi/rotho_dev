@@ -353,9 +353,9 @@ class RothoBus {
 		$order   = array("\r\n", "\n", "\r");
 		$tt_descr = str_replace($order,'|',$tt_description);
 		$arr = explode('|',$tt_descr);
-		if(count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_download) ) {
-			$tmp_page_title = $tt_address['tmp_page_title'];
-			$idtarget = $tt_address['tmp_idtarget'];
+		$tmp_page_title = $tt_address['tmp_page_title'];
+		$idtarget = $tt_address['tmp_idtarget'];
+		if((count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_download)) || in_array($tt_address['pid'],$this->pids_list_download) ) {
 			foreach( $arr as $item) {
 				if($this->log_active) echo "\nDownload item =".$item."\n";
 				/* GESTIRE DOWNLOAD
@@ -382,13 +382,18 @@ class RothoBus {
 					if($this->log_active) echo "Download ret_id_target = ".$ret_id_target."\n";
 					$tt_address['idtarget'] = strtolower($ret_id_target);
 				}
-			}			 
+			}
+			if(empty($tt_address['page_title']) ) $tt_address['page_title'] = $tmp_page_title;
+			if(empty($ret_id_target)) {
+				$ret_id_target = strtolower($idtarget.$tmp_page_title);
+				$tt_address['idtarget'] = strtolower($ret_id_target);
+			}
 			$tt_address['descr'] = $tt_address['idtarget'] . " date: ". $tt_address['insertdate'] . " uid=" .$tt_address['uid']." pid=".$tt_address['pid'];
 			$activitysubject = "Download " .$software_download ." per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
 			$activitytype = "Download - Web";
 			$activitydescr = $tt_address['descr'] . " per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
 		}
-		if(count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_corso) ) {
+		if((count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_corso)) || in_array($tt_address['pid'],$this->pids_list_corso) ) {
 			$formula = "--Nessuno--";
 			$iban = "No Iban";
 			foreach( $arr as $item ) {
