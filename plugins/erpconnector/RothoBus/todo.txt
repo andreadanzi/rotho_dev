@@ -1,0 +1,11 @@
+Verificare che tutti i custom fields siano apposto
+
+Verificare che tutti i codici delle picklist siano conformi a quelle di _test (Attività di Calendario. Tipologia Target. Tipologia Campagne. Etc)
+- Aggiunto "Richiesta Consulenze (Form)" in vtiger_campaigntype e vtiger_target_type
+- Eliminato campaigntype 'Consulenza WEB' e target_type 'Richiesta Consulenza'
+	INSERT INTO "vtiger_campaigntype" ("campaigntypeid", "campaigntype", "presence", "picklist_valueid") VALUES (16, 'Consulenza WEB', 1, 1299173);
+	INSERT INTO "vtiger_target_type" ("target_typeid", "target_type", "presence", "picklist_valueid") VALUES (7, 'Richiesta Consulenza', 1, 1296146);
+
+Verificare che in produzione le tabelle web_temp_ siano allineate per quanto riguarda il campo imported
+
+Verificare che i codici dei corsi in produzione siano uguali a quelli in _test, sia per leads, che per target e campagne

@@ -60,7 +60,9 @@ class WebsiteClass {
 		if($this->log_active) echo "_get_maxtimestamp_safe_tt_address returns ".$maxtimestamp_safe_tt_address."\n";
 		$sql_fe_users = $this->_get_sql_fe_users($maxtimestamp_fe_users);
 		if($this->log_active) echo "_get_sql_fe_users returns ".$sql_fe_users."\n";
-		$sql_tt_address = $this->_get_sql_tt_address($maxuid_tt_address);
+		// danzi.tn@20130927 - rimesso maxtimestamp_tt_address come criterio di importazione
+		$sql_tt_address = $this->_get_sql_tt_address_tstamp($maxtimestamp_tt_address);
+		// danzi.tn@20130927e
 		if($this->log_active) echo "_get_sql_tt_address returns ".$sql_tt_address."\n";
 		$sql_safe_tt_address = $this->_get_sql_safe_tt_address($maxtimestamp_safe_tt_address);
 		if($this->log_active) echo "_get_sql_safe_tt_address returns ".$sql_safe_tt_address."\n";
@@ -202,6 +204,47 @@ class WebsiteClass {
 				JOIN pages on pages.uid = ".$this->website_tableweb.".pid and pages.deleted=0
 				where ".$this->website_tableweb.".deleted=0
 				and ".$this->website_tableweb.".uid  > " . $max_uid . "  order by ".$this->website_tableweb.".uid ";
+		$this->_build_insert($this->website_dbweb, $this->website_tableweb,$sql,$this->temp_web);
+		return $sql;
+	}
+	
+	
+	
+	private function _get_sql_tt_address_tstamp($max_timestamp) {
+		$sql = "select 
+				".$this->website_tableweb.".uid,
+				".$this->website_tableweb.".pid,
+				FROM_UNIXTIME(".$this->website_tableweb.".tstamp) as insertdate ,
+				".$this->website_tableweb.".tstamp ,
+				".$this->website_tableweb.".hidden,
+				".$this->website_tableweb.".name,
+				".$this->website_tableweb.".gender,
+				".$this->website_tableweb.".first_name,
+				".$this->website_tableweb.".last_name,
+				".$this->website_tableweb.".birthday,
+				".$this->website_tableweb.".title,
+				".$this->website_tableweb.".email,
+				".$this->website_tableweb.".phone,
+				".$this->website_tableweb.".mobile,
+				".$this->website_tableweb.".www,
+				".$this->website_tableweb.".address,
+				".$this->website_tableweb.".company,
+				".$this->website_tableweb.".city,
+				".$this->website_tableweb.".zip,
+				".$this->website_tableweb.".region,
+				".$this->website_tableweb.".country,
+				".$this->website_tableweb.".fax,
+				".$this->website_tableweb.".description,
+				".$this->website_tableweb.".room, 
+				".$this->website_tableweb.".user_countries_countries, 
+				pages.title AS titlepage,
+				pages.pid as pidpage,
+				pages.doktype
+				from
+				".$this->website_tableweb."
+				JOIN pages on pages.uid = ".$this->website_tableweb.".pid and pages.deleted=0
+				where ".$this->website_tableweb.".deleted=0
+				and ".$this->website_tableweb.".tstamp  > " . $max_timestamp . "  order by ".$this->website_tableweb.".uid ";
 		$this->_build_insert($this->website_dbweb, $this->website_tableweb,$sql,$this->temp_web);
 		return $sql;
 	}

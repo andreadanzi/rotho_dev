@@ -21,6 +21,9 @@ class RothoBus {
 	var $log_active = false;
 	var $add_existing_courses = true;
 	var $import_result = Array();
+	var $ids_safe_tt_address_array_lead_insert = Array();
+	var $ids_tt_address_array_lead_insert = Array();
+	var $ids_fe_user_array_lead_insert = Array();
 	var $uids_array_fe_users_insert = Array();
 	var $uids_array_fe_users_update = Array();
 	var $uids_array_fe_users_skipped = Array();
@@ -115,6 +118,7 @@ class RothoBus {
 			$this->_process_relations($generated_ids);
 		}
 		$this->_update_web_temp();
+		$this->_update_leaddetails();
 		return $this->import_result;
 	}
 	
@@ -153,9 +157,7 @@ class RothoBus {
 					$this->import_result['records_updated']++;
 				}
 			}
-		}
-
-		
+		}		
 		return $ret_val;
 	}
 	
@@ -251,6 +253,7 @@ class RothoBus {
 				if($this->log_active) echo "Setting ".$key."=".$fe_user[$value] . " \n";
 			}
 			$newLead->save($module_name='Leads',$longdesc=false);
+			$this->ids_fe_user_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$fe_user['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 			$this->import_result['records_created']++;
 			$this->uids_array_fe_users_insert[]=$fe_user['uid'];
@@ -280,30 +283,36 @@ class RothoBus {
 	
 	private function _insert_relations_for_entity($ret_targets,$ret_campaigns,$entity) {
 		global $table_prefix, $adb;
-		foreach( $ret_targets as $ret_target )
+		if (is_array($ret_targets))
 		{
-			$sqlToCheck = "select crmid, relcrmid from ".$table_prefix."_crmentityrel where crmid=? and relcrmid=?";
-			$resRel = $adb->pquery($sqlToCheck,array($ret_target->id,$entity->id));
-			if( $adb->num_rows($resRel) == 0)
+			foreach( $ret_targets as $ret_target )
 			{
-				$sqlToInsert = "INSERT INTO ".$table_prefix."_crmentityrel 
-								(crmid,module,relcrmid,relmodule) 
-								VALUES
-								(".$ret_target->id.",'Targets',".$entity->id.",'".$entity->column_fields['record_module']."')";
-				$adb->query($sqlToInsert);
+				$sqlToCheck = "select crmid, relcrmid from ".$table_prefix."_crmentityrel where crmid=? and relcrmid=?";
+				$resRel = $adb->pquery($sqlToCheck,array($ret_target->id,$entity->id));
+				if( $adb->num_rows($resRel) == 0)
+				{
+					$sqlToInsert = "INSERT INTO ".$table_prefix."_crmentityrel 
+									(crmid,module,relcrmid,relmodule) 
+									VALUES
+									(".$ret_target->id.",'Targets',".$entity->id.",'".$entity->column_fields['record_module']."')";
+					$adb->query($sqlToInsert);
+				}
 			}
 		}
-		foreach( $ret_campaigns as $ret_campaign )
+		if (is_array($ret_campaigns))
 		{
-			$sqlToCheck = "select crmid, relcrmid from ".$table_prefix."_crmentityrel where crmid=? and relcrmid=?";
-			$resRel = $adb->pquery($sqlToCheck,array($ret_campaign->id,$entity->id));
-			if( $adb->num_rows($resRel) == 0)
+			foreach( $ret_campaigns as $ret_campaign )
 			{
-				$sqlToInsert = "INSERT INTO ".$table_prefix."_crmentityrel 
-								(crmid,module,relcrmid,relmodule) 
-								VALUES
-								(".$ret_campaign->id.",'Campaigns',".$entity->id.",'".$entity->column_fields['record_module']."')";
-				$adb->query($sqlToInsert);
+				$sqlToCheck = "select crmid, relcrmid from ".$table_prefix."_crmentityrel where crmid=? and relcrmid=?";
+				$resRel = $adb->pquery($sqlToCheck,array($ret_campaign->id,$entity->id));
+				if( $adb->num_rows($resRel) == 0)
+				{
+					$sqlToInsert = "INSERT INTO ".$table_prefix."_crmentityrel 
+									(crmid,module,relcrmid,relmodule) 
+									VALUES
+									(".$ret_campaign->id.",'Campaigns',".$entity->id.",'".$entity->column_fields['record_module']."')";
+					$adb->query($sqlToInsert);
+				}
 			}
 		}
 		$targetstocampaigns = "INSERT INTO ".$table_prefix."_crmentityrel
@@ -471,6 +480,7 @@ class RothoBus {
 				if($this->log_active) echo "Setting lead(1) field ".$key."=".$tt_address[$value] . " \n";
 			}
 			$newLead->save($module_name='Leads',$longdesc=false);
+			$this->ids_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 			$this->import_result['records_created']++;
 			$this->uids_array_tt_address_insert[]=$tt_address['uid'];
@@ -509,6 +519,7 @@ class RothoBus {
 					if($this->log_active) echo "Setting lead(2) field ".$key."=".$tt_address[$value] . " \n";
 				}
 				$newLead->save($module_name='Leads',$longdesc=false);
+				$this->ids_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 				$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 				$this->import_result['records_created']++;
 				$this->uids_array_tt_address_insert[]=$tt_address['uid'];
@@ -553,6 +564,7 @@ class RothoBus {
 				if($this->log_active) echo "Setting lead(1) field ".$key."=".$tt_address[$value] . " \n";
 			}
 			$newLead->save($module_name='Leads',$longdesc=false);
+			$this->ids_safe_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid' => $tt_address['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 			$this->import_result['records_created']++;
 			$this->uids_array_safe_tt_address_insert[]=$tt_address['uid'];
@@ -587,6 +599,7 @@ class RothoBus {
 					if($this->log_active) echo "Setting lead(2) field ".$key."=".$tt_address[$value] . " \n";
 				}
 				$newLead->save($module_name='Leads',$longdesc=false);
+				$this->ids_safe_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 				$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 				$this->import_result['records_created']++;
 				$this->uids_array_safe_tt_address_insert[]=$tt_address['uid'];
@@ -1114,6 +1127,72 @@ class RothoBus {
 		$this->mapping['Accounts']['key'] = 'value';
 		$this->mapping['Vendors']['key'] = 'value';
 		$this->mapping['Contacts']['key'] = 'value';
+	}
+	
+	private function _update_leaddetails() {
+		global $adb, $table_prefix;
+		if($this->log_active) echo "_update_leaddetails starting\n";
+		$sql_deta = $this->_get_update_leaddetails("web_temp_safe_tt_address");
+		$sql_addr = $this->_get_update_leadaddress("web_temp_safe_tt_address");
+		foreach($this->ids_safe_tt_address_array_lead_insert as $item) {
+			if($this->log_active) echo "safe id=".$item['id']." uid=".$item['uid']."\n";
+			if($this->log_active) echo "sql_deta=".$sql_deta."\n";
+			$adb->pquery($sql_deta,array($item['id'],$item['uid']));
+			if($this->log_active) echo "sql_addr=".$sql_addr."\n";
+			$adb->pquery($sql_addr,array($item['id'],$item['uid']));
+		}
+		$sql_deta = $this->_get_update_leaddetails("web_temp_tt_address");
+		$sql_addr = $this->_get_update_leadaddress("web_temp_tt_address");
+		foreach($this->ids_tt_address_array_lead_insert as $item) {
+			if($this->log_active) echo "tt id=".$item['id']." uid=".$item['uid']."\n";
+			if($this->log_active) echo "sql_deta=".$sql_deta."\n";
+			$adb->pquery($sql_deta,array($item['id'],$item['uid']));
+			if($this->log_active) echo "sql_addr=".$sql_addr."\n";
+			$adb->pquery($sql_addr,array($item['id'],$item['uid']));
+		}
+		$sql_deta = $this->_get_update_leaddetails("web_temp_fe_users");
+		$sql_addr = $this->_get_update_leadaddress("web_temp_fe_users");
+		foreach($this->ids_fe_user_array_lead_insert as $item) {
+			if($this->log_active) echo "fe id=".$item['id']." uid=".$item['uid']."\n";
+			if($this->log_active) echo "sql_deta=".$sql_deta."\n";
+			$adb->pquery($sql_deta,array($item['id'],$item['uid']));
+			if($this->log_active) echo "sql_addr=".$sql_addr."\n";
+			$adb->pquery($sql_addr,array($item['id'],$item['uid']));
+		}	
+		if($this->log_active) echo "_update_leaddetails ending\n";
+	}
+	
+	private function _get_update_leadaddress($temp_table) {
+		global $table_prefix;
+		$sql= "update 
+			".$table_prefix."_leadaddress
+			SET
+			".$table_prefix."_leadaddress.city = ".$temp_table.".city,
+			".$table_prefix."_leadaddress.lane = ".$temp_table.".address,
+			".$table_prefix."_leadaddress.state = ".$temp_table.".region
+			FROM 
+			".$table_prefix."_leadaddress
+			JOIN ".$table_prefix."_leaddetails ON ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadaddress.leadaddressid
+			JOIN ".$temp_table." ON ".$temp_table.".email = ".$table_prefix."_leaddetails.email
+			WHERE ".$table_prefix."_leadaddress.leadaddressid = ? AND ".$temp_table.".uid = ?
+			";
+		return $sql;
+	}
+	
+	private function _get_update_leaddetails($temp_table) {
+		global $table_prefix;
+		$sql= "update 
+				".$table_prefix."_leaddetails 
+				SET
+				".$table_prefix."_leaddetails.lastname = ".$temp_table.".last_name,
+				".$table_prefix."_leaddetails.firstname = ".$temp_table.".first_name,
+				".$table_prefix."_leaddetails.company = ".$temp_table.".company
+				FROM 
+				".$table_prefix."_leaddetails
+				JOIN ".$temp_table." ON ".$temp_table.".email = ".$table_prefix."_leaddetails.email
+				WHERE ".$table_prefix."_leaddetails.leadid = ? AND ".$temp_table.".uid = ?
+				";
+		return $sql;
 	}
 }
 
