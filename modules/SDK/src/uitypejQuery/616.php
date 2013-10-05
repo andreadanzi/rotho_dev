@@ -37,7 +37,7 @@ $sql_visit = "SELECT DISTINCT
 		JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid
 		JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_visitreport.visitreportid and vtiger_crmentity.deleted = 0
 		WHERE temp_acc_ratings.accountid = ?
-		AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, -4,GETDATE())  AND  GETDATE() )
+		AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, - vtiger_account.return_time ,GETDATE())  AND  GETDATE() )
 		ORDER BY 
 		vtiger_visitreport.visitdate DESC";
 // danzi.tn@20130909e
