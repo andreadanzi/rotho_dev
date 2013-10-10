@@ -167,6 +167,16 @@ class AccRatingClass {
 				$account_rating_table[$row['accountid']]['Opportunita'][$row['prog_rating_title']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				$import_result['records_updated']+=1;
 			}
+			// CONTATTI FIERE danzi.tn@20131010
+			$query = $this->_get_fiere_sql();
+			if($this->_log_active) echo "_get_fiere_sql query= ".$query." \n";
+			$result = $adb->query($query);
+			while($row=$adb->fetchByAssoc($result))
+			{
+				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Trade Show'][$row['prog_rating_title']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
+				$import_result['records_updated']+=1;
+			}
 			// PUNTEGGIO MANUALE
 			$query = $this->_get_input_points_sql();
 			if($this->_log_active) echo "_get_input_points_sql query= ".$query." \n";
@@ -391,7 +401,36 @@ class AccRatingClass {
 				" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" );
 		return $sql;
 	}
-	
+	// danzi.tn@20131010 nuovo metodo per contare i contatti fiera
+	private function _get_fiere_sql() {
+		global $table_prefix;
+		$sql = "SELECT 
+				".$table_prefix."_account.accountid, 
+				".$table_prefix."_account.account_no,
+				".$table_prefix."_account.accountname,
+				".$table_prefix."_account.rating,
+				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
+				".$table_prefix."_activity.date_start as prog_rating_date ,
+				".$table_prefix."_activity.subject as prog_rating_title ,
+				2 as prog_rating_value
+				FROM ".$table_prefix."_account 
+				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_seactivityrel ON ".$table_prefix."_seactivityrel.crmid = ".$table_prefix."_account.accountid
+				JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid AND ".$table_prefix."_activity.activitytype ='Contatto - Fiera'
+				JOIN ".$table_prefix."_crmentity as activity_crmentity ON activity_crmentity.crmid = ".$table_prefix."_activity.activityid  AND activity_crmentity.deleted = 0 
+				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
+						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
+						OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  
+						OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' 
+						OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   
+						OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
+				" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" );
+		return $sql;
+	}
+			
 	private function _get_opportunita_sql() {
 		global $table_prefix;
 		$sql = "SELECT 
