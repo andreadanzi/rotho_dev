@@ -673,6 +673,7 @@ class RothoBus {
 					, '1' AS cf_807 
 					, 'Web' as cf_757 
 					, 'ND' as cf_737 
+					, web_temp_tt_address.title as title
 					from 
 					web_temp_tt_address 
 					where imported is NULL and email <>'' 
@@ -697,6 +698,7 @@ class RothoBus {
 					, 'ND' as cf_737 
 					, '' as usergroup
 					, '' as usergroup_descr 
+					, web_temp_safe_tt_address.title as title
 					from 
 					web_temp_safe_tt_address 
 					where imported is NULL and email <>'' 
@@ -756,8 +758,9 @@ class RothoBus {
 					, '1' AS cf_807 
 					, 'Web' as cf_757 
 					, 'ND' as cf_737
+					, ".$table_prefix."_leadscf.cf_758 as title 
 					from ".$table_prefix."_leaddetails
-					join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leaddetails.leadid and ".$table_prefix."_crmentity.deleted =0
+					join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leaddetails.leadid and ".$table_prefix."_crmentity.deleted =0 AND ".$table_prefix."_leaddetails.converted = 0 
 					join ".$table_prefix."_leadscf on ".$table_prefix."_leadscf.leadid = ".$table_prefix."_leaddetails.leadid
 					join ".$table_prefix."_leadaddress on ".$table_prefix."_leadaddress.leadaddressid = ".$table_prefix."_leaddetails.leadid
 					join ".$table_prefix."_leadsubdetails on ".$table_prefix."_leadsubdetails.leadsubscriptionid = ".$table_prefix."_leaddetails.leadid
@@ -784,6 +787,7 @@ class RothoBus {
 					, 'ND' as cf_737 
 					, usergroup 
 					, usergroup_descr 
+					, web_temp_fe_users.title as title
 					from 
 					web_temp_fe_users 
 					where imported is NULL and email <>'' and email IS NOT NULL";
@@ -1075,8 +1079,8 @@ class RothoBus {
 		$this->mapping['Leads']['firstname'] = 'first_name'; // manage also the lead source
 		$this->mapping['Leads']['lastname'] = 'last_name';
 		$this->mapping['Leads']['email'] = 'email';
-		$this->mapping['Leads']['phone'] = 'agencyphone';
-		$this->mapping['Leads']['mobile'] = 'phone';
+		$this->mapping['Leads']['phone'] = 'phone'; // 'agencyphone'
+		$this->mapping['Leads']['mobile'] = 'mobile';
 		$this->mapping['Leads']['website'] = 'www';
 		$this->mapping['Leads']['lane'] = 'address';
 		$this->mapping['Leads']['company'] = 'company';

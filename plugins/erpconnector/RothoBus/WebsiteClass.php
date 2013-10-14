@@ -300,6 +300,8 @@ class WebsiteClass {
 		$values_array = array();
 		while($row = mysql_fetch_assoc($wsresult)) {
 			$val_array = array();
+			// danzi.tn@20131014 errore nel caso di parametri con carattere '
+			$question_array = array();
 			// CASO DI fe_users
 			if( $source_table == $this->website_tablesafe )
 			{
@@ -314,10 +316,15 @@ class WebsiteClass {
 			}
 			foreach($this->mapping[$source_table] as $key=>$value) {
 				$val_array[] = $row[$value];
+				$question_array[] = '?';
 			}
 			global $adb;
-			$insert_sql = $retsql . " ('".implode("', '", $val_array)."')";
-			$adb->query($insert_sql );			
+			// danzi.tn@20131014 
+			// $insert_sql = $retsql . " ('".implode("', '", $val_array)."')";
+			$insert_sql = $retsql . " ( ".implode(",", $question_array)." )";
+			if($this->log_active) echo "\n\n WebsiteClass._build_insert insert_sql = ".$insert_sql." \n\n";
+			// danzi.tn@20131014 
+			$adb->pquery($insert_sql, $val_array );			
 			$this->import_result['records_created']++;
 		}
 		mysql_free_result($wsresult);
