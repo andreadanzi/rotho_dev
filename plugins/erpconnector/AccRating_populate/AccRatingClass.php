@@ -284,7 +284,7 @@ class AccRatingClass {
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
@@ -321,7 +321,7 @@ class AccRatingClass {
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
@@ -366,7 +366,7 @@ class AccRatingClass {
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 				JOIN ".$table_prefix."_consulenza on ".$table_prefix."_consulenza.parent = ".$table_prefix."_account.accountid
 				JOIN ".$table_prefix."_crmentity as consulenza_crmentity on consulenza_crmentity.crmid = ".$table_prefix."_consulenza.consulenzaid AND consulenza_crmentity.deleted = 0 
 				LEFT JOIN ".$table_prefix."_consulenzaname on CONVERT(VARCHAR, ".$table_prefix."_consulenzaname.consulenzanameid ) = ".$table_prefix."_consulenza.consulenzaname
@@ -388,7 +388,7 @@ class AccRatingClass {
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
@@ -416,7 +416,7 @@ class AccRatingClass {
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 				JOIN ".$table_prefix."_seactivityrel ON ".$table_prefix."_seactivityrel.crmid = ".$table_prefix."_account.accountid
 				JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid AND ".$table_prefix."_activity.activitytype ='Contatto - Fiera'
 				JOIN ".$table_prefix."_crmentity as activity_crmentity ON activity_crmentity.crmid = ".$table_prefix."_activity.activityid  AND activity_crmentity.deleted = 0 
@@ -461,7 +461,7 @@ class AccRatingClass {
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 				JOIN ".$table_prefix."_potential on ".$table_prefix."_potential.related_to = ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
@@ -493,7 +493,7 @@ class AccRatingClass {
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 				JOIN ".$table_prefix."_potential on ".$table_prefix."_potential.related_to = ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
@@ -521,7 +521,7 @@ class AccRatingClass {
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%'
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
