@@ -239,6 +239,10 @@ class RothoBus {
 		$activitydescr .= ", Indirizzo: ".$fe_user['address']." ".$fe_user['city']." ".$fe_user['region'];
 		$activitydescr .= ", Categoria: ".$fe_user['usergroup_descr'];
 		$activitydatetime = $fe_user['insertdate'];
+		$fe_user['formula'] = "ND";
+		$fe_user['codfatt'] = "ND";
+		$fe_user['costo'] = "ND";
+		$fe_user['date'] = "ND";
 		$retval=$this->_find_entities_by_email($fe_user['email']);
 		$entity_ids = $retval[0];
 		$entity_objects = $retval[1];			
@@ -355,6 +359,7 @@ class RothoBus {
 		$arr = explode('|',$tt_descr);
 		$tmp_page_title = $tt_address['tmp_page_title'];
 		$idtarget = $tt_address['tmp_idtarget'];
+		$formula = "--Nessuno--";
 		if((count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_download)) || in_array($tt_address['pid'],$this->pids_list_download) ) {
 			foreach( $arr as $item) {
 				if($this->log_active) echo "\nDownload item =".$item."\n";
@@ -388,13 +393,16 @@ class RothoBus {
 				$ret_id_target = strtolower($idtarget.$tmp_page_title);
 				$tt_address['idtarget'] = strtolower($ret_id_target);
 			}
+			$tt_address['formula'] = $formula;
+			$tt_address['codfatt'] = "ND";
+			$tt_address['costo'] = "ND";
+			$tt_address['date'] = "ND";
 			$tt_address['descr'] = $tt_address['idtarget'] . " date: ". $tt_address['insertdate'] . " uid=" .$tt_address['uid']." pid=".$tt_address['pid'];
 			$activitysubject = "Download " .$software_download ." per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
 			$activitytype = "Download - Web";
 			$activitydescr = $tt_address['descr'] . " per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
 		}
 		if((count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_corso)) || in_array($tt_address['pid'],$this->pids_list_corso) ) {
-			$formula = "--Nessuno--";
 			$iban = "No Iban";
 			foreach( $arr as $item ) {
 				if($this->log_active) echo "\nCourse item =".$item."\n";
@@ -554,6 +562,10 @@ class RothoBus {
 			$activitydescr = $tt_address['descr'] . " per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
 			$ret_id_target = $tt_address['idtarget'];
 		}	
+		$tt_address['formula'] = "ND";
+		$tt_address['codfatt'] = "ND";
+		$tt_address['costo'] = "ND";
+		$tt_address['date'] = "ND";
 		$activitydatetime = $tt_address['insertdate'];
 		$retval=$this->_find_entities_by_email($tt_address['email']);
 		$entity_ids = $retval[0];
@@ -644,13 +656,13 @@ class RothoBus {
 			$newEvent->column_fields['parent_id'] = $focus->id;
 		}
 		$newEvent->column_fields['date_start'] = date('Y-m-d',$acttime);// 2013-05-27 
-		$newEvent->column_fields['time_start'] = date('H:i',$acttime);
+		$newEvent->column_fields['time_start'] = '00:00';
 		$newEvent->column_fields['due_date'] =  date('Y-m-d',$acttime); // 2013-05-27
-		$newEvent->column_fields['time_end'] = date('H:i',$acttime+300);// 15:55
-		// $newEvent->column_fields['duration_hours'] = 23;// 2
-		// $newEvent->column_fields['duration_minutes'] = 59;// 2
+		$newEvent->column_fields['time_end'] = '00:00';// 15:55
+		$newEvent->column_fields['duration_hours'] = 23;// 2
+		$newEvent->column_fields['duration_minutes'] = 59;// 2
 		$newEvent->column_fields['activitytype'] = $activitytype; //$insp_activitytype;
-		$newEvent->column_fields['is_all_day_event'] = '0';
+		$newEvent->column_fields['is_all_day_event'] = 1;
 		$newEvent->column_fields['eventstatus'] = 'Held';// $insp_eventstatus 
 		$newEvent->column_fields['description'] = $activitydescr;
 		$newEvent->save($module_name='Events',$longdesc=false);
