@@ -285,8 +285,8 @@ class AccRatingClass {
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
-			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
-			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
+			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
+			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
 			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 			AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
@@ -322,8 +322,8 @@ class AccRatingClass {
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
-			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
-			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
+			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
+			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
 			JOIN ".$table_prefix."_crmentityrel as campaigns_crmentityrel on campaigns_crmentityrel.crmid = ".$table_prefix."_targets.targetsid AND campaigns_crmentityrel.module = 'Targets' AND campaigns_crmentityrel.relmodule = 'Campaigns'
 			JOIN ".$table_prefix."_campaign on ".$table_prefix."_campaign.campaignid = campaigns_crmentityrel.relcrmid
