@@ -1,0 +1,39 @@
+do_check_scripts detail query= SELECT 
+				log_script_content.id,
+				log_script_content.type,
+				log_script_content.total_records,
+				log_script_content.records_created,
+				log_script_content.records_updated,
+				log_script_content.date_start,
+				DATEDIFF(hh,log_script_content.date_start, GETDATE()) as hours_from_start
+				FROM log_script_content 
+				WHERE 
+				log_script_content.date_start BETWEEN DATEADD(day, -1, GETDATE()) AND GETDATE()
+				AND log_script_content.date_end IS NULL
+				ORDER BY id  
+do_check_scripts summary query= SELECT 
+				log_script_content.type, 
+				count(*) as tot_count_runs ,
+				sum ( case when log_script_content.date_end IS NULL THEN  0 else 1 end) as ended_ok,
+				sum ( case when log_script_content.date_end IS NULL THEN  1 else 0 end) as ended_ko
+				FROM log_script_content 
+				WHERE
+				log_script_content.date_start BETWEEN DATEADD(day, -7, GETDATE()) AND GETDATE()
+				GROUP BY log_script_content.type 
+				ORDER BY ended_ko DESC  
+---------------------Detail----------------------------------------------Summary-------------------------Products has run 7 times, 3 ended OK, 4 ended KO 
+Accounts has run 7 times, 7 ended OK, 0 ended KO 
+Check Plugins has run 3 times, 3 ended OK, 0 ended KO 
+RothoBus has run 336 times, 336 ended OK, 0 ended KO 
+Vendors has run 7 times, 7 ended OK, 0 ended KO 
+RP/Prog Ratings has run 2 times, 2 ended OK, 0 ended KO 
+Quotes has run 7 times, 7 ended OK, 0 ended KO 
+Map has run 7 times, 7 ended OK, 0 ended KO 
+Inspections has run 7 times, 7 ended OK, 0 ended KO 
+Contacts has run 343 times, 343 ended OK, 0 ended KO 
+SalesOrder has run 7 times, 7 ended OK, 0 ended KO 
+RP-Prog Ratings has run 336 times, 336 ended OK, 0 ended KO 
+
+----------------------TOTAL TIME------------------------
+time of import : 0 s  | 0 m 0 s   
+----------------------TOTAL TIME------------------------
