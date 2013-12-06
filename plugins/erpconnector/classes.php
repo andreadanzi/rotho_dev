@@ -715,6 +715,12 @@ class importer{
 		else{
 			//faccio le create
 			foreach ($this->object->tab_name_index as $t=>$k){
+				// danzi.tn@20131206 - nel caso dei Products , tab_name_index contiene anche vtiger_seproductsrel e vtiger_producttaxrel che non sono in vtiger_field e che non possono essere create solo con id
+				if($this->module=="Products" && ($t=="vtiger_seproductsrel" ||$t=="vtiger_producttaxrel" )) {
+					echo "skipping ".$t."\n";
+					continue;
+				}
+				// danzi.tn@20131206e
 				$create_file = fopen($this->sql_file_name_create[$t],'r');
 				while(!feof($create_file)){
 					$sql = fgets($create_file);
