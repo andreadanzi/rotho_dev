@@ -1,0 +1,224 @@
+danzi.tn@20131206 procedura cambio codici nazione
+
+Tabelle che hanno il codice paese
+
+select distinct vtiger_field.fieldid, vtiger_field.columnname, vtiger_field.tablename, vtiger_field.fieldname,
+vtiger_field.fieldlabel from vtiger_field where vtiger_field.columnname like '%countr%'
+
+fieldid;columnname;tablename;fieldname;fieldlabel
+35;bill_country;vtiger_accountbillads;bill_country;Billing Country
+
+select distinct vtiger_accountbillads.bill_country 
+from vtiger_accountbillads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_accountbillads.accountaddressid and deleted =0
+order by bill_country
+
+36;ship_country;vtiger_accountshipads;ship_country;Shipping Country
+
+select distinct vtiger_accountshipads.ship_country 
+from vtiger_accountshipads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_accountshipads.accountaddressid and deleted =0
+
+64;country;vtiger_leadaddress;country;Country
+
+select distinct vtiger_leadaddress.country 
+from vtiger_leadaddress
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_leadaddress.leadaddressid and deleted =0
+
+106;mailingcountry;vtiger_contactaddress;mailingcountry;Mailing Country
+
+select distinct vtiger_contactaddress.mailingcountry 
+from vtiger_contactaddress
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_contactaddress.contactaddressid and deleted =0
+
+107;othercountry;vtiger_contactaddress;othercountry;Other Country
+
+select distinct vtiger_contactaddress.othercountry 
+from vtiger_contactaddress
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_contactaddress.contactaddressid and deleted =0
+
+297;country;vtiger_vendor;country;Country
+
+select distinct vtiger_vendor.country 
+from vtiger_vendor
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_vendor.vendorid and deleted =0
+
+336;bill_country;vtiger_quotesbillads;bill_country;Billing Country
+
+select distinct vtiger_quotesbillads.bill_country 
+from vtiger_quotesbillads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_quotesbillads.quotebilladdressid and deleted =0
+order by bill_country desc
+
+337;ship_country;vtiger_quotesshipads;ship_country;Shipping Country
+
+select distinct vtiger_quotesshipads.ship_country 
+from vtiger_quotesshipads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_quotesshipads.quoteshipaddressid and deleted =0
+
+373;bill_country;vtiger_pobillads;bill_country;Billing Country
+
+select distinct vtiger_pobillads.bill_country 
+from vtiger_pobillads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_pobillads.pobilladdressid and deleted =0
+
+374;ship_country;vtiger_poshipads;ship_country;Shipping Country
+
+select distinct vtiger_poshipads.ship_country 
+from vtiger_poshipads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_poshipads.poshipaddressid and deleted =0
+
+413;bill_country;vtiger_sobillads;bill_country;Billing Country
+
+select distinct vtiger_sobillads.bill_country 
+from vtiger_sobillads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_sobillads.sobilladdressid and deleted =0
+
+414;ship_country;vtiger_soshipads;ship_country;Shipping Country
+
+
+select distinct vtiger_soshipads.ship_country 
+from vtiger_soshipads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_soshipads.soshipaddressid and deleted =0
+
+456;bill_country;vtiger_invoicebillads;bill_country;Billing Country
+
+select distinct vtiger_invoicebillads.bill_country 
+from vtiger_invoicebillads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_invoicebillads.invoicebilladdressid and deleted =0
+
+457;ship_country;vtiger_invoiceshipads;ship_country;Shipping Country
+
+select distinct vtiger_invoiceshipads.ship_country 
+from vtiger_invoiceshipads
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_invoiceshipads.invoiceshipaddressid and deleted =0
+
+495;address_country;vtiger_users;address_country;Country
+
+select distinct vtiger_users.address_country 
+from vtiger_users
+where deleted =0
+
+827;consulenzacountry;vtiger_consulenza;consulenzacountry;consulenzacountry
+
+select distinct vtiger_consulenza.consulenzacountry 
+from vtiger_consulenza
+JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_consulenza.consulenzaid and deleted =0
+
+
+$vtiger_field = array(
+	array( // row #0 select distinct vtiger_accountbillads.bill_country from vtiger_accountbillads
+		'fieldid' => 35,
+		'columnname' => 'bill_country',
+		'tablename' => 'vtiger_accountbillads',
+		'fieldname' => 'bill_country',
+		'fieldlabel' => 'Billing Country',
+	),
+	array( // row #1
+		'fieldid' => 36,
+		'columnname' => 'ship_country',
+		'tablename' => 'vtiger_accountshipads',
+		'fieldname' => 'ship_country',
+		'fieldlabel' => 'Shipping Country',
+	),
+	array( // row #2
+		'fieldid' => 64,
+		'columnname' => 'country',
+		'tablename' => 'vtiger_leadaddress',
+		'fieldname' => 'country',
+		'fieldlabel' => 'Country',
+	),
+	array( // row #3
+		'fieldid' => 106,
+		'columnname' => 'mailingcountry',
+		'tablename' => 'vtiger_contactaddress',
+		'fieldname' => 'mailingcountry',
+		'fieldlabel' => 'Mailing Country',
+	),
+	array( // row #4
+		'fieldid' => 107,
+		'columnname' => 'othercountry',
+		'tablename' => 'vtiger_contactaddress',
+		'fieldname' => 'othercountry',
+		'fieldlabel' => 'Other Country',
+	),
+	array( // row #5
+		'fieldid' => 297,
+		'columnname' => 'country',
+		'tablename' => 'vtiger_vendor',
+		'fieldname' => 'country',
+		'fieldlabel' => 'Country',
+	),
+	array( // row #6
+		'fieldid' => 336,
+		'columnname' => 'bill_country',
+		'tablename' => 'vtiger_quotesbillads',
+		'fieldname' => 'bill_country',
+		'fieldlabel' => 'Billing Country',
+	),
+	array( // row #7
+		'fieldid' => 337,
+		'columnname' => 'ship_country',
+		'tablename' => 'vtiger_quotesshipads',
+		'fieldname' => 'ship_country',
+		'fieldlabel' => 'Shipping Country',
+	),
+	array( // row #8
+		'fieldid' => 373,
+		'columnname' => 'bill_country',
+		'tablename' => 'vtiger_pobillads',
+		'fieldname' => 'bill_country',
+		'fieldlabel' => 'Billing Country',
+	),
+	array( // row #9
+		'fieldid' => 374,
+		'columnname' => 'ship_country',
+		'tablename' => 'vtiger_poshipads',
+		'fieldname' => 'ship_country',
+		'fieldlabel' => 'Shipping Country',
+	),
+	array( // row #10
+		'fieldid' => 413,
+		'columnname' => 'bill_country',
+		'tablename' => 'vtiger_sobillads',
+		'fieldname' => 'bill_country',
+		'fieldlabel' => 'Billing Country',
+	),
+	array( // row #11
+		'fieldid' => 414,
+		'columnname' => 'ship_country',
+		'tablename' => 'vtiger_soshipads',
+		'fieldname' => 'ship_country',
+		'fieldlabel' => 'Shipping Country',
+	),
+	array( // row #12
+		'fieldid' => 456,
+		'columnname' => 'bill_country',
+		'tablename' => 'vtiger_invoicebillads',
+		'fieldname' => 'bill_country',
+		'fieldlabel' => 'Billing Country',
+	),
+	array( // row #13
+		'fieldid' => 457,
+		'columnname' => 'ship_country',
+		'tablename' => 'vtiger_invoiceshipads',
+		'fieldname' => 'ship_country',
+		'fieldlabel' => 'Shipping Country',
+	),
+	array( // row #14
+		'fieldid' => 495,
+		'columnname' => 'address_country',
+		'tablename' => 'vtiger_users',
+		'fieldname' => 'address_country',
+		'fieldlabel' => 'Country',
+	),
+	array( // row #15
+		'fieldid' => 827,
+		'columnname' => 'consulenzacountry',
+		'tablename' => 'vtiger_consulenza',
+		'fieldname' => 'consulenzacountry',
+		'fieldlabel' => 'consulenzacountry',
+	),
+);
+
+
