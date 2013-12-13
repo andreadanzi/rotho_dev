@@ -51,6 +51,28 @@ class RothoBus {
 	function setExistingCourses($existing_courses) {
 		$this->add_existing_courses = $existing_courses;
 	}
+	
+	// danzi.tn@20131209 Processing results coming from Webform Fiere
+	function populateFiere($crmid=0) {
+		global $adb,$table_prefix;
+		$sql_form_fiere = $this->_get_webform_fiere($crmid);
+		// echo "<pre>sql=".$sql_form_fiere."</pre>";
+		$wsresult = $adb->query($sql_form_fiere);
+		while($form_fiere = $adb->fetchByAssoc($wsresult)) {
+			$this->_process_form_fiere($form_fiere);
+		}
+	}
+	
+	// danzi.tn@20131209 Processing results coming from Webform Consulenze
+	function populateConsulenze() {
+		global $adb,$table_prefix;
+		$sql_form_consulenze = $this->_get_webform_consulenze();
+		$wsresult = $adb->query($sql_form_consulenze);
+		while($form_consulenze = $adb->fetchByAssoc($wsresult)) {
+			$this->_process_form_consulenze($form_consulenze);
+		}
+	}
+	
 	// populates vtiger entities from temp tables
 	function populateNow() {
 		global $adb,$table_prefix;
@@ -67,6 +89,10 @@ class RothoBus {
 		while($form_consulenze = $adb->fetchByAssoc($wsresult)) {
 			$this->_process_form_consulenze($form_consulenze);
 		}
+		// $this->populateConsulenze();
+		// Processing results coming from Webform Fiere
+		// $this->populateFiere();
+		
 		// Processing results coming from fe_user (RothoSafe)		
 		$sql_fe_users = $this->_get_web_temp_fe_users();
 		$wsresult = $adb->query($sql_fe_users);
@@ -161,6 +187,42 @@ class RothoBus {
 		return $ret_val;
 	}
 	
+	// danzi.tn@20131213 
+	function check_web_form($email, $parms, $form_type='Form Fiere') {
+		$bFound = false;
+		$activitysubject = "Contatto " .$parms['leadsource'].  ": ".$parms['firstname']." " .$parms['lastname']." - ".$parms['email'];
+		$activitytype = "Contatto - Fiera";
+		$activitydescr = "Formulario contatti: ". $parms['leadsource'] ." ".$parms['firstname']." " .$parms['lastname'];
+		$activitydescr .= ", Azienda: ".$parms['company'];
+		$activitydescr .= ", Email: ".$parms['email'];
+		$activitydescr .= ", Indirizzo: ".$parms['lane']." ".$parms['city']." ".$parms['state'];
+		$activitydescr .= ", Note: ". $parms['description'];
+		$retval = $this->_find_entities_by_email($email);
+		$entity_ids = $retval[0];
+		$entity_objects = $retval[1];
+		if(count($entity_ids)==0) { // NOT FOUND
+			$bFound = false;
+		} else {
+			foreach($entity_objects as $crmkey=>$entities) // this will be cycled only once
+			{
+				foreach($entities as $entitykey=>$entity) {
+					$bFound = true;
+					$entity->mode = 'edit';
+					$idtarget = strtolower (str_replace(' ', '_',$parms['leadsource']));
+					$ret_id_targets = array(
+						$idtarget => 1
+					);
+					$ret_campaigns = $this->_process_campaigns($ret_id_targets,$form_type,"Attivo",167);
+					$ret_targets = $this->_process_targets($ret_id_targets,$form_type,"Pronto",167);
+					$this->_insert_relations_for_entity($ret_targets,$ret_campaigns,$entity);
+					$this->_create_event($entity,$activitysubject,$activitytype,$activitydescr,"now");
+				}
+			}
+		}
+		return $bFound;
+	}
+	// danzi.tn@20131213e 
+	
 	private function _process_form_consulenze($form_consulenze) {
 		if($this->log_active) echo "Processing form consulenze uid = ".$form_consulenze['uid']." with email ".$form_consulenze['email'] ."\n";
 		if(!filter_var($form_consulenze['email'], FILTER_VALIDATE_EMAIL)) {
@@ -195,8 +257,11 @@ class RothoBus {
 					{
 						global $adb, $table_prefix;
 						$sqlupdate = "UPDATE ".$table_prefix."_leadscf SET 
-							".$table_prefix."_leadscf.cf_747 = ? 
-							".$table_prefix."_leadscf.cf_726 = ? 
+							".$table_prefix."_leadscf.cf_747 = ? ,
+							".$table_prefix."_leadscf.cf_726 = ? ,
+							".$table_prefix."_leadscf.cf_728 = 'ND' ,
+							".$table_prefix."_leadscf.cf_733 = 'ND',
+							".$table_prefix."_leadscf.cf_756 = 'ND'
 							WHERE ".$table_prefix."_leadscf.cf_808 = 0 AND ".$table_prefix."_leadscf.leadid = ?";
 						if($this->log_active) echo " UPDATE leadscf QUERY = ". $sqlupdate."\n";
 						$adb->pquery($sqlupdate,array($form_consulenze['idtarget'], $form_consulenze['page_title'],	$form_consulenze['uid']));
@@ -212,6 +277,65 @@ class RothoBus {
 			$sqlupdate = "UPDATE ".$table_prefix."_leadscf SET ".$table_prefix."_leadscf.cf_808 = ? WHERE ".$table_prefix."_leadscf.cf_808 = 0 AND ".$table_prefix."_leadscf.leadid = ?";
 			if($this->log_active) echo " UPDATE leadscf QUERY = ". $sqlupdate."\n";
 			$adb->pquery($sqlupdate,array($form_consulenze['tstamp'], 	$form_consulenze['uid']));
+		}
+	}
+	
+	// danzi.tn@20131209 
+	private function _process_form_fiere($form_fiere) {
+		if($this->log_active) echo "Processing form fiere uid = ".$form_fiere['uid']." with email ".$form_fiere['email'] ."\n";
+		if(!filter_var($form_fiere['email'], FILTER_VALIDATE_EMAIL)) {
+			if($this->log_active) echo "Skipping uid = ".$form_fiere['uid']." due to bad email ".$form_fiere['email']."\n";
+			return;
+		}
+		$activitysubject = "Contatto " .$form_fiere['leadsource'].  ": ".$form_fiere['first_name']." " .$form_fiere['last_name']." - ".$form_fiere['email'];
+		$activitytype = "Contatto - Fiera";
+		$activitydescr = $form_fiere['page_title'] ." ".$form_fiere['first_name']." " .$form_fiere['last_name'];
+		$activitydescr .= ", Azienda: ".$form_fiere['company'];
+		$activitydescr .= ", Email: ".$form_fiere['email'];
+		$activitydescr .= ", Indirizzo: ".$form_fiere['address']." ".$form_fiere['city']." ".$form_fiere['region'];
+		$activitydescr .= ", Note: ". $form_fiere['description'];
+		$activitydatetime = $form_fiere['insertdate'];
+		$retval = $this->_find_entities_by_email($form_fiere['email']);
+		$entity_ids = $retval[0];
+		$entity_objects = $retval[1];
+		if(count($entity_ids)==0) { // NOT FOUND, we have a problem
+			if($this->log_active) echo "We have a problem, missing entity with email = ".$form_fiere['email']."\n";
+		} else {
+			// FIRST UPDATE EXISTING EXCEPT THE CURRENT 
+			foreach($entity_objects as $crmkey=>$entities) // this will be cycled only once
+			{
+				if($this->log_active) echo "In entity_objects found key=".$crmkey. " count=".count($entities)." \n";
+				foreach($entities as $entitykey=>$entity) {
+					if($this->log_active) echo " Add Event to id=". $entity->id. "\n";
+					$entity->mode = 'edit';
+					$idtarget = $form_fiere['tmp_idtarget'];
+					$ret_id_targets = array(
+						$idtarget => 1
+					);
+					if($form_fiere['uid'] == $entity->id) // nel caso del lead originario, bisogna settare cf_747
+					{
+						global $adb, $table_prefix;
+						$sqlupdate = "UPDATE ".$table_prefix."_leadscf SET 
+							".$table_prefix."_leadscf.cf_747 = ? ,
+							".$table_prefix."_leadscf.cf_726 = ? ,
+							".$table_prefix."_leadscf.cf_728 = 'ND' ,
+							".$table_prefix."_leadscf.cf_733 = 'ND',
+							".$table_prefix."_leadscf.cf_756 = 'ND'
+							WHERE ".$table_prefix."_leadscf.cf_808 = 0 AND ".$table_prefix."_leadscf.leadid = ?";
+						if($this->log_active) echo " UPDATE leadscf QUERY = ". $sqlupdate."\n";
+						$adb->pquery($sqlupdate,array($idtarget, $form_fiere['page_title'],	$form_fiere['uid']));
+					}
+					$ret_campaigns = $this->_process_campaigns($ret_id_targets,'Form Fiere',"Attivo",167);
+					$ret_targets = $this->_process_targets($ret_id_targets,'Form Fiere',"Pronto",167);
+					$this->_insert_relations_for_entity($ret_targets,$ret_campaigns,$entity);
+					$this->_create_event($entity,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
+					$this->import_result['records_updated']++;
+				}
+			}
+			global $adb, $table_prefix;
+			$sqlupdate = "UPDATE ".$table_prefix."_leadscf SET ".$table_prefix."_leadscf.cf_808 = ? WHERE ".$table_prefix."_leadscf.cf_808 = 0 AND ".$table_prefix."_leadscf.leadid = ?";
+			if($this->log_active) echo " UPDATE leadscf QUERY = ". $sqlupdate."\n";
+			$adb->pquery($sqlupdate,array($form_fiere['tstamp'], 	$form_fiere['uid']));
 		}
 	}
 	
@@ -781,6 +905,51 @@ class RothoBus {
 		return $wsquery;
 	}
 	
+	// danzi.tn@20131209 
+	private function _get_webform_fiere($crmid=0) {
+		global $table_prefix;
+		$wsquery = "select 
+					DATEDIFF(s, '1970-01-01 00:00:00', ".$table_prefix."_crmentity.createdtime ) as tstamp,
+					".$table_prefix."_leaddetails.leadid as uid,
+					".$table_prefix."_leaddetails.firstname + '  ' + ".$table_prefix."_leaddetails.lastname as name,
+					".$table_prefix."_leaddetails.firstname as first_name,
+					".$table_prefix."_leaddetails.lastname as last_name,
+					".$table_prefix."_leaddetails.email,
+					".$table_prefix."_leadaddress.phone,
+					".$table_prefix."_leadaddress.mobile,
+					".$table_prefix."_leadsubdetails.website as www,
+					".$table_prefix."_leadaddress.lane as address,
+					".$table_prefix."_leaddetails.company,
+					".$table_prefix."_leadaddress.city,
+					".$table_prefix."_leadaddress.code as zip,
+					".$table_prefix."_leadaddress.state as region,
+					".$table_prefix."_leadaddress.country,
+					".$table_prefix."_crmentity.description,
+					".$table_prefix."_leadaddress.fax,
+					'Webform Fiere' as type 
+					, ".$table_prefix."_leaddetails.leadsource 
+					, 'Held' as leadstatus
+					, '167' as assigned_user_id
+					, ".$table_prefix."_crmentity.createdtime as  insertdate 
+					, LOWER(REPLACE(".$table_prefix."_leaddetails.leadsource,' ','_') ) as tmp_idtarget
+					, 'Formulario contatti Fiere:' + ".$table_prefix."_leaddetails.leadsource as page_title 
+					, 'ND' as location 
+					, 'ND' as codfatt 
+					, '1' AS cf_807 
+					, 'Web' as cf_757  -- Origine Iscrizione
+					, 'ND' as cf_737
+					, ".$table_prefix."_leadscf.cf_758 as title 
+					from ".$table_prefix."_leaddetails
+					join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leaddetails.leadid and ".$table_prefix."_crmentity.deleted =0 AND ".$table_prefix."_leaddetails.converted = 0 
+					join ".$table_prefix."_leadscf on ".$table_prefix."_leadscf.leadid = ".$table_prefix."_leaddetails.leadid
+					join ".$table_prefix."_leadaddress on ".$table_prefix."_leadaddress.leadaddressid = ".$table_prefix."_leaddetails.leadid
+					join ".$table_prefix."_leadsubdetails on ".$table_prefix."_leadsubdetails.leadsubscriptionid = ".$table_prefix."_leaddetails.leadid
+					WHERE ".$table_prefix."_leaddetails.leadsource like 'Fiera%'
+					AND ".$table_prefix."_leadscf.cf_808 = 0
+					" .($crmid > 0? " AND ".$table_prefix."_crmentity.crmid =".$crmid: "");
+		return $wsquery;
+	}
+	
 	
 	// provides the sql query string for retrieving data from web_temp_fe_users
 	private function _get_web_temp_fe_users() {
@@ -1215,6 +1384,8 @@ class RothoBus {
 				";
 		return $sql;
 	}
+	
+	
 }
 
 ?>

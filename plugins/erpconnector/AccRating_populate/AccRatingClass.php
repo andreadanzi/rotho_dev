@@ -75,8 +75,6 @@ class AccRatingClass {
 			$user->id=$user->getActiveAdminId();
 			$user->retrieve_entity_info($user->id, 'Users');
 			if($this->_log_active) echo "codiceCorsoCampagnaField = ".$this->_codiceCorsoCampagnaField ." and log_active = ".$this->_log_active." \n";
-			// $query = $this->_get_target_sql();
-			// if($this->_log_active) echo "_get_target_sql query= ".$query." \n";
 			// CORSI E DOWNLOADS
 			$query = $this->_get_target_campaign_sql();
 			if($this->_log_active) echo "_get_target_campaign_sql query= ".$query." \n";
@@ -93,8 +91,7 @@ class AccRatingClass {
 					$account_rating_table[$row['accountid']]['Corsi'][$keycorsi][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				}
 				$import_result['records_updated']+=1;
-			}			
-			
+			}		
 			// CONSULENZE
 			$query = $this->_get_consulenze_sql();
 			if($this->_log_active) echo "_get_consulenze_sql query= ".$query." \n";
@@ -124,11 +121,11 @@ class AccRatingClass {
 				// gestire prog_rating_date come data e convertirlo in stringa per utente
 				foreach($pieces as $piece) {
 					if( trim($piece) == "ARCA Tecnico Corso Base" ){ 
-						$account_rating[$row['accountid']] += 2;
+						$account_rating[$row['accountid']] += 1;
 						$account_rating_table[$row['accountid']]['Affiliazione']['ARCA Tecnico Corso Base'][$row['prog_rating_date']] += 2;
 					}
 					if( trim($piece) == "ARCA Progettista" ) { 
-						$account_rating[$row['accountid']] += 1;
+						$account_rating[$row['accountid']] += 2;
 						$account_rating_table[$row['accountid']]['Affiliazione']['ARCA Progettista'][$row['prog_rating_date']]  += 1;
 					}
 					if( trim($piece) == "ZEPHIR" ) { 
@@ -195,6 +192,7 @@ class AccRatingClass {
 			$this->_check_temp_table();
 			$this->_insert_temp_table($account_rating_table);
 			$this->_update_account_table();
+			$this->_update_accounts_focus_trimestre();
 			return $import_result;
 		} catch (Exception $e) {
 			return $import_result;
@@ -270,44 +268,14 @@ class AccRatingClass {
 		$adb->query($sql);
 	}
 	
-	private function _get_target_sql() {
-		global $table_prefix;
-		$query = "SELECT 
-			".$table_prefix."_account.accountid, 
-			".$table_prefix."_account.account_no,
-			".$table_prefix."_account.accountname,
-			".$table_prefix."_targets.targetname,
-			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." as codice_corso_target,
-			".$table_prefix."_account.rating,
-			".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
-			count(*) as targetsum
-			FROM ".$table_prefix."_account 
-			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
-			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
-			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
-			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
-			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
-			AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
-			group by 
-			".$table_prefix."_account.accountid, 
-			".$table_prefix."_account.account_no,
-			".$table_prefix."_account.accountname,
-			".$table_prefix."_targets.targetname,
-			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." ,
-			".$table_prefix."_account.rating,
-			".$table_prefix."_accountscf.".$this->_ratingField."
-			order by ".$table_prefix."_account.accountid";
-		return $sql;
-	}
-	
+	// danzi.tn@20131112 nuove modifiche su algoritmo: distinzione IT e resto del mondo (io la farei sulla base del codice corso RBCACM estero Curso Avanzado, come adesso)
 	private function _get_target_campaign_sql() {
 		global $table_prefix;
-		$sql = "SELECT 
+		$sql = "SELECT DISTINCT 
 			".$table_prefix."_account.accountid, 
 			".$table_prefix."_account.account_no,
 			".$table_prefix."_account.accountname,
+			".$table_prefix."_accountbillads.bill_country, 
 			".$table_prefix."_targets.targetname,
 			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." as codice_corso_target,
 			".$table_prefix."_account.rating,
@@ -316,7 +284,7 @@ class AccRatingClass {
 			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField." as codice_corso_campagna,
 			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField." as prog_rating_date,
 			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." as codice_fatturazione, -- Per i download = 'ND'
-			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RHCA') THEN 2  ELSE 1 END as prog_rating_value ,
+			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END as prog_rating_value ,
 			count(*) as targetsum
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
@@ -337,6 +305,7 @@ class AccRatingClass {
 			".$table_prefix."_account.accountid, 
 			".$table_prefix."_account.account_no,
 			".$table_prefix."_account.accountname,
+			".$table_prefix."_accountbillads.bill_country, 
 			".$table_prefix."_targets.targetname,
 			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." ,
 			".$table_prefix."_account.rating,
@@ -345,10 +314,62 @@ class AccRatingClass {
 			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField.",
 			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField.",
 			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField.",
-			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RHCA') THEN 2  ELSE 1 END
+			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END
 			order by ".$table_prefix."_account.accountid";
 		return $sql;
 	}
+	
+	// danzi.tn@20131130 target invertiti
+	private function _get_target_rev_campaign_sql() {
+		global $table_prefix;
+		$sql = "SELECT DISTINCT 
+			".$table_prefix."_account.accountid, 
+			".$table_prefix."_account.account_no,
+			".$table_prefix."_account.accountname,
+			".$table_prefix."_accountbillads.bill_country, 
+			".$table_prefix."_targets.targetname,
+			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." as codice_corso_target,
+			".$table_prefix."_account.rating,
+			".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
+			".$table_prefix."_campaign.campaignname,
+			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField." as codice_corso_campagna,
+			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField." as prog_rating_date,
+			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." as codice_fatturazione, -- Per i download = 'ND'
+			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END as prog_rating_value ,
+			count(*) as targetsum
+			FROM ".$table_prefix."_account 
+			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
+			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
+			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
+			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
+			JOIN ".$table_prefix."_crmentityrel as campaigns_crmentityrel on campaigns_crmentityrel.crmid = ".$table_prefix."_targets.targetsid AND campaigns_crmentityrel.module = 'Targets' AND campaigns_crmentityrel.relmodule = 'Campaigns'
+			JOIN ".$table_prefix."_campaign on ".$table_prefix."_campaign.campaignid = campaigns_crmentityrel.relcrmid
+			JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid
+			JOIN ".$table_prefix."_crmentity as campaign_crmentity on campaign_crmentity.crmid = ".$table_prefix."_campaign.campaignid AND campaign_crmentity.deleted=0
+			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+			AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
+			AND ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCBC','RFCAC','RFCACN','RFCAPC','RSCAP','RSCA','RSCBDPI','RHCB','RHCA','RHCT','RBFCACM','RHCI','ND') 
+			" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" ).  "
+			group by 
+			".$table_prefix."_account.accountid, 
+			".$table_prefix."_account.account_no,
+			".$table_prefix."_account.accountname,
+			".$table_prefix."_accountbillads.bill_country, 
+			".$table_prefix."_targets.targetname,
+			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." ,
+			".$table_prefix."_account.rating,
+			".$table_prefix."_accountscf.".$this->_ratingField.",
+			".$table_prefix."_campaign.campaignname,
+			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField.",
+			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField.",
+			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField.",
+			CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN','RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END
+			order by ".$table_prefix."_account.accountid";
+		return $sql;
+	}
+	
 	
 	private function _get_consulenze_sql() {
 		global $table_prefix;
@@ -356,6 +377,7 @@ class AccRatingClass {
 				".$table_prefix."_account.accountid, 
 				".$table_prefix."_account.account_no,
 				".$table_prefix."_account.accountname,
+				".$table_prefix."_accountbillads.bill_country, 
 				".$table_prefix."_consulenza.consulenzaname,
 				".$table_prefix."_consulenzaname.consulenzaname as consulenza_title,
 				".$table_prefix."_consulenza.product_cat, 
@@ -382,13 +404,14 @@ class AccRatingClass {
 				".$table_prefix."_account.account_no,
 				".$table_prefix."_account.accountname,
 				".$table_prefix."_account.rating,
+				".$table_prefix."_accountbillads.bill_country, 
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
 				".$table_prefix."_accountscf.".$this->_tipoAffiliazioneField." as tipo_affiliazione,
 				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
 				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
-				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( ".$table_prefix."_accountbillads.bill_country like 'IT%' OR  ".$table_prefix."_accountbillads.bill_country like 'ES%' OR  ".$table_prefix."_accountbillads.bill_country like 'PT%' )
+				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountbillads.bill_country like 'IT%' 
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
@@ -437,6 +460,7 @@ class AccRatingClass {
 				".$table_prefix."_account.accountid, 
 				".$table_prefix."_account.account_no,
 				".$table_prefix."_account.accountname,
+				".$table_prefix."_accountbillads.bill_country, 
 				".$table_prefix."_account.rating,
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
 				".$table_prefix."_potential.potentialname,
@@ -482,6 +506,7 @@ class AccRatingClass {
 				".$table_prefix."_account.accountid, 
 				".$table_prefix."_account.account_no,
 				".$table_prefix."_account.accountname,
+				".$table_prefix."_accountbillads.bill_country, 
 				".$table_prefix."_account.rating,
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
 				".$table_prefix."_potential.potentialname + ' (Chiusa Vinta) '  as prog_rating_title,
@@ -514,6 +539,7 @@ class AccRatingClass {
 				".$table_prefix."_account.accountid, 
 				".$table_prefix."_account.account_no,
 				".$table_prefix."_account.accountname,
+				".$table_prefix."_accountbillads.bill_country, 
 				".$table_prefix."_account.rating,
 				".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
 				".$table_prefix."_account.input_points as prog_rating_value ,
@@ -533,6 +559,31 @@ class AccRatingClass {
 				AND ".$table_prefix."_account.input_points <> 0 
 				" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" );
 		return $sql;
+	}
+	
+	private function _update_accounts_focus_trimestre($crmid=0) {
+		global $table_prefix, $adb;
+		// danzi.tn@20131209 prima setto tutti i Focus trimestre a 0, manca la gestione di crmid
+		$sql = "UPDATE ".$table_prefix."_accountscf
+				SET ".$table_prefix."_accountscf.cf_1224 = 0
+				FROM
+				".$table_prefix."_accountscf
+				JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_accountscf.accountid and ".$table_prefix."_crmentity.deleted = 0";
+		$adb->query($sql);		
+		// danzi.tn@20131209  poi, per quelli che hanno voci in calendario d 90 giorni a questa parte setto  i Focus trimestre a 1, manca la gestione di crmid
+		$sql="UPDATE
+				".$table_prefix."_accountscf
+				SET ".$table_prefix."_accountscf.cf_1224 = 1
+				FROM
+				".$table_prefix."_accountscf
+				JOIN temp_acc_ratings on temp_acc_ratings.accountid = ".$table_prefix."_accountscf.accountid				
+				JOIN ".$table_prefix."_seactivityrel ON ".$table_prefix."_seactivityrel.crmid = temp_acc_ratings.accountid
+				JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid 
+				AND ".$table_prefix."_activity.activitytype in ( 'Contatto - Fiera', 'Registrazione - Safe', 'Download - Web','Iscrizione Corso - Web','Consulenza - Web')
+				JOIN ".$table_prefix."_crmentity as activity_crmentity ON activity_crmentity.crmid = ".$table_prefix."_activity.activityid  AND activity_crmentity.deleted = 0 
+				WHERE 
+				".$table_prefix."_activity.date_start  BETWEEN DATEADD(day,-90, GETDATE()) AND GETDATE()";
+		$adb->query($sql);	
 	}
 
 }
