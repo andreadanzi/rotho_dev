@@ -18,6 +18,8 @@ include_once 'include/Webservices/Create.php';
 include_once 'modules/Webforms/model/WebformsModel.php';
 include_once 'modules/Webforms/model/WebformsFieldModel.php';
 include_once 'include/QueryGenerator/QueryGenerator.php';
+include_once 'include/QueryGenerator/QueryGenerator.php';
+include_once 'plugins/erpconnector/RothoBus/RothoBusClass.php';
 
 class Webform_Capture {
 	
@@ -29,7 +31,7 @@ class Webform_Capture {
 			
 			$webform = Webforms_Model::retrieveWithPublicId(vtlib_purify($request['publicid']));
 			if (empty($webform)) throw new Exception("Webform not found.");
-			
+			$data_prescelta = vtlib_purify($request['data_prescelta']);
 			$returnURL = $webform->getReturnUrl();
 
 			// Retrieve user information
@@ -57,7 +59,8 @@ class Webform_Capture {
 					if(empty($parameters[$webformField->getFieldName()]))  throw new Exception("Required fields not filled");
 				}
 			}
-
+			$parameters['data_prescelta'] = $data_prescelta;
+			$parameters['description'] = "Data prescelta: " . $data_prescelta . " \nArgomento: ".$parameters['description'];
 			// danzi.tn@20130327 $parameters['assigned_user_id'] = vtws_getWebserviceEntityId('Users', $webform->getOwnerId());
 			// danzi.tn@20130327 -- modifica per recepire Owner Id dalla Form
 			if( !empty($parameters['cf_1079']) && $parameters['cf_1079']!='') {
@@ -68,7 +71,25 @@ class Webform_Capture {
 			// danzi.tn@20130327 e
 			// Create the record
 			
-			$record=vtws_create($webform->getTargetModule(), $parameters, $user);
+			// danzi.tn@20131209 gestione Webforms
+			$rothoBusClass = new RothoBus();
+			$rothoBusClass->setLog(false);
+			$rothoBusClass->setExistingCourses(true);
+			$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
+			if(!$bFound)
+			{
+				$record = vtws_create($webform->getTargetModule(), $parameters, $user);
+				$entity_id = $record['id'];
+				$leadIdComponents = vtws_getIdComponents($entity_id);
+				$leadId = $leadIdComponents[1];
+				if( isset($leadId) && $leadId > 0 )
+				{
+					$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
+				}
+			}
+			// danzi.tn@20131209 e
+			
+		
 			
 			$this->sendResponse($returnURL, 'ok');
 			return;
