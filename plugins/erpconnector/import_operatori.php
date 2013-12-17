@@ -21,7 +21,10 @@ $query="SELECT
       ,AGENT_USERNAME
       ,AGENT_CN
 	  ,AGENT_TIPORAPPORTO
+	  ,AGENT_INTERNALUSER_NUMBER
+	  ,AGENT_INTERNALUSER_FULLNAME
   FROM erp_temp_crm_agenti";
+//mycrmv@3147e
 $res=$adb->query($query);
 while($row=$adb->fetchByAssoc($res,-1,false)){
 	
@@ -128,6 +131,15 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 	else{
 		$user->column_fields["last_name"] = $row['agent_surname'];
 	}
+
+	//mycrmv@3147
+	if ($row['agent_internaluser_number'] != null && $row['agent_internaluser_number'] != ''){
+		$user->column_fields["referente_codice"] = $row['agent_internaluser_number'];
+	}
+	if ($row['agent_internaluser_fullname'] != null && $row['agent_internaluser_fullname'] != ''){
+		$user->column_fields["referente_nome"] = $row['agent_internaluser_fullname'];
+	}
+	//mycrmv@3147e
 	
 	$user->saveentity('Users');
 	$user->saveHomeStuffOrder($user->id);
@@ -142,11 +154,13 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 	}
 	
 	if ($user->mode == 'edit'){
+		file_put_contents("debug_userimport","EDIT ".$user->id." ",FILE_APPEND);
 //		updateUser2RoleMapping("H7",$user->id);
 //		updateUsers2GroupMapping("",$user->id);
 	}
 	else{
 		insertUser2RoleMapping($roleid,$user->id);
+		file_put_contents("debug_userimport","INSERT ".$user->id." ",FILE_APPEND);
 //		insertUsers2GroupMapping("",$user->id);			
 	}
 
