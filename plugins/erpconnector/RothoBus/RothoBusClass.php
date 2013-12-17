@@ -192,11 +192,11 @@ class RothoBus {
 		$bFound = false;
 		$activitysubject = "Contatto " .$parms['leadsource'].  ": ".$parms['firstname']." " .$parms['lastname']." - ".$parms['email'];
 		$activitytype = "Contatto - Fiera";
-		$activitydescr = "Formulario contatti: ". $parms['leadsource'] ." ".$parms['firstname']." " .$parms['lastname'];
-		$activitydescr .= ", Azienda: ".$parms['company'];
-		$activitydescr .= ", Email: ".$parms['email'];
-		$activitydescr .= ", Indirizzo: ".$parms['lane']." ".$parms['city']." ".$parms['state'];
-		$activitydescr .= ", Note: ". $parms['description'];
+		$activitydescr = $parms['description'];
+		$activitydescr .= "\n********************\nNominativo: ".$parms['firstname']." " .$parms['lastname'];
+		$activitydescr .= "\nAzienda: ".$parms['company'];
+		$activitydescr .= "\nEmail: ".$parms['email'];
+		$activitydescr .= "\nIndirizzo: ".$parms['lane']." ".$parms['city']." ".$parms['state'];
 		$retval = $this->_find_entities_by_email($email);
 		$entity_ids = $retval[0];
 		$entity_objects = $retval[1];
