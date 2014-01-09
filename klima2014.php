@@ -14,7 +14,7 @@
 	select.select { margin-bottom:12px; width:95%; padding: .4em; }
 	fieldset { padding:0; border:0; margin-top:25px; }
 	h1 { font-size: 1.2em; margin: .6em 0; }
-	div#main-container {background-image: url(klimahouse2014.jpg);  width:1024px; height:768px }
+	div#main-container {background-image: url(klima2014.jpg);  width:1024px; height:768px }
 	div#form-container {position:relative; top:150px; left:100px}
 	ul#cams {color:#fff;}
 	.ui-dialog { padding: .3em; }
@@ -187,9 +187,8 @@ $(function() {
 				<form name="EASY" action="http://crm.rothoblaas.com/modules/Webforms/rotho.capture.php" method="post" accept-charset="utf-8">
 					<input type="hidden" name="publicid" value="824a079a2c9ba8c2ef73181d66e3bca8"></input>
 					<input type="hidden" name="name" value="EASY"></input>
-					<input type="hidden" id="rdrct"  name="rdrct" value="klimahouse2014"></input>
-					<input type="hidden" value="Fiera KLIMAHOUSE 2014" name="leadsource"></input>
-					<input type="hidden" name="assigned_user_id" id="assigned_user_id" value="9"></input>
+					<input type="hidden" id="rdrct"  name="rdrct" value="klima2014"></input>
+					<input type="hidden" value="KLIMAHOUSE 2014 BZ" name="leadsource"></input>
 					<table width="800px">
 					<tbody>
 						<tr VALIGN=TOP>
@@ -203,7 +202,7 @@ $(function() {
 								<label>Azienda*</label><input type="text"  class="text ui-widget-content ui-corner-all" value="" name="company" id="company"  required="true"></input>
 							</td>
 							<td colspan=2 rowspan=4>
-									<label>Se durante l'evento desideri anche una consulenza, allora scrivi qui sotto l'argomento e l'ora che preferisci, tra le 9:00 e le 15:30, grazie!</label><textarea  type="text" value="" id="description" name="description" rows="14" cols="45" ></textarea >
+									<label>Note</label><textarea  type="text" value="" id="description" name="description" rows="14" cols="45" ></textarea >
 								<!-- <label for="webcam">Snapshot</label> -->
 								<!-- <ul id="cams"></ul> -->
 								<!-- <div id="webcam"></div> -->
@@ -232,8 +231,11 @@ $(function() {
 								<!-- <input type="text"  class="text ui-widget-content ui-corner-all" value="" name="country"  id="country" ></input> -->
 								<select class="select ui-widget-content ui-corner-all" id="country" name="country">
 									<option value="IT">Italia</option>
+									<option value="DE">Germania</option>
+									<option value="AT">Austria</option>
+									<option value="FR">Francia</option>
 									<option value="AF">Afghanistan</option>
-									<option value="AX">Åland Islands</option>
+									<option value="AX">Aland Islands</option>
 									<option value="AL">Albania</option>
 									<option value="DZ">Algeria</option>
 									<option value="AS">American Samoa</option>
@@ -246,7 +248,6 @@ $(function() {
 									<option value="AM">Armenia</option>
 									<option value="AW">Aruba</option>
 									<option value="AU">Australia</option>
-									<option value="AT">Austria</option>
 									<option value="AZ">Azerbaijan</option>
 									<option value="BS">Bahamas</option>
 									<option value="BH">Bahrain</option>
@@ -305,14 +306,12 @@ $(function() {
 									<option value="FO">Faroe Islands</option>
 									<option value="FJ">Fiji</option>
 									<option value="FI">Finland</option>
-									<option value="FR">France</option>
 									<option value="GF">French Guiana</option>
 									<option value="PF">French Polynesia</option>
 									<option value="TF">French Southern Territories</option>
 									<option value="GA">Gabon</option>
 									<option value="GM">Gambia</option>
 									<option value="GE">Georgia</option>
-									<option value="DE">Germany</option>
 									<option value="DE">Deutschland</option>
 									<option value="GH">Ghana</option>
 									<option value="GI">Gibraltar</option>
@@ -507,14 +506,67 @@ $(function() {
 							   </select>
 							</td>
 							<td>
-								<label>Data prescelta</label> 	<!--assigned_user_id','assigned_user_id_display','{\"118137-->
-								<select class="select ui-widget-content ui-corner-all" id="data_prescelta" name="data_prescelta">
-												<option value="23/01/2014">
-														23 Gennaio 2014
-												</option>
-												<option value="24/01/2014">
-														24 Gennaio 2014
-												</option>
+								<label>Agente</label> 	<!--assigned_user_id','assigned_user_id_display','{\"118137-->
+								<select class="select ui-widget-content ui-corner-all" id="assigned_user_id" name="assigned_user_id">
+												<option value="9">Utente Fiera (Generico)</option>
+												<option value="85">Agnola Francesco</option>
+												<option value="1860">Angrilli Andrea</option>
+												<option value="6946">Barrafranca Filippo</option>
+												<option value="100">Bellato Filippo</option>
+												<option value="96">Berti Roberto</option>
+												<option value="66">Bettin Lorenzo</option>
+												<option value="155">Boretti Matteo</option>
+												<option value="92">Bortolotti Christian</option>
+												<option value="83">Cappelli Massimiliano</option>
+												<option value="27325">Caridi Giuseppe</option>
+												<option value="1903">Cecchetto Denis</option>
+												<option value="4375">Ciuppani Gian Paolo</option>
+												<option value="64">Conteduca Vitangelo</option>
+												<option value="2039">Corino Stefano</option>
+												<option value="44">Coviello Walter</option>
+												<option value="101">Dalle Sasse Loris</option>
+												<option value="77">Di Bella Antonio</option>
+												<option value="2029">Di Bucchianico Roberto</option>
+												<option value="75">Di Dio Francesco</option>
+												<option value="55">Di Paola Luca</option>
+												<option value="6943">DUSS NORD Stanisavljevic Nenad</option>
+												<option value="16">Ferri Guido</option>
+												<option value="2020">Fiorenza Pietro</option>
+												<option value="103568">Freguglia Stefano</option>
+												<option value="59">Gasparri Andrea</option>
+												<option value="97">Giriolo Angelo</option>
+												<option value="71">Grosso Claudio</option>
+												<option value="132878">Lamatrice Christian</option>
+												<option value="27076">Landi Catio</option>
+												<option value="43">Lerma Erik</option>
+												<option value="4426">Lo Conte Alberto</option>
+												<option value="132904">Lo Conte Antonio</option>
+												<option value="102">Lorenzon Pierluigi</option>
+												<option value="99">Marchetti Federico</option>
+												<option value="51">Mazoll Andreas</option>
+												<option value="82">Mora Michele</option>
+												<option value="2036">Morelli Sergio</option>
+												<option value="154">Moro Patrick</option>
+												<option value="4376">Palazzi Luca</option>
+												<option value="60">Palmisio Salvatore</option>
+												<option value="103376">Pol Michele</option>
+												<option value="52">Rainer Stefan</option>
+												<option value="6945">Renna Bernardino</option>
+												<option value="132901">Ricci Dario</option>
+												<option value="1491">Rufail Martin</option>
+												<option value="95">Russo Raffaele</option>
+												<option value="156">Sangiorgi Alessandro</option>
+												<option value="62">Scognamiglio Salvatore</option>
+												<option value="68">Segato Marco</option>
+												<option value="112950">Soriani William</option>
+												<option value="103377">Sotto Corona Markus</option>
+												<option value="63">Spina Davide</option>
+												<option value="105622">Tomasini Christian</option>
+												<option value="17">Tonelli Massimo</option>
+												<option value="1916">Toselli Fabrizio</option>
+												<option value="53">Vella Giuseppe</option>
+												<option value="69">Vicenzi Michele</option>
+												<option value="103">Zanin Stefano</option>
 							   </select>
 							</td>
 						</tr>

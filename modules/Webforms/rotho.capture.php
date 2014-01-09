@@ -31,8 +31,15 @@ class Webform_Capture {
 			
 			$webform = Webforms_Model::retrieveWithPublicId(vtlib_purify($request['publicid']));
 			if (empty($webform)) throw new Exception("Webform not found.");
-			$data_prescelta = vtlib_purify($request['data_prescelta']);
-			$returnURL = $webform->getReturnUrl();
+			if(isset($request['data_prescelta'])) {
+				$data_prescelta = vtlib_purify($request['data_prescelta']);
+			}
+			if(isset($request['rdrct'])) {
+				$rdrct = vtlib_purify($request['rdrct']);
+				$returnURL = "crm.rothoblaas.com/".$rdrct.".php";
+			} else {
+				$returnURL = $webform->getReturnUrl();
+			}
 
 			// Retrieve user information
 			$user = CRMEntity::getInstance('Users');
@@ -59,12 +66,14 @@ class Webform_Capture {
 					if(empty($parameters[$webformField->getFieldName()]))  throw new Exception("Required fields not filled");
 				}
 			}
-			$parameters['data_prescelta'] = $data_prescelta;
-			$parameters['description'] = "Data prescelta: " . $data_prescelta . " \nArgomento: ".$parameters['description'];
+			if(isset($data_prescelta)) {
+				$parameters['data_prescelta'] = $data_prescelta;
+				$parameters['description'] = "Data prescelta: " . $data_prescelta . " \nArgomento: ".$parameters['description'];
+			}
 			// danzi.tn@20130327 $parameters['assigned_user_id'] = vtws_getWebserviceEntityId('Users', $webform->getOwnerId());
 			// danzi.tn@20130327 -- modifica per recepire Owner Id dalla Form
-			if( !empty($parameters['cf_1079']) && $parameters['cf_1079']!='') {
-				$parameters['assigned_user_id'] = vtws_getWebserviceEntityId('Users', $parameters['cf_1079']);
+			if( isset($request['assigned_user_id']) && !empty($request['assigned_user_id'])) {
+				$parameters['assigned_user_id'] = vtws_getWebserviceEntityId('Users', $request['assigned_user_id']);
 			} else {
 				$parameters['assigned_user_id'] = vtws_getWebserviceEntityId('Users', $webform->getOwnerId());
 			}
@@ -75,9 +84,15 @@ class Webform_Capture {
 			$rothoBusClass = new RothoBus();
 			$rothoBusClass->setLog(false);
 			$rothoBusClass->setExistingCourses(true);
+			$campaign_id = strtolower (str_replace(' ', '_',$parameters['leadsource']));
+			$parameters['cf_747'] = $campaign_id; // campaign_id
+			$parameters['cf_726'] = "Form " . $parameters['leadsource']; // campaign_title
+			$parameters['cf_728'] = 'ND';
+			$parameters['cf_733'] = 'ND';
+			$parameters['cf_756'] = 'ND';
 			$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
 			if(!$bFound)
-			{
+			{				
 				$record = vtws_create($webform->getTargetModule(), $parameters, $user);
 				$entity_id = $record['id'];
 				$leadIdComponents = vtws_getIdComponents($entity_id);
