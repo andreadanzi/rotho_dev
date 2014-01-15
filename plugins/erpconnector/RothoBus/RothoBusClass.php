@@ -1011,10 +1011,12 @@ class RothoBus {
 		global $adb,$table_prefix;		
 		$ret_targets = array();
 		if($this->log_active) echo "\n----------------------_process_targets STARTS with ".$target_type."------------------------\n";
+		// danzi.tn@20140115 gestione codice fatturazione corso e data corso 
 		$wsquery = "SELECT
 					".$table_prefix."_leadscf.cf_747 as target_id,
 					max(".$table_prefix."_leadscf.cf_726) as target_title,
 					max(".$table_prefix."_leadscf.cf_756) as target_cod_fatt,
+					max(".$table_prefix."_leadscf.cf_733) as target_date,
 					max(".$table_prefix."_leadscf.cf_728) as target_localita,
 					count(".$table_prefix."_leadscf.leadid) as totleads 
 					FROM ".$table_prefix."_leadscf
@@ -1033,6 +1035,7 @@ class RothoBus {
 				$target_title = $row['target_title'];
 				$target_localita = $row['target_localita'];
 				$target_cod_fatt = $row['target_cod_fatt'];
+				$target_date = $row['target_date'];
 				$target_entity = CRMEntity::getInstance('Targets');
 				vtlib_setup_modulevars('Targets',$target_entity);
 				$target_entity->column_fields['assigned_user_id']= $assigned_user_id;
@@ -1040,6 +1043,8 @@ class RothoBus {
 				$target_entity->column_fields['target_type'] = $target_type;
 				$target_entity->column_fields['target_state'] = $target_state;
 				$target_entity->column_fields['cf_1006'] = $target_id;
+				$target_entity->column_fields['cf_1225'] = $target_cod_fatt;
+				$target_entity->column_fields['cf_1226'] = $target_date;
 				$target_entity->save($module_name='Targets',$longdesc=false);
 				$ret_targets[] = $target_entity;
 			}
@@ -1317,6 +1322,22 @@ class RothoBus {
 		$this->mapping['Accounts']['key'] = 'value';
 		$this->mapping['Vendors']['key'] = 'value';
 		$this->mapping['Contacts']['key'] = 'value';
+	}
+	
+	// danzi.tn@20140115 _update_targetscf copiare cCodice Fatturazione Corso e Data Corso da Campagne a Target
+	private function _update_targetscf() {
+		global $adb, $table_prefix;
+		$sql = "UPDATE 
+				".$table_prefix."_targetscf
+				set
+				".$table_prefix."_targetscf.cf_1225 = ".$table_prefix."_campaignscf.cf_759, 
+				".$table_prefix."_targetscf.cf_1226 = ".$table_prefix."_campaignscf.cf_745
+				from ".$table_prefix."_targetscf
+				JOIN ".$table_prefix."_crmentity as targetcf_entity on targetcf_entity.crmid = ".$table_prefix."_targetscf.targetsid and targetcf_entity.deleted=0
+				JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_targetscf.targetsid and ".$table_prefix."_crmentityrel.relmodule = 'Campaigns'
+				JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid =  ".$table_prefix."_crmentityrel.relcrmid
+				JOIN ".$table_prefix."_crmentity as campaignscf_entity on  campaignscf_entity.crmid = ".$table_prefix."_campaignscf.campaignid and campaignscf_entity.deleted=0";
+		$adb->query($sql);
 	}
 	
 	private function _update_leaddetails() {
