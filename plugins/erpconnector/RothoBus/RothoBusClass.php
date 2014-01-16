@@ -188,7 +188,7 @@ class RothoBus {
 	}
 	
 	// danzi.tn@20131213 
-	function check_web_form($email, $parms, $form_type='Form Fiere') {
+	function check_web_form($email, $parms, $form_type='Form Fiere',$acc_no="") {
 		$bFound = false;
 		$activitysubject = "Contatto " .$parms['leadsource'].  ": ".$parms['firstname']." " .$parms['lastname']." - ".$parms['email'];
 		$activitytype = "Contatto - Fiera";
@@ -200,6 +200,11 @@ class RothoBus {
 		$retval = $this->_find_entities_by_email($email);
 		$entity_ids = $retval[0];
 		$entity_objects = $retval[1];
+		if( !empty($acc_no) ) {
+			$acc_no_retval = $this->_find_account_by_account_no($acc_no);
+			$entity_ids = $entity_ids + $acc_no_retval[0];
+			$entity_objects = $entity_objects + $acc_no_retval[1];
+		}
 		if(count($entity_ids)==0) { // NOT FOUND
 			$bFound = false;
 		} else {
@@ -1168,6 +1173,25 @@ class RothoBus {
 					AND ".$table_prefix."_targetscf.cf_1006 in ('".implode("', '",array_keys($generated_ids))."')	";
 		$adb->query($wsquery);
 		if($this->log_active) echo "\n----------------------_process_relations TERMINATED------------------------\n";
+	}
+	
+	private function _find_account_by_account_no($acc_no) {
+		global $adb,$table_prefix;	
+		$entity_ids = array();
+		$entity_objects = array();
+		$wsquery = "SELECT crmid FROM ".$table_prefix."_crmentity LEFT JOIN ".$table_prefix."_account ON accountid=crmid WHERE deleted=0 AND account_no='".$acc_no."')"; 
+		$wsresult = $adb->query($wsquery);
+		if ($wsresult && $adb->num_rows($wsresult) > 0){
+			while($row = $adb->fetchByAssoc($wsresult)){
+				if($this->log_active) echo "found accountid=".$row['crmid']."\n";
+				$entity_ids[$row['crmid']] =1;
+				$account_entity = CRMEntity::getInstance('Accounts');
+				$account_entity->id = $row['crmid'];
+				$account_entity->retrieve_entity_info($row['crmid'],'Accounts');
+				$entity_objects['Accounts'][$row['crmid']]=$account_entity;
+			}
+		}	
+		return array($entity_ids,$entity_objects);
 	}
 	
 	private function _find_entities_by_email($input_email) {

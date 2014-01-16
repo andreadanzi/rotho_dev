@@ -1,0 +1,3 @@
+File xlsx
+
+prima colonna deve essere lead source (A), e deve esistere il target con lo stesso nome
