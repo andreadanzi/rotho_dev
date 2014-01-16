@@ -33,12 +33,49 @@ class File_Form_Import {
 		$this->mainDescr = $mainDescr;
 	}
 	
-	function addEvent($description,$subject,$assigned_user_id,$parent_id, $contact_id, $moduleName) {
+	function getTarget($target_name) {
+		global $log, $adb,$table_prefix;
+		$ids = array();
+		$sql="SELECT 
+				".$table_prefix."_targets.targetsid,
+				".$table_prefix."_targets.target_no,
+				".$table_prefix."_targets.target_type
+				FROM 
+				".$table_prefix."_targets 
+				JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_crmentity.deleted = 0
+				WHERE ".$table_prefix."_targets.targetname = '".$target_name."'";
+		$wsresult = $adb->query($sql);
+		if ($wsresult && $adb->num_rows($wsresult) > 0){
+			while($row = $adb->fetchByAssoc($wsresult)){
+				$ids[] = $row['targetsid'];
+			}
+		}
+		return $ids;
+	}
+	
+	function processTargetRelations($entity_rel) {
+		global $log, $adb,$table_prefix;
+		foreach($entity_rel as $entity_type=>$target_rel) {
+			foreach($target_rel as $key=>$targetids) {
+				foreach($targetids as $targetid) {
+					$sql="INSERT INTO ".$table_prefix."_crmentityrel 
+							(crmid,module,relcrmid,relmodule)
+							VALUES
+							(?,'Targets',?,?)";
+					 $adb->pquery($sql,array($targetid,$key,$entity_type));
+				}
+			}
+		}
+	}
+	
+	
+	function addEvent($description,$subject,$assigned_user_id,$parent_id, $contact_id, $moduleName, $taskpriority) {
 		global $log, $adb;
 		$acttime = strtotime("now");
 		$fields = array(
 					'activitytype'=> 'Contatto - Fiera',
 					'description'=> $description,
+					'taskpriority'=> $taskpriority,
 					'subject'=> $subject,
 					'assigned_user_id' => $assigned_user_id,
 					'time_start'=> date('H:i',$acttime),
@@ -226,14 +263,18 @@ class File_Form_Import {
 				}
 				if(!empty($wsAccId)) {
 					$accIDs = vtws_getIdComponents($wsAccId);
+					$taskpriority = 'Medium';
+					if($urgenza=='Alta') $taskpriority = 'High' ;
+					if($urgenza=='Media') $taskpriority = 'Medium';
+					if($urgenza=='Bassa') $taskpriority = 'Low';
 					if(!empty($wsConId))
 					{
 						$conIDs = vtws_getIdComponents($wsConId);
-						$this->addEvent($this->mainDescr . " " . $acc_parameters['description'] . " - " .$contactName,$con_parameters['leadsource']. " - " .$contactName,$acc_parameters['assigned_user_id'],$wsAccId, $wsConId, "Contacts");
+						$this->addEvent($this->mainDescr . " " . $acc_parameters['description'] . " - " .$contactName,$con_parameters['leadsource']. " - " .$contactName,$acc_parameters['assigned_user_id'],$wsAccId, $wsConId, "Contacts",$taskpriority);
 						vtws_insertWebserviceRelatedNotes($conIDs[1], $docId);
 						vtws_insertWebserviceRelatedNotes($accIDs[1], $docId);
 					} else { // nel caso non ci siano contatti corrispondenti
-						$this->addEvent($this->mainDescr . " " . $acc_parameters['description'] . " - " .$accountName,$con_parameters['leadsource']. " - " .$accountName,$acc_parameters['assigned_user_id'],$wsAccId, $wsConId , "Accounts");
+						$this->addEvent($this->mainDescr . " " . $acc_parameters['description'] . " - " .$accountName,$con_parameters['leadsource']. " - " .$accountName,$acc_parameters['assigned_user_id'],$wsAccId, $wsConId , "Accounts",$taskpriority);
 						vtws_insertWebserviceRelatedNotes($accIDs[1], $docId);
 					}
 				}
