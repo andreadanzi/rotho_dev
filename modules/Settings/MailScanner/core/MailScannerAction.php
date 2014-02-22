@@ -135,11 +135,14 @@ class Vtiger_MailScannerAction {
 			if($this->module == 'HelpDesk') {
 				$returnid = $this->__CreateTicketUser($mailscanner, $mailrecord); 
 			}
-		} /*mycrmv@3147e danzi.tn@20140207*/elseif($this->actiontype == 'CREATEINT') {
+		} /*mycrmv@3147e */
+		  /*danzi.tn@20140207*/		
+		elseif($this->actiontype == 'CREATEINT') {
 			if($this->module == 'HelpDesk') {
 				$returnid = $this->__CreateTicketInterno($mailscanner, $mailrecord); 
 			}
-		} /*danzi.tn@20140207e*/else if($this->actiontype == 'LINK') {
+		} /*danzi.tn@20140207e*/
+		else if($this->actiontype == 'LINK') {
 			$returnid = $this->__LinkToRecord($mailscanner, $mailrecord);
 		} else if($this->actiontype == 'UPDATE') {
 			if($this->module == 'HelpDesk') {
