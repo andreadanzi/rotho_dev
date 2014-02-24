@@ -956,9 +956,9 @@ class RothoBus {
 	}
 	
 	
-	// provides the sql query string for retrieving data from web_temp_fe_users
+	// provides the sql query string for retrieving data from web_temp_fe_users danzi.tn@20140224 modifica per safe country a 3 caratteri
 	private function _get_web_temp_fe_users() {
-		$wsquery = "select uid, pid, name, first_name, last_name, email, phone, mobile, www, address, company, city, zip, region, country, description, fax,  'safe' as type 
+		$wsquery = "select uid, pid, name, first_name, last_name, email, phone, mobile, www, address, company, city, zip, region, temp_country_iso.iso2 as country, description, fax,  'safe' as type 
 					, 'RothoSafe' AS leadsource 
 					, 'Held' as leadstatus
 					, '167' as assigned_user_id
@@ -976,7 +976,8 @@ class RothoBus {
 					, web_temp_fe_users.title as title
 					from 
 					web_temp_fe_users 
-					where imported is NULL and email <>'' and email IS NOT NULL";
+					JOIN temp_country_iso on temp_country_iso.iso3 = web_temp_fe_users.country 
+					where  web_temp_fe_users.hidden =0 AND web_temp_fe_users.imported is NULL and web_temp_fe_users.email <>'' and web_temp_fe_users.email IS NOT NULL";
 		return $wsquery;
 	}
 	

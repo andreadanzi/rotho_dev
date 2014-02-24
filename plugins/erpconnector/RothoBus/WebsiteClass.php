@@ -290,15 +290,13 @@ class WebsiteClass {
 	
 	private function _build_insert($website_db, $source_table,$sql,$temp_table) {
 		$parm_array = array();
-		$retsql = "INSERT INTO " . $temp_table;
-		$retsql .= " (".implode(", ", array_keys($this->mapping[$source_table])).")";
-		$retsql .= " VALUES ";
 		$conn = mysql_connect($this->website_host, $this->website_usr, $this->website_pwd);
 		mysql_select_db($website_db, $conn);
 		mysql_set_charset('UTF8',$conn);
 		$wsresult = mysql_query($sql);
 		$values_array = array();
 		while($row = mysql_fetch_assoc($wsresult)) {
+			$key_array = array();
 			$val_array = array();
 			// danzi.tn@20131014 errore nel caso di parametri con carattere '
 			$question_array = array();
@@ -315,14 +313,24 @@ class WebsiteClass {
 				$row['usergroup_descr'] = $group_descr;
 			}
 			foreach($this->mapping[$source_table] as $key=>$value) {
+				$valstr = trim($row[$value]);
+				//if( !empty($valstr)) {
+				$key_array[] = $key;
 				$val_array[] = $row[$value];
-				$question_array[] = '?';
+				$question_array[] = "?";
+				//}
 			}
 			global $adb;
 			// danzi.tn@20131014 
 			// $insert_sql = $retsql . " ('".implode("', '", $val_array)."')";
+			$retsql = "INSERT INTO " . $temp_table;
+			$retsql .= " (".implode(", ", $key_array).")";
+			$retsql .= " VALUES ";
 			$insert_sql = $retsql . " ( ".implode(",", $question_array)." )";
-			if($this->log_active) echo "\n\n WebsiteClass._build_insert insert_sql = ".$insert_sql." \n\n";
+			if($this->log_active) echo "\n\n WebsiteClass._build_insert insert_sql = ".$insert_sql." \n";
+			if($this->log_active) echo " WebsiteClass._build_insert insert parameters = ";
+			if($this->log_active) print_r($val_array);
+			if($this->log_active) echo " \n\n";
 			// danzi.tn@20131014 
 			$adb->pquery($insert_sql, $val_array );			
 			$this->import_result['records_created']++;
