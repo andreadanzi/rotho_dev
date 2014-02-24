@@ -9,10 +9,7 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 // chdir(dirname(__FILE__) . '/../..');
-// danzi.tn@20140116 - aggiunti codici paese AT DE e CH
-// danzi.tn@20140129 - aggiunti codici paese FR GB IE PL e RO
-// danzi.tn@20140210 - aggiunti codici paese RU SE NO e FI
-// danzi.tn@20140224 - DISTINZIONE TRA RP / PROG E RC / CARP per Sudamerica - RICORDARSI DELETE MANUALE
+// danzi.tn@20140224 - GESTIONE RC / CARP per Sudamerica - RICORDARSI DELETE MANUALE
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -21,7 +18,7 @@ include_once 'include/Webservices/Create.php';
 include_once 'include/QueryGenerator/QueryGenerator.php';
 
 
-class AccRatingClass {
+class AccRatingClassCARP {
 	
 	var $entity_id = 0;
 	var $_log_active = false;
@@ -215,7 +212,7 @@ class AccRatingClass {
 								eventdatetime VARCHAR(255) NULL
 							)";
 		$adb->query($create_sql);
-		$delete_sql= "delete from temp_acc_ratings " .( $this->entity_id > 0 ? " WHERE account_category = 'RP / PROG' AND accountid = ".$this->entity_id : " WHERE account_category = 'RP / PROG'" );
+		$delete_sql= "delete from temp_acc_ratings " .( $this->entity_id > 0 ? " WHERE account_category = 'RC / CARP' AND accountid = ".$this->entity_id : " WHERE account_category = 'RC / CARP'" );
 		$adb->query($delete_sql);
 	}
 	
@@ -223,7 +220,7 @@ class AccRatingClass {
 		global $adb;
 		$sql = "INSERT INTO temp_acc_ratings ";
 		$sql .= "(accountid,categoria,gruppo,valore,eventdatetime,insdatetime,account_category)";
-		$sql .= " VALUES (?,?,?,?,?,GETDATE(),'RP / PROG')";
+		$sql .= " VALUES (?,?,?,?,?,GETDATE(),'RC / CARP')";
 		foreach($account_rating_table as $key=>$val) {
 			foreach($val as $type_key=>$type_val) {
 				foreach($type_val as $type_val_key=>$type_val_date) {
@@ -292,23 +289,25 @@ class AccRatingClass {
 			count(*) as targetsum
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( 
-			".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-			".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-			".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-			".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-			".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-			".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+			".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+			".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+			".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+			".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+			".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+			".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+			".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+			".$table_prefix."_accountbillads.bill_country like 'GF%'  )
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
@@ -358,23 +357,25 @@ class AccRatingClass {
 			count(*) as targetsum
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( 
-			".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-			".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-			".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-			".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-			".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-			".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-			".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+			".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+			".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+			".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+			".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+			".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+			".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+			".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+			".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+			".$table_prefix."_accountbillads.bill_country like 'GF%'  )
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
@@ -421,23 +422,25 @@ class AccRatingClass {
 				2 as prog_rating_value
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( 
-				".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-				".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+				".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+				".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+				".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GF%' )
 				JOIN ".$table_prefix."_consulenza on ".$table_prefix."_consulenza.parent = ".$table_prefix."_account.accountid
 				JOIN ".$table_prefix."_crmentity as consulenza_crmentity on consulenza_crmentity.crmid = ".$table_prefix."_consulenza.consulenzaid AND consulenza_crmentity.deleted = 0 
 				LEFT JOIN ".$table_prefix."_consulenzaname on CONVERT(VARCHAR, ".$table_prefix."_consulenzaname.consulenzanameid ) = ".$table_prefix."_consulenza.consulenzaname
@@ -459,23 +462,25 @@ class AccRatingClass {
 				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND ( 
-				".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-				".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+				".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+				".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+				".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GF%' )				
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
@@ -502,23 +507,25 @@ class AccRatingClass {
 				2 as prog_rating_value
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND (  
-				".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-				".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+				".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+				".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+				".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GF%'  )
 				JOIN ".$table_prefix."_seactivityrel ON ".$table_prefix."_seactivityrel.crmid = ".$table_prefix."_account.accountid
 				JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid AND ".$table_prefix."_activity.activitytype ='Contatto - Fiera'
 				JOIN ".$table_prefix."_crmentity as activity_crmentity ON activity_crmentity.crmid = ".$table_prefix."_activity.activityid  AND activity_crmentity.deleted = 0 
@@ -563,23 +570,25 @@ class AccRatingClass {
 				potential_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND (  
-				".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-				".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+				".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+				".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+				".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GF%' )
 				JOIN ".$table_prefix."_potential on ".$table_prefix."_potential.related_to = ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
@@ -611,23 +620,25 @@ class AccRatingClass {
 				potential_crmentity.createdtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND (  
-				".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-				".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+				".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+				".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+				".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GF%'  )
 				JOIN ".$table_prefix."_potential on ".$table_prefix."_potential.related_to = ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
@@ -655,23 +666,25 @@ class AccRatingClass {
 				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid AND (  
-				".$table_prefix."_accountbillads.bill_country like 'IT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'ES%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'DE%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'AT%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'CH%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FR%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'GB%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'PL%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'RO%' OR  
-				".$table_prefix."_accountbillads.bill_country like 'IE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'RU%' OR
-				".$table_prefix."_accountbillads.bill_country like 'SE%' OR
-				".$table_prefix."_accountbillads.bill_country like 'NO%' OR
-				".$table_prefix."_accountbillads.bill_country like 'FI%'  )
+				".$table_prefix."_accountbillads.bill_country like 'AR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CL%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'EC%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'UY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PE%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'CR%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'MX%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'BO%' OR  
+				".$table_prefix."_accountbillads.bill_country like 'PY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'PA%' OR
+				".$table_prefix."_accountbillads.bill_country like 'VE%' OR
+				".$table_prefix."_accountbillads.bill_country like 'NI%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GT%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GY%' OR
+				".$table_prefix."_accountbillads.bill_country like 'GF%'  )
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
