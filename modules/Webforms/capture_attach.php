@@ -19,10 +19,12 @@ include_once 'include/Webservices/Utils.php';
 include_once 'modules/Webforms/model/WebformsModel.php';
 include_once 'modules/Webforms/model/WebformsFieldModel.php';
 include_once 'include/QueryGenerator/QueryGenerator.php';
+include_once 'plugins/erpconnector/RothoBus/RothoBusClass.php';
 
 class Webform_Capture {
 	
 	function captureNow($request) {
+		global $table_prefix, $adb;
 		$returnURL = false;
 		try {
 
@@ -67,35 +69,64 @@ class Webform_Capture {
 				$parameters['assigned_user_id'] = vtws_getWebserviceEntityId('Users', $webform->getOwnerId());
 			}
 			// danzi.tn@20130906 e
-			
-			// Create the record
-			
-			$record=vtws_create($webform->getTargetModule(), $parameters, $user);
-			$entity_id = $record['id'];
-			
-			//*** Attachment ***//  
-			if($_FILES["filename"]["name"] != "")  
-			{
-				$_REQUEST['filename_hidden'] = $_FILES['filename']['name'];
-				$uploadfile = $_FILES['filename']['name'];
-				$doc_parameters=array();
-				$array_file = explode('.',$uploadfile);
-				$doc_parameters['notes_title']= $array_file[0];
-				$doc_parameters['notecontent'] = 'Web Form Request: '.$parameters['description'];
-				$doc_parameters['filestatus'] = 1;
-				$doc_parameters['filelocationtype']='I';
-				$doc_parameters['assigned_user_id']=$parameters['assigned_user_id'];
-				$doc_parameters['folderid']='22x26';
-				$doc_record = vtws_create('Documents' , $doc_parameters, $user);
-				$doc_id = $doc_record['id'];
+		
+			// danzi.tn@20140310 Modifica gestione RothoBUS per Consulenze WEB (non bisogna più creare Lead se esiste e-mail)
+			$rothoBusClass = new RothoBus();
+			$rothoBusClass->setLog(false);
+			$rothoBusClass->setExistingCourses(true);
+			$campaign_id = strtolower (str_replace(' ', '_',$parameters['leadsource']));
+			$parameters['leadsource'] = 'Richiesta Consulenze (Form)';
+			$parameters['idtarget'] = 'form_consulenza_web'; // idtarget
+			$parameters['cf_747'] = 'form_consulenza_web'; // campaign_id
+			$parameters['cf_726'] = 'Formulario WEB richiesta consulenza'; // campaign_title
+			$parameters['cf_728'] = 'ND';
+			$parameters['cf_733'] = 'ND';
+			$parameters['cf_756'] = 'ND';
+			$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Richiesta Consulenze (Form)','Consulenza - Web');
+			$bFound = $retval[0];
+			if(!$bFound)
+			{				
+				$record = vtws_create($webform->getTargetModule(), $parameters, $user);
+				$entity_id = $record['id'];
+				//*** Attachment ***//  
+				if($_FILES["filename"]["name"] != "")  
+				{
+					$_REQUEST['filename_hidden'] = $_FILES['filename']['name'];
+					$uploadfile = $_FILES['filename']['name'];
+					$doc_parameters=array();
+					$array_file = explode('.',$uploadfile);
+					$doc_parameters['notes_title']= $array_file[0];
+					$doc_parameters['notecontent'] = 'Web Form Request: '.$parameters['description'];
+					$doc_parameters['filestatus'] = 1;
+					$doc_parameters['filelocationtype']='I';
+					$doc_parameters['assigned_user_id']=$parameters['assigned_user_id'];
+					$doc_parameters['folderid']='22x26';
+					$doc_record = vtws_create('Documents' , $doc_parameters, $user);
+					$doc_id = $doc_record['id'];
+					$leadIdComponents = vtws_getIdComponents($entity_id);
+					$leadId = $leadIdComponents[1];
+					$docIdComponents = vtws_getIdComponents($doc_id);
+					$docId = $docIdComponents[1];
+					vtws_insertWebserviceRelatedNotes($leadId, $docId);
+				}				
 				$leadIdComponents = vtws_getIdComponents($entity_id);
 				$leadId = $leadIdComponents[1];
-				$docIdComponents = vtws_getIdComponents($doc_id);
-				$docId = $docIdComponents[1];
-				vtws_insertWebserviceRelatedNotes($leadId, $docId);
+				if( isset($leadId) && $leadId > 0 )
+				{
+					$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters,  'Richiesta Consulenze (Form)','Consulenza - Web');
+					$bFound = $retval[0];
+					if($bFound)
+					{	
+						$sqlupdate = "UPDATE ".$table_prefix."_leadscf
+										SET ".$table_prefix."_leadscf.cf_808 = DATEDIFF(s, '1970-01-01 00:00:00', ".$table_prefix."_crmentity.createdtime )
+										FROM ".$table_prefix."_leadscf 
+										JOIN ".$table_prefix."_crmentity ON   ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid and ".$table_prefix."_crmentity.deleted = 0 
+										WHERE ".$table_prefix."_leadscf.cf_808 = 0 AND ".$table_prefix."_leadscf.leadid = ?";
+						$adb->pquery($sqlupdate,array($leadId));
+					}
+				}
 			}
-			
-			
+			// danzi.tn@20140310 e			
 			$this->sendResponse($returnURL, 'ok');
 			return;
 

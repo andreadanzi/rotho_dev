@@ -187,11 +187,10 @@ class RothoBus {
 		return $ret_val;
 	}
 	
-	// danzi.tn@20131213 
-	function check_web_form($email, $parms, $form_type='Form Fiere',$acc_no="") {
+	// danzi.tn@20140310 Modifica gestione RothoBUS per Consulenze WEB (non bisogna più creare Lead se esiste e-mail)
+	function check_web_form($email, $parms, $form_type='Form Fiere',$activitytype = "Contatto - Fiera",$acc_no="") {
 		$bFound = false;
 		$activitysubject = "Contatto " .$parms['leadsource'].  ": ".$parms['firstname']." " .$parms['lastname']." - ".$parms['email'];
-		$activitytype = "Contatto - Fiera";
 		$activitydescr = $parms['description'];
 		$activitydescr .= "\n********************\nNominativo: ".$parms['firstname']." " .$parms['lastname'];
 		$activitydescr .= "\nAzienda: ".$parms['company'];
@@ -213,7 +212,11 @@ class RothoBus {
 				foreach($entities as $entitykey=>$entity) {
 					$bFound = true;
 					$entity->mode = 'edit';
-					$idtarget = strtolower (str_replace(' ', '_',$parms['leadsource']));
+					if(!empty($parms['idtarget'])) {
+						$idtarget = $parms['idtarget'];
+					} else {
+						$idtarget = strtolower (str_replace(' ', '_',$parms['leadsource']));
+					}
 					$ret_id_targets = array(
 						$idtarget => 1
 					);
@@ -224,7 +227,8 @@ class RothoBus {
 				}
 			}
 		}
-		return $bFound;
+		// danzi.tn@20140310 gestione return modificato da Rotho BUS
+		return array($bFound,$entity_ids);
 	}
 	// danzi.tn@20131213e 
 	
@@ -801,7 +805,7 @@ class RothoBus {
 	
 	// provides the sql query string for retrieving data from web_temp_tt_address
 	private function _get_web_temp_tt_address() {
-		$wsquery = "select uid, pid, name, first_name, last_name, email, phone, mobile, www, address, company, city, zip, region, country, description, fax,  'web' as type 
+		$wsquery = "select uid, pid, name, SUBSTRING( first_name,0,20) AS first_name, SUBSTRING(last_name,0,30) AS last_name, email, phone, mobile, www, address, company, city, zip, region, country, description, fax,  'web' as type 
 					, CASE WHEN pid in (".implode(", ",$this->pids_list_corso).") THEN 'Corso' WHEN pid in (".implode(", ",$this->pids_list_download).") THEN 'Download' END as leadsource
 					, CASE WHEN pid in (".implode(", ",$this->pids_list_corso).") THEN 'Qualified' WHEN pid in (".implode(", ",$this->pids_list_download).") THEN 'Held' END as leadstatus
 					, '167' as assigned_user_id
@@ -824,7 +828,7 @@ class RothoBus {
 	}
 	
 	private function _get_web_temp_safe_tt_address() {
-			$wsquery = "select uid, pid, name, first_name, last_name, email, phone, mobile, www, address, company, city, zip, region, country, description, fax,  'web' as type 
+			$wsquery = "select uid, pid, name, SUBSTRING( first_name,0,20) AS first_name, SUBSTRING(last_name,0,30) AS last_name, email, phone, mobile, www, address, company, city, zip, region, country, description, fax,  'web' as type 
 					, CASE WHEN pid in (".implode(", ",$this->pids_list_newsletter).") THEN 'Newsletter Safe' ELSE 'ND' END as leadsource
 					, CASE WHEN pid in (".implode(", ",$this->pids_list_newsletter).") THEN 'Qualified' ELSE 'ND' END as leadstatus
 					, '167' as assigned_user_id
@@ -958,7 +962,7 @@ class RothoBus {
 	
 	// provides the sql query string for retrieving data from web_temp_fe_users danzi.tn@20140224 modifica per safe country a 3 caratteri
 	private function _get_web_temp_fe_users() {
-		$wsquery = "select uid, pid, name, first_name, last_name, email, phone, mobile, www, address, company, city, zip, region, temp_country_iso.iso2 as country, description, fax,  'safe' as type 
+		$wsquery = "select uid, pid, name, SUBSTRING( first_name,0,20) AS first_name, SUBSTRING(last_name,0,30) AS last_name, email, phone, mobile, www, address, company, city, zip, region, temp_country_iso.iso2 as country, description, fax,  'safe' as type 
 					, 'RothoSafe' AS leadsource 
 					, 'Held' as leadstatus
 					, '167' as assigned_user_id

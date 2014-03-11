@@ -24,6 +24,7 @@ include_once 'plugins/erpconnector/RothoBus/RothoBusClass.php';
 class Webform_Capture {
 	
 	function captureNow($request) {
+		global $table_prefix, $adb;
 		$returnURL = false;
 		try {
 
@@ -90,7 +91,9 @@ class Webform_Capture {
 			$parameters['cf_728'] = 'ND';
 			$parameters['cf_733'] = 'ND';
 			$parameters['cf_756'] = 'ND';
-			$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
+			// danzi.tn@20140310 Modifica gestione RothoBUS per Consulenze WEB (non bisogna più creare Lead se esiste e-mail)
+			$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere',"Contatto - Fiera");
+			$bFound = $retval[0];
 			if(!$bFound)
 			{				
 				$record = vtws_create($webform->getTargetModule(), $parameters, $user);
@@ -99,7 +102,17 @@ class Webform_Capture {
 				$leadId = $leadIdComponents[1];
 				if( isset($leadId) && $leadId > 0 )
 				{
-					$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
+					$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere',"Contatto - Fiera");
+					$bFound = $retval[0];
+					if($bFound)
+					{	
+						$sqlupdate = "UPDATE ".$table_prefix."_leadscf
+										SET ".$table_prefix."_leadscf.cf_808 = DATEDIFF(s, '1970-01-01 00:00:00', ".$table_prefix."_crmentity.createdtime )
+										FROM ".$table_prefix."_leadscf 
+										JOIN ".$table_prefix."_crmentity ON   ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid and ".$table_prefix."_crmentity.deleted = 0 
+										WHERE ".$table_prefix."_leadscf.cf_808 = 0 AND ".$table_prefix."_leadscf.leadid = ?";
+						$adb->pquery($sqlupdate,array($leadId));
+					}
 				}
 			}
 			// danzi.tn@20131209 e
