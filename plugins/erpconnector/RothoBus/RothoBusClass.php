@@ -10,6 +10,7 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 // chdir(dirname(__FILE__) . '/../..');
+// danzi.tn@20140417 default newsletter permission a True
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -35,7 +36,7 @@ class RothoBus {
 	var $uids_array_safe_tt_address_skipped = Array();
 	var $mapping = Array();
 	var $group_mapping = Array();
-	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456);
+	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504);
 	var $pids_list_download = Array(137,139,141,143,200,205);
 	var $pids_list_newsletter = Array(124);
 	
@@ -389,6 +390,9 @@ class RothoBus {
 				$newLead->column_fields[$key] = $fe_user[$value];
 				if($this->log_active) echo "Setting ".$key."=".$fe_user[$value] . " \n";
 			}
+			// danzi.tn@20140417 default newsletter permission a True
+			$newLead->column_fields['newsletter_permission'] = '1';
+			// danzi.tn@20140417e
 			$newLead->save($module_name='Leads',$longdesc=false);
 			$this->ids_fe_user_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$fe_user['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
@@ -569,6 +573,9 @@ class RothoBus {
 					if( preg_match("/\b(corso|kurs|curso|incontro formativo)\b/i",$formula_corso) )	{
 						$formula = "Corso";
 					}
+					if( preg_match("/\b(2 pranzi)\b/i",$formula_corso) )	{
+						$formula .= " + 2 pranzi";
+					}
 					if( preg_match("/\b(cena|abendessen|cenas)\b/i",$formula_corso) )	{
 						$formula .= " + cena";
 					}
@@ -585,6 +592,9 @@ class RothoBus {
 						$formula .= " + 2 pernottamenti";
 					} elseif( preg_match("/\b(pernottamento|pernotto|übernachtung|noches)\b/i",$formula_corso) )	{
 						$formula .= " + pernottamento";
+					}
+					if( preg_match("/\b(transfer)\b/i",$formula_corso) )	{
+						$formula .= " + transfer";
 					}
 					// danzi.tn@20131029 e
 				}
@@ -625,6 +635,10 @@ class RothoBus {
 				$newLead->column_fields[$key] = $tt_address[$value];
 				if($this->log_active) echo "Setting lead(1) field ".$key."=".$tt_address[$value] . " \n";
 			}
+			
+			// danzi.tn@20140417 default newsletter permission a True
+			$newLead->column_fields['newsletter_permission'] = '1';
+			// danzi.tn@20140417e
 			$newLead->save($module_name='Leads',$longdesc=false);
 			$this->ids_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
@@ -664,6 +678,9 @@ class RothoBus {
 					$newLead->column_fields[$key] = $tt_address[$value];
 					if($this->log_active) echo "Setting lead(2) field ".$key."=".$tt_address[$value] . " \n";
 				}
+				// danzi.tn@20140417 default newsletter permission a True
+				$newLead->column_fields['newsletter_permission'] = '1';
+				// danzi.tn@20140417e
 				$newLead->save($module_name='Leads',$longdesc=false);
 				$this->ids_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 				$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
@@ -713,6 +730,9 @@ class RothoBus {
 				$newLead->column_fields[$key] = $tt_address[$value];
 				if($this->log_active) echo "Setting lead(1) field ".$key."=".$tt_address[$value] . " \n";
 			}
+			// danzi.tn@20140417 default newsletter permission a True
+			$newLead->column_fields['newsletter_permission'] = '1';
+			// danzi.tn@20140417e
 			$newLead->save($module_name='Leads',$longdesc=false);
 			$this->ids_safe_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid' => $tt_address['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
@@ -748,6 +768,9 @@ class RothoBus {
 					$newLead->column_fields[$key] = $tt_address[$value];
 					if($this->log_active) echo "Setting lead(2) field ".$key."=".$tt_address[$value] . " \n";
 				}
+				// danzi.tn@20140417 default newsletter permission a True
+				$newLead->column_fields['newsletter_permission'] = '1';
+				// danzi.tn@20140417e
 				$newLead->save($module_name='Leads',$longdesc=false);
 				$this->ids_safe_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 				$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);

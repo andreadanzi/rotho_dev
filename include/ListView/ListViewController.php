@@ -428,7 +428,8 @@ class ListViewController {
 					}else {
 						$value = ' --';
 					}
-				}elseif ($field->getFieldDataType() == 'picklist') {
+				//crmv@sdk-18509 e
+				} elseif ($field->getFieldDataType() == 'picklist') {
 					//crmv@27889
 					$value = correctEncoding($value);
 					if ($value != '' && !$is_admin && $this->picklistRoleMap[$fieldName] &&
@@ -697,6 +698,7 @@ class ListViewController {
 				$value = "$value <span type='vtlib_metainfo' vtrecordid='{$recordId}' vtfieldname=".
 					"'{$fieldName}' vtmodule='$module' style='display:none;'></span>";
 				// END
+				
 				$row[] = $value;
 			}
 

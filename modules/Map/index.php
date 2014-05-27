@@ -574,6 +574,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
 
 </script>
 <!--18052012 Andrea INIZIO -->
+<!-- danzi.tn@20140417 telefono (Account_phone) per infowindows aziende -->
 <script type="text/javascript" class="source below"> 
 $(function () {
 
@@ -586,12 +587,13 @@ $(function () {
             provincia = $( "#provincia" ),
             cap = $( "#cap" ),
             stato = $( "#stato" ),
+            account_phone = $( "#account_phone" ),
             do_geocode = $( "#do_geocode" ),
             lat_geocode = $( "#lat_geocode" ),
             lon_geocode = $( "#lon_geocode" ),
             esistente = $( "#esistente" ),
             entity_id = $( "#entity_id" ),
-            allFields = $( [] ).add( indirizzo ).add( citta ).add( provincia ).add( cap ).add( stato ).add( do_geocode ),
+            allFields = $( [] ).add( indirizzo ).add( citta ).add( provincia ).add( cap ).add( stato ).add( account_phone ).add( do_geocode ),
             tips = $( ".validateTips" );
  
         function updateTips( t ) {
@@ -697,7 +699,8 @@ $(function () {
 									result["state"] = provincia.val();
 									result["country"] = stato.val();
 									result["street"] = indirizzo.val();
-									result["extra"] = result['street'] + "<br/>" + result['code'] + " "+ result['city'] + "(" + result["state"] + ")";
+									result["account_phone"] = account_phone.val();
+									result["extra"] = result['street'] + "<br/>" + result['code'] + " "+ result['city'] + "(" + result["state"] + ")"+ "<br/>" + result["account_phone"];
 									contentString = getDescription(map_id, pos ,result["name"] ,result["type"] ,result["map_value"],result["city"],result["extra"],result["map_aurea"],result);
 									var infowindow = new google.maps.InfoWindow;
 									bindInfoW(local_markersArray[i], contentString, infowindow);

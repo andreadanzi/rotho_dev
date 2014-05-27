@@ -289,7 +289,9 @@
                                              {elseif $keyid eq 80} <!--SalesOrderPopup-->
                                                   <td width=25% class="dvtCellInfo" align="left" id="mouseArea_{$label}">&nbsp;<a href="{$keyseclink}">{$keyval}</a>
                                                   </td>
-					     {elseif $keyid eq '52' || $keyid eq '77'} 
+												  {*danzi.tn@20140220*}
+					     {elseif $keyid eq '52' || $keyid eq '77' || $keyid eq '1077'} 
+													<!-- danzi.tn@20140220 -->
                                                                 <td width=25% class="dvtCellInfo" align="left" id="mouseArea_{$label}" onmouseover="hndMouseOver({$keyid},'{$label}');" onmouseout="fnhide('crmspanid');">&nbsp;<span id="dtlview_{$label}">{$keyval}</span>
                                                         <div id="editarea_{$label}" style="display:none;">
                                                                            <select id="txtbox_{$label}" name="{$keyfldname}">
@@ -304,6 +306,7 @@
                                                            <a href="javascript:;" onclick="hndCancel('dtlview_{$label}','editarea_{$label}','{$label}')" class="link">{$APP.LBL_CANCEL_BUTTON_LABEL}</a>
                                                                         </div>
                                                                 </td>	
+													<!-- danzi.tn@20140220end -->
 						{* crmv@31171 *}
 						{elseif $keyid eq '53'} <!--Assigned To-->
 							{php}$this->assign('JSON',new Zend_Json());{/php}

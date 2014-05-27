@@ -154,6 +154,10 @@
 									<option value="CREATEINT,HelpDesk,FROM" {if $RULEACTIONTEXT eq 'CREATEINT,HelpDesk,FROM'}selected=true{/if}
 									>{$MOD.LBL_CREATE} {$MOD.LBL_TICKET} (Interni)</option>
 									{*//danzi.tn@20140207 e*}									
+									{*//danzi.tn@20140407*}
+									<option value="CREATERUMO,Rumors,FROM" {if $RULEACTIONTEXT eq 'CREATERUMO,Rumors,FROM'}selected=true{/if}
+									>{$MOD.LBL_CREATE} Rumors</option>
+									{*//danzi.tn@20140407 e*}									
 									<option value="CREATE,HelpDesk,FROM" {if $RULEACTIONTEXT eq 'CREATE,HelpDesk,FROM'}selected=true{/if}
 									>{$MOD.LBL_CREATE} {$MOD.LBL_TICKET}</option>
 									<option value="UPDATE,HelpDesk,SUBJECT" {if $RULEACTIONTEXT eq 'UPDATE,HelpDesk,SUBJECT'}selected=true{/if}

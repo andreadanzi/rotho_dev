@@ -1,4 +1,6 @@
 <?php
+
+// danzi.tn@20140213  - bisogna aggiungere il criterio vtiger_contactscf.cf_1229 <> 'XXX' in produzione è cf_1229 in _test è cf_1239
 function do_export_contacts($time_start) {
 	global $adb,$seq_log,$current_user,$root_directory;	
 	$invalid_characters = array("$", "%", "#", "<", ">", "|","\n","\r");
@@ -49,7 +51,7 @@ function do_export_contacts($time_start) {
 		vtiger_contactdetails
 		INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0
 		INNER JOIN vtiger_contactaddress ON vtiger_contactaddress.contactaddressid = vtiger_contactdetails.contactid
-		INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+		INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 		INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>''
 	";
 	$fp = fopen($exportdir.'01x_import_contatto.csv', 'w');
@@ -99,7 +101,7 @@ function do_export_contacts($time_start) {
 		vtiger_contactdetails
 		INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0
 		INNER JOIN vtiger_contactaddress ON vtiger_contactaddress.contactaddressid = vtiger_contactdetails.contactid
-		INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+		INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 		INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>''
 		WHERE vtiger_contactdetails.ext_code IS NULL OR vtiger_contactdetails.ext_code = ''
 	";
@@ -118,7 +120,7 @@ function do_export_contacts($time_start) {
 		AS number, vtiger_contactdetails.email as contact_value, 'true' as preferred ,'300' as contact_type
 	from vtiger_contactdetails 
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>'' 
 	where vtiger_contactdetails.email is not null and  vtiger_contactdetails.email <>''
 	union
@@ -133,7 +135,7 @@ function do_export_contacts($time_start) {
 		AS number, vtiger_contactdetails.otheremail as contact_value,'true' as preferred , '310' as contact_type
 	from vtiger_contactdetails 
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>'' 
 	where  vtiger_contactdetails.otheremail is not null and  vtiger_contactdetails.otheremail <>''
 	union
@@ -148,7 +150,7 @@ function do_export_contacts($time_start) {
 		AS number, vtiger_contactdetails.fax as contact_value, 'true' as preferred ,'200' as contact_type
 	from vtiger_contactdetails 
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>'' 
 	where  vtiger_contactdetails.fax is not null and  vtiger_contactdetails.fax <>''
 	union
@@ -163,7 +165,7 @@ function do_export_contacts($time_start) {
 		AS number, vtiger_contactdetails.phone as contact_value, 'true' as preferred , '100' as contact_type
 	from vtiger_contactdetails 
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>'' 
 	where  vtiger_contactdetails.phone is not null and  vtiger_contactdetails.phone <>''
 	union
@@ -178,7 +180,7 @@ function do_export_contacts($time_start) {
 		AS number, vtiger_contactdetails.mobile as contact_value, 'true' as preferred , '120' as contact_type
 	from vtiger_contactdetails 
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>''
 	where  vtiger_contactdetails.mobile is not null and  vtiger_contactdetails.mobile <>''
 	union
@@ -194,7 +196,7 @@ function do_export_contacts($time_start) {
 	from vtiger_contactdetails
 	INNER JOIN vtiger_contactsubdetails on vtiger_contactsubdetails.contactsubscriptionid = vtiger_contactdetails.contactid and  vtiger_contactsubdetails.homephone  is not null and  vtiger_contactsubdetails.homephone  <>''
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>'' 
 	ORDER BY number
 	";
@@ -224,7 +226,7 @@ function do_export_contacts($time_start) {
 	from vtiger_contactdetails
 	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid AND vtiger_crmentity.deleted = 0 
 	INNER JOIN vtiger_account ON vtiger_account.accountid = vtiger_contactdetails.accountid AND vtiger_account.external_code IS NOT NULL AND vtiger_account.external_code <>'' 
-	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(hour,1,vtiger_contactscf.cf_1170) < vtiger_crmentity.modifiedtime ))
+	INNER JOIN vtiger_contactscf ON vtiger_contactscf.contactid = vtiger_contactdetails.contactid AND (vtiger_contactscf.cf_1229 IS NULL OR vtiger_contactscf.cf_1229 <> 'XXX')  AND (vtiger_contactscf.cf_1170 IS NULL OR ( DATEADD(second,75,vtiger_contactscf.cf_1170) < DATEADD(hh, DATEDIFF(hh, GETDATE(), GETUTCDATE())-1,vtiger_crmentity.modifiedtime) ))
 	order by account_no
 	";
 	$fp = fopen($exportdir.'03x_import_contatto_collegamenti.csv', 'w');

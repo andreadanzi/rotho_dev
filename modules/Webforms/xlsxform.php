@@ -173,10 +173,10 @@ class Xlsx_File_Form_Import {
 				$cell = $objWorksheet->getCell('B'.$row);
 				$con_parameters['salutationtype'] = trim($cell->getValue());
 				$cell = $objWorksheet->getCell('C'.$row);
-				$con_parameters['firstname'] = trim($cell->getValue());
+				$con_parameters['firstname'] = substr(trim($cell->getValue()),0,20);
 				$parameters['firstname'] = $con_parameters['firstname'];
 				$cell = $objWorksheet->getCell('D'.$row);
-				$con_parameters['lastname'] = trim($cell->getValue());
+				$con_parameters['lastname'] = substr(trim($cell->getValue()),0,30);
 				$parameters['lastname'] = $con_parameters['lastname'];
 				$cell = $objWorksheet->getCell('J'.$row);
 				$acc_parameters['phone'] = trim($cell->getValue());
@@ -208,6 +208,12 @@ class Xlsx_File_Form_Import {
 				$account_no = trim($cell->getValue());
 				$cell = $objWorksheet->getCell('O'.$row);
 				$username = trim($cell->getValue());
+				$cell = $objWorksheet->getCell('Q'.$row); // danzi.tn@20140129 aggiunti tre nuovi parametri otherphone mobile description
+				$acc_parameters['otherphone'] = trim($cell->getValue());
+				$con_parameters['mobile'] = trim($cell->getValue());
+				$cell = $objWorksheet->getCell('R'.$row);
+				$acc_parameters['description'] = trim($cell->getValue());
+				$con_parameters['description'] = trim($cell->getValue()); // danzi.tn@20140129 aggiunti tre  nuovi parametri
 				// Retrieve user information
 				$user = CRMEntity::getInstance('Users');
 				$user->id = $user->retrieve_user_id($username);
@@ -235,6 +241,9 @@ class Xlsx_File_Form_Import {
 					if( isset($accId) && $accId > 0 )
 					{
 						vtws_insertWebserviceRelatedNotes($accId, $docId);
+						if(empty($con_parameters['lastname'])) $con_parameters['lastname'] = $acc_parameters['accountname'];
+						if(empty($con_parameters['mobile'])) $con_parameters['mobile'] = "+39";
+						if(empty($con_parameters['phone'])) $con_parameters['phone'] = $con_parameters['mobile'];
 						$con_parameters['account_id'] = $acc_record['id']; 
 						$con_parameters['email'] = $acc_parameters['email1'];
 						$con_record = vtws_create('Contacts' , $con_parameters, $this->adminuser);

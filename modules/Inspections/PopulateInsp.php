@@ -30,13 +30,13 @@ class Inspections_Populate {
 
 			if(!vtlib_isModuleActive('Inspections')) throw new Exception('Inspections is not active');
 			
-
+			// danzi.tn@20140411 update product category 
 			// Retrieve user information
 			$user = CRMEntity::getInstance('Users');
 			$user->id=$user->getActiveAdminId();
 			$user->retrieve_entity_info($user->id, 'Users');
 			global $adb, $current_user;
-			global $table_prefix, $cf_product_category, $cf_account_category,$cf_account_base_language, $insp_activitytype,$insp_eventstatus;
+			global $table_prefix,  $cf_account_category,$cf_account_base_language, $insp_activitytype,$insp_eventstatus;
 			$interval = "12 MONTH";
 			$query = "
 				select 
@@ -52,7 +52,7 @@ class Inspections_Populate {
 					".$table_prefix."_crmentity.modifiedtime AS modifiedtime,
 					case when ".$table_prefix."_products.productid is not null then ".$table_prefix."_products.productid else ".$table_prefix."_service.serviceid end as productid, 
 					case when ".$table_prefix."_products.productid is not null then ".$table_prefix."_products.productname else ".$table_prefix."_service.servicename end as product_description, 
-					case when ".$table_prefix."_productcf.productid is not null then ".$table_prefix."_productcf.".$cf_product_category." else 'ND' end as product_category, -- cf_803
+					case when ".$table_prefix."_products.productid is not null then ".$table_prefix."_products.product_cat else 'ND' end as product_category, 
 					case when ".$table_prefix."_products.productid is not null then ".$table_prefix."_products.vendor_id else 'ND' end as vendor_id, 
 					".sql_date_add($table_prefix).", -- Verificare qual'è la data dell'Ordine di vendita e come calcolare la due_date
 					'Aperta' AS inspection_state, -- Eventualmente calcolare se in scadenza
@@ -71,7 +71,6 @@ class Inspections_Populate {
 				from ".$table_prefix."_inventoryproductrel 
 				left join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_inventoryproductrel.id 
 				left join ".$table_prefix."_products on ".$table_prefix."_products.productid=".$table_prefix."_inventoryproductrel.productid 
-				left join ".$table_prefix."_productcf on ".$table_prefix."_productcf.productid=".$table_prefix."_inventoryproductrel.productid 
 				left join ".$table_prefix."_service on ".$table_prefix."_service.serviceid=".$table_prefix."_inventoryproductrel.productid  
 				left join ".$table_prefix."_salesorder on ".$table_prefix."_salesorder.salesorderid=".$table_prefix."_inventoryproductrel.id  
 				left join ".$table_prefix."_inspections on ".$table_prefix."_inspections.salesorderid = ".$table_prefix."_salesorder.salesorderid 

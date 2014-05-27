@@ -1,6 +1,6 @@
 <?php
 
-$cf_product_category='cf_803'; // cf_796 ROTHO -- cf_803
+// danzi.tn@20140411 update product category
 $cf_account_category='cf_762'; // cf_799 ROTHO -- cf_762
 $cf_account_base_language = 'cf_1113'; // cf_851  ROTHO = cf_1113 ROTHO_test = cf_1120
 $insp_activitytype = 'Revisione (Auto-gen)';

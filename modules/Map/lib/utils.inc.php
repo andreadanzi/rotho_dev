@@ -1,4 +1,5 @@
 <?php
+// danzi.tn@20140417 telefono (Account_phone) per infowindows aziende
 
 function getSkippedAccounts($ids)
 {
@@ -36,7 +37,7 @@ function getSkippedAccounts($ids)
 			"street" => addslashes(ucwords(strtolower(str_replace($vowels, "",$row['street'])))),
 			"state" => addslashes(ucwords(strtolower($row['state']))),
 			"code" => addslashes(ucwords(strtolower($row['code']))),
-			"extra" => addslashes(ucwords(strtolower($row['street']."<br/>".$row['code']." ".$row['city'])).$state), 
+			"extra" => addslashes(ucwords(strtolower($row['street']."<br/>".$row['code']." ".$row['city'])).$state."<br/>".$row['account_phone']), 
 			"country" => addslashes($row['country'])
 		);
 	}
@@ -73,12 +74,13 @@ function getResult($gc,$query)
 						"type" => addslashes($row['type']), // Andrea Danzi aggiunto type - 24.03.2012
 						"map_value" => addslashes($row['map_value']), // Andrea Danzi aggiunto map_value - 26.03.2012
 						"city" => addslashes(ucwords(strtolower($row['city']))),
-						"extra" => addslashes(ucwords(strtolower($row['street']."<br/>".$row['code']." ".$row['city'])).$state.$approx), 
+						"extra" => addslashes(ucwords(strtolower($row['street']."<br/>".$row['code']." ".$row['city'])).$state.$approx."<br/>".$row['account_phone']), 
 						"map_aurea" => addslashes($row['map_aurea']), // Andrea Danzi aggiunto map_value - 26.03.2012
 						"lat" => $coord->latitude,
 						"lng" => $coord->longitude,
 						"street" => addslashes(ucwords(strtolower(str_replace($vowels, "",$row['street'])))),
 						"state" => $row['state'],
+						"account_phone" => $row['account_phone'],
 						"code" => $row['code'],
 						"country" => $row['country']
 					);
@@ -96,6 +98,7 @@ function getResult($gc,$query)
 						"street" => addslashes(ucwords(strtolower(str_replace($vowels, "",$row['street'])))),
 						"state" => $row['state'],
 						"code" => $row['code'],
+						"account_phone" => $row['account_phone'],
 						"country" => $row['country']
                                         );	
 		if($gc->needsDelay()) usleep($gc->getDelay());
@@ -116,60 +119,58 @@ function getResults($type,$ids,$extra_ids=null,$prod_id=null,$mindate=null,$maxd
 	switch($type)
 	{
 		case "Potentials":
-			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, cf_762 as type, sum( amount ) AS map_value ,CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea  from vtiger_potential join vtiger_accountbillads on vtiger_potential.related_to=vtiger_accountbillads.accountaddressid join vtiger_account on vtiger_account.accountid=vtiger_potential.related_to join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_potential.related_to WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto type - 24.03.2012
+			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, cf_762 as type, sum( amount ) AS map_value ,CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone from vtiger_potential join vtiger_accountbillads on vtiger_potential.related_to=vtiger_accountbillads.accountaddressid join vtiger_account on vtiger_account.accountid=vtiger_potential.related_to join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_potential.related_to WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto type - 24.03.2012
 			if($ids)
 				$query .= "AND potentialid in ($ids) ";
-			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code, bill_city, bill_country, bill_state, bill_street, potentialtype, external_code ORDER BY map_value ASC"; //
+			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code, bill_city, bill_country, bill_state, bill_street, potentialtype, external_code, vtiger_account.phone ORDER BY map_value ASC"; //
 		break;
 		case "HelpDesk":
 			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, cf_762 as type,  CASE priority 
 WHEN \"Urgent\" THEN 10000000 
 WHEN \"High\" THEN 100000 
 WHEN \"Normal\" THEN 10000 
-WHEN \"Low\" THEN 1000 END as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea from vtiger_troubletickets join vtiger_account on parent_id=vtiger_account.accountid  join vtiger_accountbillads on vtiger_account.accountid=accountaddressid join vtiger_accountscf on parent_id=vtiger_accountscf.accountid WHERE ticketid in ($ids) AND bill_code IS NOT NULL AND bill_city IS NOT NULL
+WHEN \"Low\" THEN 1000 END as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone from vtiger_troubletickets join vtiger_account on parent_id=vtiger_account.accountid  join vtiger_accountbillads on vtiger_account.accountid=accountaddressid join vtiger_accountscf on parent_id=vtiger_accountscf.accountid WHERE ticketid in ($ids) AND bill_code IS NOT NULL AND bill_city IS NOT NULL
 			UNION
 			select contactid as id,concat(firstname,' ',lastname) as name, mailingzip as code, mailingcity as city,mailingcountry as country,mailingstate as state,mailingstreet as street, cf_762 as type, CASE priority 
 WHEN \"Urgent\" THEN 10000000 
 WHEN \"High\" THEN 100000 
 WHEN \"Normal\" THEN 10000 
-WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea from vtiger_troubletickets join vtiger_contactdetails on parent_id=contactid join vtiger_contactaddress on contactid=contactaddressid join vtiger_accountscf on vtiger_contactdetails.accountid =vtiger_accountscf.accountid WHERE  mailingzip IS NOT NULL AND mailingcity IS NOT NULL "; // Andrea Danzi aggiunto type - 24.03.2012
+WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetails.phone as account_phone from vtiger_troubletickets join vtiger_contactdetails on parent_id=contactid join vtiger_contactaddress on contactid=contactaddressid join vtiger_accountscf on vtiger_contactdetails.accountid =vtiger_accountscf.accountid WHERE  mailingzip IS NOT NULL AND mailingcity IS NOT NULL "; // Andrea Danzi aggiunto type - 24.03.2012
 			if($ids)
                         	$query .= " AND ticketid in ($ids) ";
 		break;
 		case "Accounts":
-			$query = "select accountname as name, accountaddressid as id, bill_city as city, bill_code as code, bill_country as country, bill_state as state, bill_street as street,  cf_762 as type, annualrevenue as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea from vtiger_accountbillads INNER JOIN vtiger_crmentity ON accountaddressid=vtiger_crmentity.crmid  join vtiger_account on accountaddressid= vtiger_account.accountid join vtiger_accountscf on accountaddressid=vtiger_accountscf.accountid"; // Andrea Danzi aggiunto cf_762 (dovrà essere modificato per RB in  cf_762) as type - 24.03.2012
+			$query = "select accountname as name, accountaddressid as id, bill_city as city, bill_code as code, bill_country as country, bill_state as state, bill_street as street,  cf_762 as type, annualrevenue as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone from vtiger_accountbillads INNER JOIN vtiger_crmentity ON accountaddressid=vtiger_crmentity.crmid  join vtiger_account on accountaddressid= vtiger_account.accountid join vtiger_accountscf on accountaddressid=vtiger_accountscf.accountid"; // Andrea Danzi aggiunto cf_762 (dovrà essere modificato per RB in  cf_762) as type - 24.03.2012
 			if($extra_ids)
 			{
 				$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_accountscf.cf_762 as type ,
-sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea 
+sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea , vtiger_account.phone as account_phone
 from vtiger_salesorder 
 INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid  
 join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid 
 join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid 
 join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid 
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
-left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid 
-left join vtiger_productcf on vtiger_productcf.productid = vtiger_inventoryproductrel.productid";
+left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid";
 			}
 			if($prod_id)
 			{
 				$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_accountscf.cf_762 as type ,
-sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea
+sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
 from vtiger_salesorder 
 INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid 
 join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid 
 join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid 
 join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid 
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
-left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid 
-left join vtiger_productcf on vtiger_productcf.productid = vtiger_inventoryproductrel.productid";
+left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid";
 			}
 			if($ids)
 			{
 			 	$query .= " WHERE vtiger_crmentity.deleted=0 AND vtiger_accountbillads.accountaddressid in ($ids)";
 				if($extra_ids)
 				{
-					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_salesorder.accountid in ($ids) AND vtiger_productcf.cf_803 LIKE '$extra_ids%' ";
+					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_salesorder.accountid in ($ids) AND vtiger_products.product_cat LIKE '$extra_ids%' ";
 					if($mindate) {
 						$query .= " AND data_ordine_ven >='$mindate' ";
 					}
@@ -177,7 +178,7 @@ left join vtiger_productcf on vtiger_productcf.productid = vtiger_inventoryprodu
 						$query .= " AND data_ordine_ven <='$maxdate' ";
 					}
 
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code"; //
+					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code, vtiger_account.phone"; //
 					
 				}
 				if($prod_id)
@@ -190,21 +191,21 @@ left join vtiger_productcf on vtiger_productcf.productid = vtiger_inventoryprodu
 					if($maxdate) {
 						$query .= " AND data_ordine_ven <='$maxdate' ";
 					}
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code"; //
+					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code, vtiger_account.phone"; //
 					
 				}
 			} else {
 				
 				if($extra_ids)
 				{
-					$query .= " WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_productcf.cf_803 LIKE '$extra_ids%' ";
+					$query .= " WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.product_cat LIKE '$extra_ids%' ";
 					if($mindate) {
 						$query .= " AND data_ordine_ven >='$mindate' ";
 					}
 					if($maxdate) {
 						$query .= " AND data_ordine_ven <='$maxdate' ";
 					}
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code"; //
+					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code, vtiger_account.phone"; //
 					
 				}
 				if($prod_id)
@@ -218,23 +219,23 @@ left join vtiger_productcf on vtiger_productcf.productid = vtiger_inventoryprodu
 						$query .= " AND data_ordine_ven <='$maxdate' ";
 					}
 
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code"; //
+					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_accountscf.cf_762, vtiger_account.external_code, vtiger_account.phone"; //
 					
 				}
 			}
 			$query .= " ORDER BY map_value ASC";
 		break;
 		case "SalesOrder":
-			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, cf_762 as type ,sum(total) as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea from vtiger_salesorder join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto map_value - 26.03.2012 sum(total) oppure anche sum(subtotal) 
+			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, cf_762 as type ,sum(total) as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea , vtiger_account.phone as account_phone from vtiger_salesorder join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto map_value - 26.03.2012 sum(total) oppure anche sum(subtotal) 
 			if($ids)
 				$query .= "AND salesorderid in ($ids) ";
-			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.external_code"; //
+			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.external_code, vtiger_account.phone"; //
 			$query .= " ORDER BY map_value ASC";
 			//$query .= " ORDER BY map_value ASC"; Andrea Danzi aggiunto Group By - 26.03.2012
 		break;
 		case "ProductCategory":
-			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_productcf.cf_803 as type ,
-sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea
+			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_products.product_cat as type ,
+sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
 from vtiger_salesorder
 inner join vtiger_crmentity on vtiger_salesorder.salesorderid = vtiger_crmentity.crmid  
 join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid 
@@ -242,11 +243,10 @@ join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid
 join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid 
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
 left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid 
-left join vtiger_productcf on vtiger_productcf.productid = vtiger_inventoryproductrel.productid
 WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto - 11.04.2012 
 			if($ids)
-				$query .= "AND vtiger_productcf.cf_803 LIKE '$ids%'"; //cf_803 x crm e cf_803 x rb
-			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.external_code"; //
+				$query .= "AND vtiger_products.product_cat LIKE '$ids%'"; 
+			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.external_code, vtiger_account.phone"; //
 			$query .= " ORDER BY map_value ASC";
 		break;
 		case "Leads":
@@ -289,13 +289,16 @@ function getValueSelectorOptions($type,$option_selected=null)
 }
 
 // 18052012 Andrea
+
+// danzi.tn@20140411 update product category 
 function getProductCategoryTree()
 {
 	global $adb;
 	$tree_string="";
 	$query = "SELECT DISTINCT class3 as categorycode, class1 as parentlevel1, class2 as parentlevel2, class_desc3 as categorydescr, class_desc1, class_desc2 
-	FROM erp_temp_crm_classificazioni , vtiger_productcf
-	WHERE erp_temp_crm_classificazioni.class3 = LEFT(vtiger_productcf.cf_803,8)
+	FROM erp_temp_crm_classificazioni 
+	JOIN vtiger_products ON vtiger_products.product_cat = erp_temp_crm_classificazioni.class3
+	JOIN vtiger_crmentity ON vtiger_crmentity.crmid  = vtiger_products.productid AND vtiger_crmentity.deleted = 0
 	ORDER BY parentlevel1 ASC, parentlevel2 ASC, categorycode ASC ";
 	$result = $adb->query($query);
 	$i_count = 0;
@@ -336,43 +339,6 @@ function getProductCategoryTree()
 	return $tree_string;
 }
 
-function getProductCategoryOptions($catCode,$type,$option_selected=null)
-{
-	$options_string="";
-	$query = "SELECT DISTINCT LEFT( vtiger_productcf.cf_803, 4) AS code FROM vtiger_productcf ORDER BY code ASC";
-	$result = $adb->query($query);
-	$i_count=0;
-	while($row=$adb->fetchByAssoc($result))
-	{
-		if(($catCode==null && $i_count==0) || ($catCode!=null && substr($row['code'],0,4)==$catCode) ) $options_string.="<option selected value=\"".substr($row['code'],0,4)."\">".substr($row['code'],0,4)."</option>";
-		else $options_string.="<option value=\"".substr($row['code'],0,4)."\">".substr($row['code'],0,4)."</option>";
-		$i_count++;
-	}
-
-
-	$retValue = "<option value=\"all\">Tutti</option>"; 
-	switch($type)
-	{
-		case "Potentials":
-			if( $option_selected=="ammontare") $retValue = "<option value=\"all\">Tutti i tipi di opportunità</option>";
-		break;
-		case "Accounts":
-			if( $option_selected=="productcat") $retValue = $options_string;
-		break;
-		case "HelpDesk":
-			if( $option_selected=="priority") $retValue = "<option value=\"all\">Tutte le priorità</option>";
-		break;
-		case "SalesOrder":
-			if( $option_selected=="defaultSO") $retValue = "<option value=\"all\">Tutti gli OV</option>";
-		break;
-		case "Leads":
-			if( $option_selected=="defaultLEA") $retValue = "<option value=\"all\">Tutti i tipi di Lead</option>";
-		break;
-	}
-	return $retValue;
-}
-
-
 function printResultLayer($results,$skippedAccs=null)
 {	
 	echo "var resultLayer = {\n";
@@ -391,6 +357,7 @@ function printResultLayer($results,$skippedAccs=null)
 		echo "\t'street': '{$result['street']}', \n";
 		echo "\t'country': '{$result['country']}', \n";
 		echo "\t'state': '{$result['state']}', \n";
+		echo "\t'account_phone': '{$result['account_phone']}', \n";
 		echo "\t'record_id': '{$key}', \n";
 		echo "\t'extra': '".str_replace(array("\r", "\r\n", "\n"), '', $result['extra'])."', \n";
 		echo "\t'pos': [{$result['lat']},{$result['lng']}], \n";
@@ -417,6 +384,7 @@ function printResultLayer($results,$skippedAccs=null)
 			echo "\t'street': '{$nresult['street']}', \n";
 			echo "\t'country': '{$nresult['country']}', \n";
 			echo "\t'state': '{$nresult['state']}', \n";
+			echo "\t'account_phone': '{$nresult['account_phone']}', \n";
 			echo "\t'extra': '".str_replace(array("\r", "\r\n", "\n"), '', $nresult['extra'])."', \n";
 			echo "\t},\n";
 		}

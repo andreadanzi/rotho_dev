@@ -5,6 +5,8 @@ $log_active = true;
 //modulo da importare:
 $module = 'Contacts';
 //array mappaggio campi: nome campo tabella di appoggio => fieldname di vtiger
+// danzi.tn@20140213 IMPORTFLAG Per distinguere i record modificati/creati dalla procedura di import produzione è cf_1229 in _test è cf_1239
+// danzi.tn@20140412 ORIG_PERSON_PARENT Per salvarsi il person_parent del contatto che va in cf_1249
 $mapping = Array(
 'PERSON_PARENT'=>'account_id',
 'PERSON_PARENT1'=>'assigned_user_id', //campo ghost
@@ -22,6 +24,8 @@ $mapping = Array(
 'PERSON_EMAILDUNNING'=>'cf_1017',
 'PERSON_EMAILTRACKING'=>'cf_1018',
 'INSERTDATE'=>'cf_1170',
+'IMPORTFLAG'=>'cf_1229', 
+'ORIG_PERSON_PARENT'=>'cf_1249',
 );
 //campo nella tabella di appoggio per identificare il codice esterno (sul quale l'import effettuerà la creazione/aggiornamento dei dati)
 $external_code = 'PERSON_NUMBER';

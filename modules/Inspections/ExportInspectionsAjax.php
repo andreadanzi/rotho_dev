@@ -46,6 +46,8 @@ if($action == 'InspectionsAjax')
 			$xlsStyle1_1 = new PHPExcel_Style();
 			$xlsStyle1_2 = new PHPExcel_Style();
 			$xlsStyle2_1 = new PHPExcel_Style();
+			$xlsStyle2_2 = new PHPExcel_Style();
+			$xlsStyle2_3 = new PHPExcel_Style();
 
 			$xlsStyle1->applyFromArray(
 				array('font' => array(
@@ -120,12 +122,35 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 10,
+					'size' => 12,
 					'color' => array( 'rgb' => 'FF6600' )
 					)
 				)
 			);
 
+			$xlsStyle2_2->applyFromArray(
+				array('font' => array(
+					'name' => 'Arial',
+					'bold' => true,
+					'size' => 11,
+					'color' => array( 'rgb' => '000000' )
+					)
+				)
+			);
+			
+			$xlsStyle2_3->applyFromArray(
+				array('font' => array(
+					'name' => 'Arial',
+					'bold' => true,
+					'size' => 11,
+					'color' => array( 'rgb' => '000000' )
+				),
+				'borders' => array(
+					'allborders' => array(
+						'style' => PHPExcel_Style_Border::BORDER_THIN )
+					)
+				)
+			);
 			
 			$log->debug("Entering ExportInspectionsAjax EXPORT");
 			$oCustomView = new CustomView($currentModule);
@@ -157,7 +182,7 @@ if($action == 'InspectionsAjax')
 			$objPageSetup = new PHPExcel_Worksheet_PageSetup();
 			$objPageSetup->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
 			$objPageSetup->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
-			$objPageSetup->setPrintArea("A1:K15");
+			$objPageSetup->setPrintArea("A1:I20");
 			$objPageSetup->setFitToWidth(1);
 			
 			$count = 0;
@@ -165,44 +190,95 @@ if($action == 'InspectionsAjax')
 			// $sheet1 = new PHPExcel_Worksheet($objPHPExcel, getTranslatedString('Inspections',$currentModule));
 			$sheet1->setTitle(getTranslatedString('Inspections',$currentModule));
 			$sheet1->getColumnDimension('A')->setWidth(23);
-			$sheet1->getColumnDimension('B')->setWidth(20);
+			$sheet1->getColumnDimension('B')->setWidth(35);
 			$sheet1->getColumnDimension('C')->setWidth(20);
-			$sheet1->getColumnDimension('D')->setWidth(20);
+			$sheet1->getColumnDimension('D')->setWidth(35);
 			$sheet1->getColumnDimension('E')->setWidth(20);
-			$sheet1->getColumnDimension('F')->setWidth(32);
-			$sheet1->getColumnDimension('G')->setWidth(15);
-			$sheet1->getColumnDimension('H')->setWidth(20);
-			$sheet1->getColumnDimension('I')->setWidth(20);
-			$sheet1->getColumnDimension('J')->setWidth(6);
-			$sheet1->getColumnDimension('K')->setWidth(50);
+			$sheet1->getColumnDimension('F')->setWidth(20);
+			$sheet1->getColumnDimension('G')->setWidth(32);
+			$sheet1->getColumnDimension('H')->setWidth(15);
+			$sheet1->getColumnDimension('I')->setWidth(40);
 			// $objPHPExcel->addSheet($sheet1);
-			$sheet1->setSharedStyle($xlsStyle2_1,'A3');
-			$sheet1->setCellValue('A3', getTranslatedString('MODULO REVISIONE DPI',$currentModule)); // #FF6600 arancio #FFFF00 giallo
-			$sheet1->setSharedStyle($xlsStyle1, 'A6:'.PHPExcel_Cell::stringFromColumnIndex(count($fields_array)-1).'6');
+			$sheet1->setSharedStyle($xlsStyle2_1,'A2');
+			$sheet1->setCellValue('A2', getTranslatedString('MODULO REVISIONE DPI',$currentModule)); // #FF6600 arancio #FFFF00 giallo
+			$sheet1->setSharedStyle($xlsStyle1, 'A6:I6');
 			$sheet1->setSharedStyle($xlsStyle1_1,'B6');
-			$sheet1->setSharedStyle($xlsStyle1_2,'E6:J6');
-			$sheet1->setSharedStyle($xlsStyle1_1,'K6');
+			$sheet1->setSharedStyle($xlsStyle1_2,'F6:H6');
+			$sheet1->setSharedStyle($xlsStyle1_1,'I6');
+			//Codice Articolo	Marca	Nr. Matricola	Data primo utilizzo	Data di Acquisto	Data Prossima Revisione	Esito	Nota
+			$sheet1->setCellValue('A6',"Codice Articolo");
+			$sheet1->setCellValue('B6',"Marca");
+			$sheet1->setCellValue('C6',"Nr. Matricola");
+			$sheet1->setCellValue('D6',"Descr. Articolo");
+			$sheet1->setCellValue('E6',"Data primo utilizzo");
+			$sheet1->setCellValue('F6',"Data di Acquisto");
+			$sheet1->setCellValue('G6',"Data Prossima Revisione");
+			$sheet1->setCellValue('H6',"Esito");
+			$sheet1->setCellValue('I6',"Nota");
+			/*
 			for($i=0; $i<count($fields_array); $i++) {
-				$translated_fields_array[$i] = getTranslatedString($fields_array[$i],$currentModule);
-				$sheet1->setCellValue(PHPExcel_Cell::stringFromColumnIndex($count).'6', $translated_fields_array[$i]);
-				$count = $count + 1;
-			}
+				if($i==0) {
+				}else if ($i==6) {
+				} else {
+					$translated_fields_array[$i] = getTranslatedString($fields_array[$i],$currentModule);
+					$sheet1->setCellValue(PHPExcel_Cell::stringFromColumnIndex($count).'6', $translated_fields_array[$i]);
+					$count = $count + 1;
+				}
+			}*/
 			$rowcount=7;
 			while($val = $adb->fetchByAssoc($result, -1, false)){
 				$dcount = 0;
 				foreach ($val as $key => $value){
 					// $value = decode_html($value);
-					if($key=='inspection_state') {
-						$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, getTranslatedString($value,$currentModule));
+					if($key == 'inspection_date') {
+						$inspection_date = $value;
+					} elseif($key== 'accountname') {
+						$account_name = $value;
+					//} elseif($key=='inspection_state') {
+					//	$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, getTranslatedString($value,$currentModule));
+					} elseif($key == 'salesdate') {
+						$my_date1 = strtotime( $value);
+						$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, PHPExcel_Shared_Date::PHPToExcel($my_date1));
+						$dcount = $dcount + 1;
+					} elseif($key == 'nextinspdate') {
+						$my_date2 = strtotime( $value);
+						$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, PHPExcel_Shared_Date::PHPToExcel($my_date2));
+						$dcount = $dcount + 1;
+					} elseif($key == 'first_time_use') {
+						if($value == "") {
+							$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, "ND");
+						} else {
+							$my_date3 = strtotime( $value);
+							$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, PHPExcel_Shared_Date::PHPToExcel($my_date3));
+						}
+						$dcount = $dcount + 1;
 					} else {
 						$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, $value);
+						$dcount = $dcount + 1;
 					}
-					$dcount = $dcount + 1;
 				}
 				$rowcount++;
 			}
+			$sheet1->setSharedStyle($xlsStyle2_2,'F2');
+			$sheet1->setCellValue('F2', getTranslatedString('Cliente:',$currentModule));
+			$sheet1->mergeCells('G2:H2');
+			$sheet1->setSharedStyle($xlsStyle2_3,'G2:H2');
+			$sheet1->setCellValue('G2', $account_name);
+			$sheet1->setSharedStyle($xlsStyle2_2,'F4');
+			$sheet1->setCellValue('F4', getTranslatedString('Data di Revisione:',$currentModule));
+			$sheet1->setSharedStyle($xlsStyle2_3,'G4');
+			// $sheet1->setCellValue('G4', $inspection_date);
+			$my_date = strtotime($inspection_date);
+			$sheet1->setCellValue('G4', PHPExcel_Shared_Date::PHPToExcel($my_date));
+			$sheet1->getStyle('G4')->getNumberFormat()->setFormatCode('dd.mm.yyyy');
+			//$sheet1->setCellValue('G4', $inspection_date);
 			if($rowcount>2) $rowcount=$rowcount-1;
-			$sheet1->setSharedStyle($xlsStyle2, 'A7:'.PHPExcel_Cell::stringFromColumnIndex(count($fields_array)-1).$rowcount);
+			$sheet1->setSharedStyle($xlsStyle2, 'A7:I'.$rowcount);
+			for($i=7;$i<=$rowcount; $i++) {
+				$sheet1->getStyleByColumnAndRow(4, $i)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
+				$sheet1->getStyleByColumnAndRow(5, $i)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
+				$sheet1->getStyleByColumnAndRow(6, $i)->getNumberFormat()->setFormatCode('mmmm-yyyy');
+			}
 			// firm
 			$gdImage = imagecreatefromjpeg('images/rothoblaas.jpg');
 			$objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
@@ -212,7 +288,8 @@ if($action == 'InspectionsAjax')
 			$objDrawing->setRenderingFunction(PHPExcel_Worksheet_MemoryDrawing::RENDERING_JPEG);
 			$objDrawing->setMimeType(PHPExcel_Worksheet_MemoryDrawing::MIMETYPE_DEFAULT);
 			$objDrawing->setHeight(70);
-			$objDrawing->setCoordinates('I1');
+			$coords = sprintf("A%d",$rowcount+4);
+			$objDrawing->setCoordinates($coords);
 			$objDrawing->setWorksheet($sheet1);
 			$sheet1->setCellValueByColumnAndRow($dcount-3, $rowcount+3, "Addetto alla verifica revisione DPI");
 			$sheet1->setPageSetup($objPageSetup);

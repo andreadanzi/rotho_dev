@@ -26,7 +26,7 @@ $field1->typeofdata = 'V~O';// Varchar~Optional
 $block1->addField($field1); /** table and column are automatically set */
 $field1->setPicklistValues( Array ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12') );
 
-// Ricordarsi settare valore di default a 4 per tutti
+// Ricordarsi settare valore di default a 4 per tutti danzi.tn@20130909 di ritorno non ancora portato in produzione	
 
 SDK::setLanguageEntry('Accounts','it_it','Return Time' , 'Tempo di ritorno (mesi)');
 SDK::setLanguageEntry('Accounts','en_us', 'Return Time' , 'Return Time (months)');

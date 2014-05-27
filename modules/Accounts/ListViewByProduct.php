@@ -10,6 +10,7 @@
  ************************************************************************************/
 
 global $app_strings, $mod_strings, $current_language, $currentModule, $theme, $table_prefix, $list_max_entries_per_page;
+// danzi.tn@20140411 update product category 
 
 require_once('Smarty_setup.php');
 require_once('include/ListView/ListView.php');
@@ -17,7 +18,6 @@ require_once 'include/ListView/ListViewByProductController.php';
 require_once('modules/CustomView/CustomView.php');
 require_once('include/DatabaseUtil.php');
 
-$cf_category = 'cf_803';
 $filter_type = $_REQUEST['filter_type'];
 $filter_value = $_REQUEST['filter_value'];
 $startdate = $_REQUEST['startdate'];
@@ -205,7 +205,7 @@ if(isset($filter_value) && $filter_value!="" && $filter_value!="ND" )
 		if( $filter_type=='prod' ) {
 			$extra_where_clause .= " AND {$table_prefix}_products.base_no LIKE '$filter_value%'";
 		} else {
-			$extra_where_clause .= " AND {$table_prefix}_productcf.{$cf_category} LIKE '$filter_value%'";
+			$extra_where_clause .= " AND {$table_prefix}_products.product_cat LIKE '$filter_value%'"; 
 		}
 	}
 }
@@ -260,7 +260,7 @@ if(isset($_REQUEST['lv_user_id'])) {
 	$_REQUEST['lv_user_id'] = $_SESSION['lv_user_id'];
 }
 $smarty->assign("LV_USER_PICKLIST",getUserOptionsHTML($_REQUEST['lv_user_id'],$currentModule,""));
-$smarty->assign("PRODUCT_CATEGORY_TREE",getProductCategoryTree($cf_category));
+$smarty->assign("PRODUCT_CATEGORY_TREE",getProductCategoryTree());
 // $smarty->assign("PRODUCT_CATEGORY_TREE","<p>pippo</p>");
 if( $_REQUEST['lv_user_id'] == "all" || $_REQUEST['lv_user_id'] == "") { // all event (normal rule)
 
@@ -519,13 +519,16 @@ function get_navigation_values_by_product($list_query_count,$url_string,$current
 	return Zend_Json::encode(Array('nav_array'=>$navigationOutput,'rec_string'=>$record_string,'permitted'=>$permitted,'reload_notification_count'=>$reload_notification_count));	//crmv@29617
 }
 
-function getProductCategoryTree($cf_category)
+// danzi.tn@20140411 update product category
+function getProductCategoryTree()
 {
 	global $adb, $table_prefix;
 	$tree_string="";
+	
 	$query = "SELECT DISTINCT class3 as categorycode, class1 as parentlevel1, class2 as parentlevel2, class_desc3 as categorydescr, class_desc1, class_desc2 
-	FROM erp_temp_crm_classificazioni , {$table_prefix}_productcf
-	WHERE erp_temp_crm_classificazioni.class3 = LEFT({$table_prefix}_productcf.{$cf_category},8)
+	FROM erp_temp_crm_classificazioni 
+	JOIN {$table_prefix}_products ON {$table_prefix}_products.product_cat = erp_temp_crm_classificazioni.class3
+	JOIN {$table_prefix}_crmentity ON {$table_prefix}_crmentity.crmid  = {$table_prefix}_products.productid AND {$table_prefix}_crmentity.deleted = 0
 	ORDER BY parentlevel1 ASC, parentlevel2 ASC, categorycode ASC ";
 	
 	$result = $adb->query($query);

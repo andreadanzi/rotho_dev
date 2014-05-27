@@ -191,13 +191,12 @@ class Inspections extends CRMEntity {
 		include("include/utils/ExportUtils.php");
 		if( $export_type=="printexp"  )
 		{
-			$query = "SELECT  {$table_prefix}_inspections.inspection_no ,   
-							  '' as salesorder_ref, 
-							  {$table_prefix}_inspections.inspection_name ,  
-							  {$table_prefix}_account.accountname , 
+			$query = "SELECT  {$table_prefix}_account.accountname , 
 							  {$table_prefix}_products.productname , 
 							  {$table_prefix}_vendor.vendorname,
 							  {$table_prefix}_inspections.product_serialno , 
+							  {$table_prefix}_inspections.product_description,
+							  {$table_prefix}_inspections.first_time_use ,
 							  {$table_prefix}_inspections.salesorder_date as salesdate,
 							  case 
 								when {$table_prefix}_products.inspection_frequency = 'lbl_6m' then 
@@ -212,7 +211,8 @@ class Inspections extends CRMEntity {
 									dateadd(month,12,{$table_prefix}_inspections.inspection_date) 
 								end
 								AS nextinspdate ,
-							  {$table_prefix}_inspections.inspection_state,
+							  {$table_prefix}_inspections.inspection_date , 
+							  CASE {$table_prefix}_inspections.inspection_state WHEN 'Chiusa' THEN 'OK' ELSE 'KO' END AS Esito,
 							  '' as note
 						FROM {$table_prefix}_crmentity 
 						INNER JOIN $this->table_name ON {$table_prefix}_crmentity.crmid=$this->table_name.$this->table_index";

@@ -7,16 +7,46 @@ function do_import_contacts($time_start) {
 	$array_key=array_keys($mapping);
 	$key = array_search('PERSON_PARENT1', $array_key);
 	$array_key[$key]="PERSON_PARENT as PERSON_PARENT1";
+	// danzi.tn@20140213 IMPORTFLAG Per distinguere i record modificati/creati dalla procedura di import
+	$key = array_search('IMPORTFLAG', $array_key);
+	$array_key[$key]="'XXX' AS IMPORTFLAG";
 	
 	$sql="select ".implode(",",$array_key)." from $table $where";
-        echo $sql;	
+    echo $sql;	
+	echo "\n";
 	$import_info = $import->go($sql);
-	
+	echo "Go terminated!\n";
+	$ii=0;
+	$hash_table = array();
 	foreach($import_info['external_code_rows'] as $ext_cod){
+		if(array_key_exists($ext_cod,$hash_table)) { 
+			// echo $ext_cod . " already imported\n";
+			continue;
+		}
 		import_contacts_info($ext_cod);
+		$ii++;
+		$hash_table[$ext_cod]=$ii;
+		// echo "(".$ii."|".$ext_cod."),";
 	}
-	
+	echo "import_contacts_info terminated!\n";
+	update_vendor_id();
+	echo "update_vendor_id terminated!\n";
 	return $import_info;
+}
+
+// danzi.tn@20140412 ORIG_PERSON_PARENT Per salvarsi il person_parent del contatto che va in cf_1249
+function update_vendor_id() {
+	global $adb,$table_info,$external_code_info;
+	$sql = "UPDATE
+		vtiger_contactdetails
+		SET 
+		vtiger_contactdetails.vendor_id = vtiger_vendorcf.vendorid
+		from vtiger_contactdetails 
+		JOIN vtiger_contactscf ON  vtiger_contactscf.contactid = vtiger_contactdetails.contactid
+		JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid and deleted = 0
+		JOIN vtiger_vendorcf ON vtiger_vendorcf.cf_1115 = vtiger_contactscf.cf_1249 
+		WHERE vtiger_vendorcf.cf_1115 IS NOT NULL AND vtiger_vendorcf.cf_1115 <>''";
+	$adb->query($sql);	
 }
 
 function import_contacts_info($ext_cod){

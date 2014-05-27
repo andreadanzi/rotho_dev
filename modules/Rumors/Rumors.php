@@ -42,7 +42,11 @@ class Rumors extends CRMEntity {
 	var $list_fields_name = Array(
 		/* Format: Field Label => fieldname */
 		'Rumor Name'=> 'rumor_name',
-		'Assigned To' => 'assigned_user_id'
+		'Assigned To' => 'assigned_user_id',
+		'Competitor' => 'competitor',
+		'Customer' => 'accounts_customer',
+		'Oggetto' => 'cf_1215',
+		'Created Time' => 'createdtime',		
 	);
 
 	// Make the field link to detail view from list view (Fieldname)
@@ -95,9 +99,13 @@ class Rumors extends CRMEntity {
 		);
 		$this->list_fields = Array(
 			/* Format: Field Label => Array(tablename, columnname) */
-			// tablename should not have prefix 'vte_'
+			// danzi.tn@20140505 modifica colonne elenco related e anche su vtiger_cvcolumnlist
 			'Rumor Name'=> Array($table_prefix.'_rumors', 'rumor_name'),
-			'Assigned To' => Array($table_prefix.'_crmentity','smownerid')
+			'Assigned To' => Array($table_prefix.'_crmentity','smownerid'),
+			'Competitor' => Array($table_prefix.'_rumors','competitor'),
+			'Customer' => Array($table_prefix.'_rumors','accounts_customer'),
+			'Oggetto' => Array($table_prefix.'_rumorscf','cf_1215'),
+			'Created Time' => Array($table_prefix.'_crmentity','createdtime')			
 		);
 		$this->search_fields = Array(
 			/* Format: Field Label => Array(tablename, columnname) */

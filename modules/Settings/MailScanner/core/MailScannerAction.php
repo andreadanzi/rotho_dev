@@ -127,6 +127,7 @@ class Vtiger_MailScannerAction {
 	 */
 	function apply($mailscanner, $mailrecord, $mailscannerrule, $matchresult) {
 		$returnid = false;
+		$this->log("process apply for action type ".$this->actiontype." and module ". $this->module);
 		if($this->actiontype == 'CREATE') {
 			if($this->module == 'HelpDesk') {
 				$returnid = $this->__CreateTicket($mailscanner, $mailrecord); 
@@ -141,7 +142,12 @@ class Vtiger_MailScannerAction {
 			if($this->module == 'HelpDesk') {
 				$returnid = $this->__CreateTicketInterno($mailscanner, $mailrecord); 
 			}
-		} /*danzi.tn@20140207e*/
+		} /*danzi.tn@20140207e*/ /*danzi.tn@20140407 aggancio a RUMORS*/		
+		elseif($this->actiontype == 'CREATERUMO') {
+			if($this->module == 'Rumors') {
+				$returnid = $this->__CreateRumor($mailscanner, $mailrecord); 
+			}
+		} /*danzi.tn@20140407*/
 		else if($this->actiontype == 'LINK') {
 			$returnid = $this->__LinkToRecord($mailscanner, $mailrecord);
 		} else if($this->actiontype == 'UPDATE') {
@@ -717,5 +723,52 @@ class Vtiger_MailScannerAction {
 		return $ticket->id;
 	}
 	// danzi.tn@20140207 e
+	
+	// danzi.tn@20140407 Creazione nuovo record in modulo Rumors
+	/**
+	 * Create rumor action.
+	 */
+	function __CreateRumor($mailscanner, $mailrecord) {
+		// Prepare data to create rumor
+		$usetitle = $mailrecord->_subject;
+		$description = $mailrecord->getBodyText();
+		//crmv@2043m
+		$matches = preg_match('/<body[^>]*>(.*)/ims',$description,$tmp);
+		if ($matches) {
+			$description = $tmp[1];
+		}
+		if (strpos($description,'</body>') !== false) {
+			$description = substr($description,0,strpos($description,'</body>'));
+		}
+		//crmv@2043me
+
+		// There will be only on FROM address to email, so pick the first one
+		$fromemail = $mailrecord->_from[0];	
+		
+		/** Now Create Rumor **/
+		global $current_user;
+		if(!$current_user) $current_user = new Users();
+		$current_user->id = 1;
+		$this->log("process __CreateRumor for subject ".$usetitle." from ". $fromemail);
+		// Create trouble rumor record
+		$rumor = CRMEntity::getInstance('Rumors');
+		$rumor->column_fields['rumor_name'] = "Other"; //$usetitle;
+		$rumor->column_fields['description'] = $description;
+		$rumor->column_fields['cf_1215'] = $usetitle;
+		$rumor->column_fields['infosender'] = $fromemail;
+		$rumor->column_fields['product_cat'] = '06';
+		$rumor->column_fields['product_cat_descr'] = 'ALTRO';
+		$rumor->column_fields['assigned_user_id'] = 133013; // ASSEGNATO a Gruppo Product Manager
+		$rumor->save('Rumors');
+		// Associate any attachement of the email to rumor
+		// $this->__SaveAttachements($mailrecord, 'Rumors', $rumor, $rumor);	//crmv@27657
+		
+		//crmv@2043m
+		$mailrecord->_subject .= ' - Rumor Id: '.$rumor->id;
+		$this->__CreateNewEmail($mailrecord, $this->module, $rumor);
+		//crmv@2043me
+		return $rumor->id;
+	}
+	// danzi.tn@20140407 e
 }
 ?>

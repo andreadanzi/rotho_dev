@@ -1,4 +1,4 @@
-function return_product_to_rumors(recordid,value,target_fieldname,product_cat,link_to_description) {
+function return_product_to_rumors(recordid,value,target_fieldname,product_cat,link_to_description,link_to_category_descr) {
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
 	if (form) {
@@ -13,6 +13,10 @@ function return_product_to_rumors(recordid,value,target_fieldname,product_cat,li
 			}
 			if (form.elements['product_desc']) {
 				form.elements['product_desc'].value = link_to_description;
+			}
+			// danzi.tn@20140225 aggiunto descrizione categoria category_descr
+			if (form.elements['product_cat_descr']) {
+				form.elements['product_cat_descr'].value = link_to_category_descr;
 			}
 		}
 		return true;	

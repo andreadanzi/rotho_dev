@@ -7,9 +7,9 @@
 			<span class="show_points" align="left" >0&nbsp;&times;&nbsp;
 			{/if}
 			{if $NO_VISITE }
-			<img  id="opener"  src="modules/SDK/src/uitypejQuery/img/r_star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
+			<img  id="opener"  src="modules/SDK/src/uitypejQuery/img/r_{$ICONFILE}" alt="Acc - Rating" title="Acc - Rating" /></span>
 			{else}
-			<img  id="opener"  src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
+			<img  id="opener"  src="modules/SDK/src/uitypejQuery/img/{$ICONFILE}" alt="Acc - Rating" title="Acc - Rating" /></span>
 			{/if}
 		</span>
 		<div id="showpoints_{$ID}" class="showpoints_hidden"    >
@@ -27,9 +27,9 @@
 			&nbsp;<span id ="dtlview_points">
 				<span class="show_points" onclick="show_points_loaded(this, 'showpoints','{$fldvalue}','{$ID}','showpoints_{$ID}');" align="left" >{$fldvalue}&nbsp;&times;&nbsp;
 				{if $NO_VISITE }
-				<img  id="opener" src="modules/SDK/src/uitypejQuery/img/r_star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
+				<img  id="opener" src="modules/SDK/src/uitypejQuery/img/r_{$ICONFILE}" alt="Acc - Rating" title="Acc - Rating" /></span>
 				{else}
-				<img  id="opener" src="modules/SDK/src/uitypejQuery/img/star_16.png" alt="RP Prog - Rating" title="RP Prog - Rating" /></span>
+				<img  id="opener" src="modules/SDK/src/uitypejQuery/img/{$ICONFILE}" alt="Acc - Rating" title="Acc - Rating" /></span>
 				{/if}
 				<input type="hidden" name="points" tabindex="{$vt_tab}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox >
 			</span>

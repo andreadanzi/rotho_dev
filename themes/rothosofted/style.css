@@ -2929,3 +2929,6 @@ label {
 .disabled {
 	color: gray;
 }
+
+/* danzi.tn@20140417 */
+html.wait, html.wait * {cursor:wait;}

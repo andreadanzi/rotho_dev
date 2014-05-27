@@ -318,7 +318,7 @@
 				{/if}
 			</td>
 		{* crmv@31171e *}
-{elseif $uitype eq 52 || $uitype eq 77}
+{elseif $uitype eq 52 || $uitype eq 77 || $uitype eq 1077}
 	<td width="20%" class="dvtCellLabel" align=right>
 		<font color="red">{$mandatory_field}</font>{$usefldlabel}
 		 {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
@@ -326,15 +326,15 @@
 	<td width="30%" align=left class="dvtCellInfo">
 		{if $uitype eq 52}
 			<select name="{$fldname}" class="small">
-		{elseif $uitype eq 77}
+		{elseif $uitype eq 77 || $uitype eq 1077}
 			{*<select name="assigned_user_id1" tabindex="{$vt_tab}" class="small">*}
-			{*mycrmv@rotho_blaas*}
+			{*mycrmv@rotho_blaas danzi.tn@20140220*}
 			{if $fldname eq 'agente_riferimento'}
 				<select name="{$fldname}" tabindex="{$vt_tab}" class="small" onChange="changeCapoarea()">
 			{else}
 				<select name="{$fldname}" tabindex="{$vt_tab}" class="small">
 			{/if}
-			{*mycrmv@rotho_blaase*}
+			{*mycrmv@rotho_blaase danzi.tn@20140220e*}
 		{else}
 			<select name="{$fldname}" tabindex="{$vt_tab}" class="small">
 		{/if}
