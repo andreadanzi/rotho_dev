@@ -1,0 +1,32 @@
+./modules/Accounts/ListViewByProduct.php:$cf_category = 'cf_803';
+./modules/Nonconformities/CategoryToNonconformities.php:	$query = "SELECT ".$table_prefix."_productcf.cf_803 AS prodcat, ".$table_prefix."_crmentity.description as proddesc, ".$table_prefix."_products.vendor_id as prodvendid, ".$table_prefix."_vendor.vendorname as prodvendname FROM ".$table_prefix."_products LEFT JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_products.productid = ".$table_prefix."_crmentity.crmid   LEFT JOIN ".$table_prefix."_vendor ON ".$table_prefix."_products.vendor_id = ".$table_prefix."_vendor.vendorid  LEFT JOIN ".$table_prefix."_productcf ON  ".$table_prefix."_products.productid = ".$table_prefix."_productcf.productid	WHERE ".$table_prefix."_products.productid = ".$entity_id;
+./modules/Products/Products.php:		'Categoria Prodotto'=>Array('productscf'=>'cf_803'),
+./modules/Products/Products.php:		'Categoria Prodotto'=>'cf_803',
+./modules/Inspections/PopulateInsp.php:					case when ".$table_prefix."_productcf.productid is not null then ".$table_prefix."_productcf.".$cf_product_category." else 'ND' end as product_category, -- cf_803
+./modules/Inspections/Populate.php:					case when ".$table_prefix."_productcf.productid is not null then ".$table_prefix."_productcf.".$cf_product_category." else 'ND' end as product_category, -- cf_803
+./modules/Inspections/ProductToInspections.php:	// cf_796 local, ROTHO --> cf_803
+./modules/Inspections/Inspections_conf.php:$cf_product_category='cf_803'; // cf_796 ROTHO -- cf_803
+./modules/Rumors/ProductToInspections.php:	// cf_796 local, ROTHO --> cf_803
+./modules/Rumors/ProductToRumors.php:	// cf_796 local, ROTHO --> cf_803 in test
+./modules/Rumors/ProductToRumors.php:	$query = "SELECT LEFT(".$table_prefix."_productcf.cf_803,8) AS category, ".$table_prefix."_crmentity.description , erp_temp_crm_classificazioni.class_desc3 as category_descr
+./modules/Rumors/ProductToRumors.php:			LEFT JOIN erp_temp_crm_classificazioni ON erp_temp_crm_classificazioni.class3 = LEFT(".$table_prefix."_productcf.cf_803,8)
+./modules/Map/lib/utils.inc.php:					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_salesorder.accountid in ($ids) AND vtiger_productcf.cf_803 LIKE '$extra_ids%' ";
+./modules/Map/lib/utils.inc.php:					$query .= " WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_productcf.cf_803 LIKE '$extra_ids%' ";
+./modules/Map/lib/utils.inc.php:			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_productcf.cf_803 as type ,
+./modules/Map/lib/utils.inc.php:				$query .= "AND vtiger_productcf.cf_803 LIKE '$ids%'"; //cf_803 x crm e cf_803 x rb
+./modules/Map/lib/utils.inc.php:	WHERE erp_temp_crm_classificazioni.class3 = LEFT(vtiger_productcf.cf_803,8)
+./modules/Map/lib/utils.inc.php:	$query = "SELECT DISTINCT LEFT( vtiger_productcf.cf_803, 4) AS code FROM vtiger_productcf ORDER BY code ASC";
+./modules/Map/lib/utils.inc_old.php:					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_salesorder.accountid in ($ids) AND vtiger_productcf.cf_803 LIKE '$extra_ids%' ";
+./modules/Map/lib/utils.inc_old.php:					$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_productcf.cf_803 LIKE '$extra_ids%' ";
+./modules/Map/lib/utils.inc_old.php:			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_productcf.cf_803 as type ,
+./modules/Map/lib/utils.inc_old.php:				$query .= "AND vtiger_productcf.cf_803 LIKE '$ids%'"; //cf_803 x crm e cf_803 x rb
+./modules/Map/lib/utils.inc_old.php:	WHERE erp_temp_crm_classificazioni.class3 = LEFT(vtiger_productcf.cf_803,8)
+./modules/Map/lib/utils.inc_old.php:	$query = "SELECT DISTINCT LEFT( vtiger_productcf.cf_803, 4) AS code FROM vtiger_productcf ORDER BY code ASC";
+./modules/SDK/src/modules/HelpDesk/ProductToHelpDesk.php:	// cf_796 local, ROTHO --> cf_803 in test + LEFT
+./modules/SDK/src/modules/HelpDesk/ProductToHelpDesk.php:	$query = "SELECT LEFT(".$table_prefix."_productcf.cf_803,8) AS category, ".$table_prefix."_crmentity.description , erp_temp_crm_classificazioni.class_desc3 as category_descr
+./modules/SDK/src/modules/HelpDesk/ProductToHelpDesk.php:			LEFT JOIN erp_temp_crm_classificazioni ON erp_temp_crm_classificazioni.class3 = LEFT(".$table_prefix."_productcf.cf_803,8)
+./modules/SDK/src/modules/HelpDesk/ProductToHelpDesk.php:	WHERE erp_temp_crm_classificazioni.class3 = LEFT(vtiger_productcf.cf_803,8)
+./modules/SDK/src/modules/HelpDesk/ProductstoHelpDesk.php:	$query_pdesc = "SELECT description, case when cf_803 IS NULL then '' else cf_803 end as productcat FROM [vte40_387].[dbo].vtiger_crmentity 
+./plugins/erpconnector/BKP_SCRIPT_04052012/Products_import/Products_config.php:'SALES_CLASSIFICATION'=>'cf_803',
+./plugins/erpconnector/Products_import/Products_config.php:'SALES_CLASSIFICATION'=>'cf_803',
+./plugins/erpconnector/Inspections_populate/PopulateInsp.php:					case when ".$table_prefix."_productcf.productid is not null then ".$table_prefix."_productcf.".$cf_product_category." else 'ND' end as product_category, -- cf_803

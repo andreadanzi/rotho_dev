@@ -1,0 +1,29 @@
+<html>
+  <head>
+   <script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript">
+      
+		var mxhr = $.ajax({
+		  type: "POST",
+		  url: "http://doccredit.sedocfinance.net/DCT/Home/Login",
+		  crossDomain: true,
+		  data: { PWD: "test", USR: "test" }
+		})
+		   .success(function( response, textStatus, jqXHR ) {
+			alert( "Authenticated: " + response );
+			contentType = jqXHR.getResponseHeader("Content-Type");
+			setCookie = jqXHR.getResponseHeader("Set-Cookie");			
+		  })
+		  .fail(function(msg) {
+			alert( "ERROR: " + msg );
+		  });
+		
+   
+		
+    </script>
+  </head>
+  <body>
+    <h1>Pagina Iniziale</h1>
+	<h4>Chiamata a DocCreditWebAgenti</h4>
+  </body>
+</html>

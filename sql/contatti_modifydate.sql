@@ -1,0 +1,74 @@
+select 
+PERSON_PARENT,
+PERSON_NUMBER,
+PERSON_FULLNAME,
+INSERTDATE,
+convert(varchar,PERSON_MODIFYDATE)
+
+from erp_temp_crm_contatti
+where
+convert(datetime,
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),1,4) + '-'+
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),5,2) +'-'+
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),7,2)+' '+
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),9,2) +':'+
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),11,2)+':'+
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),13,2) +'.'+
+SUBSTRING(convert(varchar,PERSON_MODIFYDATE),15,3) , 121) BETWEEN (
+select DATEADD(minute, -1, max(cf_1170)) from vtiger_contactscf
+join vtiger_crmentity on vtiger_crmentity.crmid = vtiger_contactscf.contactid and vtiger_crmentity.deleted = 0) 
+AND GETDATE()
+--,convert(datetime,  , 121 )as mod_date
+-- 121 yyyy-mm-dd hh:mm:ss.mmm 
+
+"SELECT [PERSON_PARENT]
+      ,[PERSON_NUMBER]
+      ,[PERSON_FULLNAME]
+      ,[PERSON_GIVENNAME]
+      ,[PERSON_MIDDLENAMES]
+      ,[PERSON_SURNAME]
+      ,[PERSON_SALUTATION]
+      ,[PERSON_TITLE]
+      ,[PERSON_LANGUAGE]
+      ,[PERSON_STREET]
+      ,[PERSON_POSTALCODE]
+      ,[PERSON_CITY]
+      ,[PERSON_COUNTRY]
+      ,[PERSON_REGION]
+      ,[PERSON_JOB]
+      ,CASE
+      WHEN [PERSON_JOBDESC] = 'ACQUISTO' THEN 1 
+      WHEN [PERSON_JOBDESC] = 'COMMITTENTE' THEN 1 
+      WHEN [PERSON_JOBDESC] = 'TITOLARE' THEN 3 
+      WHEN [PERSON_JOBDESC] = 'TECNICO' THEN 4 
+      WHEN [PERSON_JOBDESC] LIKE 'CONTABILIT%' THEN 5
+      WHEN [PERSON_JOBDESC] = 'MAGAZZINO' THEN 6
+      WHEN [PERSON_JOBDESC] = 'ASSISTENTE DIREZIONE' THEN 7
+      WHEN [PERSON_JOBDESC] LIKE 'ALTRO' THEN 8
+      ELSE 0 
+      END AS PERSON_JOBDESC
+      ,[PERSON_EMAIL]
+      ,[PERSON_PHONE]
+      ,[PERSON_MOBILE]
+      ,[PERSON_EMAILDELIVERYSLIP]  
+      ,[PERSON_EMAILCUSTOMERINVOICE] 
+      ,[PERSON_EMAILCONFIRMATIONORDER]
+      ,[PERSON_EMAILDUNNING]
+      ,[PERSON_EMAILTRACKING]
+      ,[PERSON_DELETED]
+      ,[PERSON_MODIFYDATE]
+  FROM [ROTHOBLAAS01].[dbo].[CRM_CONTATTI]
+  WHERE 
+CONVERT(datetime,
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),1,4) + '-'+
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),5,2) +'-'+
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),7,2)+' '+
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),9,2) +':'+
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),11,2)+':'+
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),13,2) +'.'+
+SUBSTRING(CONVERT(varchar,PERSON_MODIFYDATE),15,3) , 121) BETWEEN ("+ row4.max_insertdate +") 
+AND GETDATE()"
+  
+  
+  
+  "
