@@ -395,6 +395,8 @@ class importer{
 							}
 						}
 					}
+				} elseif ($this->module == 'Vendors') {
+					$this->check_vendors($row,$rows_updated);
 				} else {
 					if ($this->existing_entity[$row[$this->external_code]] != ''){
 						$this->update($row,$this->existing_entity[$row[$this->external_code]]);
@@ -431,6 +433,73 @@ class importer{
 //			return Array('records_created'=>$this->records_created,'records_updated'=>$this->records_updated);
 			return Array('records_created'=>$this->records_created,'records_updated'=>$this->records_updated,'external_code_rows'=>$rows,'upd_ext_codes' => $rows_updated);
 			//crmv@18206e
+		}
+	}
+	
+	// danzi.tn@20140602 gestione Vendors
+	private function check_vendors($row,&$rows_updated) {
+		global $adb;
+		//check codice fornitore semiramis
+		if ($row['supplier_number'] != '') {
+			// se il codice fornitore non è vuoto allora si verifica se ci sono già Vendor con lo stesso codice
+			$qry_ext_code = "SELECT vtiger_vendor.vendorid from vtiger_vendor
+							JOIN vtiger_vendorcf ON vtiger_vendorcf.vendorid = vtiger_vendor.vendorid
+							JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_vendor.vendorid AND vtiger_crmentity.deleted = 0
+							WHERE vtiger_vendorcf.cf_1115 = '".$row['supplier_number']."'";						
+			$res_ext_code = $adb->query($qry_ext_code);
+			$rows_ext_code = $adb->num_rows($res_ext_code);							
+		} else {
+			// echo "Nothing Found for SUPPLIER_NUMBER  ".$row['supplier_number']."\n" ;
+			$rows_ext_code = 0;
+		}
+		if ($rows_ext_code > 0 && $row['supplier_number'] != '') {
+			$id = $adb->query_result($res_ext_code,0,'vendorid');	
+			// echo "Found SUPPLIER_NUMBER  with id ".$id."\n" ;
+			$this->update($row,$id);
+			$rows_updated[] = $row[$this->external_code];
+		}else {
+			// danzi.tn@20140602 - check partita IVA
+			if ($row['finance_taxidcee'] != '') {
+				// se la partita iva internazionale non è vuota allora si verifica se ci sono già Vendor con la stessa partita IVA
+				$qry_piva = "SELECT vtiger_vendor.vendorid  from vtiger_vendor
+							JOIN vtiger_vendorcf ON vtiger_vendorcf.vendorid = vtiger_vendor.vendorid
+							JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_vendor.vendorid AND vtiger_crmentity.deleted = 0 
+							WHERE vtiger_vendor.vendor_vat_code = '".$row['finance_taxidcee']."'";
+				$res_piva = $adb->query($qry_piva);
+				$rows_piva = $adb->num_rows($res_piva);
+			}else {
+				$rows_piva = 0;
+				// echo "Nothing Found for FINANCE_TAXIDCEE  ".$row['finance_taxidcee']."\n" ;
+			}
+			if ($rows_piva > 0 && $row['finance_localtaxid'] != '' ) {
+				$id = $adb->query_result($res_piva,0,'vendorid');
+				// echo "Found FINANCE_TAXIDCEE  with id ".$id."\n" ;
+				$this->update($row,$id);
+				$rows_updated[] = $row[$this->external_code];
+			} else {
+				// danzi.tn@20140602 - check codice Fiscale
+				if ($row['finance_suppltaxid'] != '') {
+					// se il codice fiscale non è vuoto allora si verifica se ci sono già Vendor con lo stesso codice
+					$qry_cf = "SELECT vtiger_vendor.vendorid  from vtiger_vendor
+							JOIN vtiger_vendorcf ON vtiger_vendorcf.vendorid = vtiger_vendor.vendorid
+							JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_vendor.vendorid AND vtiger_crmentity.deleted = 0
+							WHERE vtiger_vendor.vendor_fiscal_code = '".$row['finance_suppltaxid']."'";									
+					$res_cf = $adb->query($qry_cf);
+					$rows_cf = $adb->num_rows($res_cf);
+				} else {
+					$rows_cf = 0;
+				}
+				if ($rows_cf > 0 && $row['finance_suppltaxid'] != '') {
+					$id = $adb->query_result($res_cf,0,'vendorid');
+					// echo "Found FINANCE_SUPPLTAXID  with id ".$id."\n" ;
+					$this->update($row,$id);
+					$rows_updated[] = $row[$this->external_code];
+				} else {
+					// echo "Nothing Found for FINANCE_SUPPLTAXID  ".$row['finance_suppltaxid']."\n" ;
+					//alla fine se non è stato trovato nulla allora vuol dire che non c'è e deve essere creato
+					$this->create($row);
+				}
+			}
 		}
 	}
 	

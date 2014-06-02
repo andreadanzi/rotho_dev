@@ -14,6 +14,11 @@ $mapping = Array(
 'BASE_CITY'=>'city',
 'BASE_COUNTRY'=>'country',
 'BASE_REGION'=>'state',
+'FINANCE_TAXIDCEE'=>'vendor_vat_code',
+'FINANCE_SUPPLTAXID'=>'vendor_fiscal_code',
+// danzi.tn@20140602 DEFAULT VENDOR_TYPE = Merce conto vendita e VENDOR_STATUS = Attivo
+'VENDOR_TYPE'=>'cf_1118',
+'VENDOR_STATUS'=>'cf_1117',
 // 'FINANCE_PAYMENTTERMS'=>'',
 // 'FINANCE_PAYMENTTERMSDESC'=>'',
 // 'FINANCE_RATINGFORNITORE'=>'vendor_rating'

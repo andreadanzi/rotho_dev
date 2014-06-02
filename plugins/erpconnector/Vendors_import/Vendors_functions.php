@@ -6,9 +6,12 @@ function do_import_vendors($time_start) {
 	$array_key=array_keys($mapping);
 	$key = array_search('SUPPLIER_DESCR', $array_key);
 	$array_key[$key]="'IMPORTED DATE ' +INSERTDATE+ ' - ' + SUPPLIER_NUMBER+' / '+SUPPLIER_NAME as SUPPLIER_DESCR";
-	
+	// danzi.tn@20140602 DEFAULT VENDOR_TYPE = Merce conto vendita e VENDOR_STATUS = Attivo
+	$key = array_search('VENDOR_TYPE', $array_key);
+	$array_key[$key]="'1' AS VENDOR_TYPE";
+	$key = array_search('VENDOR_STATUS', $array_key);
+	$array_key[$key]="'1' AS VENDOR_STATUS";
 	$sql="select ".implode(",",$array_key)." from $table $where";
-	
 	$import_info = $import->go($sql);
 	foreach($import_info['external_code_rows'] as $ext_cod){
 		import_vendors_info($ext_cod);
