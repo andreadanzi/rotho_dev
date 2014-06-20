@@ -14,6 +14,7 @@
 // danzi.tn@20140210 - aggiunti codici paese RU SE NO e FI
 // danzi.tn@20140224 - DISTINZIONE TRA RP / PROG E RC / CARP per Sudamerica - RICORDARSI DELETE MANUALE
 // danzi.tn@20140324 - TOLTO IL FILTRO AGLI STATI
+// danzi.tn@20140603 - filtro su ultimi 21 mesi BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() )
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -307,6 +308,7 @@ class AccRatingClass {
 			JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid
 			JOIN ".$table_prefix."_crmentity as campaign_crmentity on campaign_crmentity.crmid = ".$table_prefix."_campaign.campaignid AND campaign_crmentity.deleted=0
 			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+			AND campaign_crmentity.createdtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 			AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
 			AND ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCBC','RFCAC','RFCACN','RFCAPRING', 'RFCAPC','RSCAP','RSCA','RSCBDPI','RHCB','RHCA','RHCT','RBFCACM','RHCI','ND') 
 			" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" ).  "
@@ -366,6 +368,7 @@ class AccRatingClass {
 			JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid
 			JOIN ".$table_prefix."_crmentity as campaign_crmentity on campaign_crmentity.crmid = ".$table_prefix."_campaign.campaignid AND campaign_crmentity.deleted=0
 			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+			AND campaign_crmentity.createdtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 			AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
 			AND ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCBC','RFCAC','RFCAPRING', 'RFCACN','RFCAPC','RSCAP','RSCA','RSCBDPI','RHCB','RHCA','RHCT','RBFCACM','RHCI','ND') 
 			" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" ).  "
@@ -414,6 +417,7 @@ class AccRatingClass {
 				JOIN ".$table_prefix."_crmentity as consulenza_crmentity on consulenza_crmentity.crmid = ".$table_prefix."_consulenza.consulenzaid AND consulenza_crmentity.deleted = 0 
 				LEFT JOIN ".$table_prefix."_consulenzaname on CONVERT(VARCHAR, ".$table_prefix."_consulenzaname.consulenzanameid ) = ".$table_prefix."_consulenza.consulenzaname
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+				AND consulenza_crmentity.modifiedtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato') " .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" );
 		return $sql;
 	}
@@ -440,6 +444,7 @@ class AccRatingClass {
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
+				AND ".$table_prefix."_crmentity.modifiedtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 				AND ".$table_prefix."_accountscf.".$this->_tipoAffiliazioneField." IS NOT NULL
 				AND ".$table_prefix."_accountscf.".$this->_tipoAffiliazioneField." <>''
 				" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" );
@@ -465,6 +470,7 @@ class AccRatingClass {
 				JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid AND ".$table_prefix."_activity.activitytype ='Contatto - Fiera'
 				JOIN ".$table_prefix."_crmentity as activity_crmentity ON activity_crmentity.crmid = ".$table_prefix."_activity.activityid  AND activity_crmentity.deleted = 0 
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+				AND ".$table_prefix."_activity.date_start BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  
@@ -511,6 +517,7 @@ class AccRatingClass {
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND ".$table_prefix."_potential.sales_stage not in ( 'Closed Won' , 'Closed Lost') 
+				AND  potential_crmentity.modifiedtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  
@@ -544,6 +551,7 @@ class AccRatingClass {
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND ".$table_prefix."_potential.sales_stage = 'Closed Won'  
+				AND  potential_crmentity.createdtime  BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='' 
 						OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  

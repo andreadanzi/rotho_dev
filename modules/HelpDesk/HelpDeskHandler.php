@@ -106,8 +106,9 @@ class HelpDeskHandler extends VTEventHandler {
 		$newNC->column_fields['nc_source'] = $source;
 		$newNC->column_fields['createdtime'] = $data_array['createdtime'];
 		$newNC->column_fields['modifiedtime'] = $data_array['createdtime'];
-		$newNC->column_fields['assigned_user_id'] = $data_array['assigned_user_id'];
-		$newNC->column_fields['smownerid'] = $data_array['assigned_user_id'];
+		// danzi.tn@20140603 assegnare al gruppo Ufficio Acquisti
+		$newNC->column_fields['assigned_user_id'] = 133018; //$data_array['assigned_user_id'];
+		$newNC->column_fields['smownerid'] = 133018; //$data_array['assigned_user_id'];
 		$newNC->column_fields['nonconformity_state'] = "Aperta"; // picklist
 		$newNC->column_fields["description"] =  $data_array['description'].  " -- ". $data_array["ticket_title"] . " (".$data_array["ticket_no"].", '".$ticketsubcategories."', '".$cf_798."') --";
 		$newNC->save($module_name='Nonconformities');
