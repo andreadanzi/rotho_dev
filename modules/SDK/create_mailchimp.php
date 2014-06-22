@@ -106,6 +106,27 @@ $field5->typeofdata = 'T~O';
 $field5->displaytype = 2;
 $block1->addField($field5);
 
+$field16 = new Vtiger_Field();
+$field16->name = 'mailchimp_uid';
+$field16->label= 'MailChimp Campaign UID';
+$field16->table = $module->basetable;
+$field16->columntype = 'VARCHAR(255)';
+$field16->uitype = 1;
+$field16->typeofdata = 'V~O';
+$field16->quickcreate = 1;
+$block1->addField($field16);
+
+
+$field26 = new Vtiger_Field();
+$field26->name = 'mailchimp_link';
+$field26->label= 'MailChimp Campaign Link';
+$field26->table = $module->basetable;
+$field26->columntype = 'VARCHAR(255)';
+$field26->uitype = 17;
+$field26->typeofdata = 'V~O';
+$field26->quickcreate = 1;
+$block1->addField($field26);
+
 /** Common fields that should be in every module, linked to vtiger CRM core table */
 $field8 = new Vtiger_Field();
 $field8->name = 'assigned_user_id';
@@ -155,11 +176,20 @@ $filter1->addField($field1,1)->addField($field3,2)->addField($field4,3)->addFiel
 
 //relazione n a n
 $module->setRelatedList(Vtiger_Module::getInstance('Targets'), 'Targets', Array('SELECT'));
+$module->setRelatedList(Vtiger_Module::getInstance('Accounts'), 'Accounts', Array('SELECT'));
 $module->setRelatedList(Vtiger_Module::getInstance('Calendar'), 'Activities',Array('ADD'),'get_activities');
 $module->setRelatedList(Vtiger_Module::getInstance('Calendar'), 'Activity History',Array('ADD'),'get_history');
+$module->setRelatedList(Vtiger_Module::getInstance('Contacts'), 'Contacts', Array('SELECT'));
+$module->setRelatedList(Vtiger_Module::getInstance('Leads'), 'Leads', Array('SELECT'));
 
+$leads = Vtiger_Module::getInstance('Leads');
+$leads->setRelatedList(Vtiger_Module::getInstance('MailchimpSync'), 'MailchimpSync', Array('ADD','SELECT'));
+$contacts = Vtiger_Module::getInstance('Contacts');
+$contacts->setRelatedList(Vtiger_Module::getInstance('MailchimpSync'), 'MailchimpSync', Array('ADD','SELECT'));
 $targets = Vtiger_Module::getInstance('Targets');
 $targets->setRelatedList(Vtiger_Module::getInstance('MailchimpSync'), 'MailchimpSync', Array('ADD','SELECT'));
+$accounts = Vtiger_Module::getInstance('Accounts');
+$accounts->setRelatedList(Vtiger_Module::getInstance('MailchimpSync'), 'MailchimpSync', Array('ADD','SELECT'));
 
 /** Set sharing access of this module */
 $module->setDefaultSharing('Private');

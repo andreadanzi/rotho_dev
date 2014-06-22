@@ -55,6 +55,9 @@ foreach($record_array as $record_item) {
 	// Set New sync date and update diff table
 	// setLastSyncDate();
 	updateVtigerSyncDiffTable();
+	syncCampaings();
+	// https://admin.mailchimp.com/campaigns/show?id=c_web_id
+	// https://admin.mailchimp.com/lists/members/view?id=m_web_id
 }
 echo "<br /><br /> &nbsp; &nbsp; &nbsp; <a href=\"index.php?action=DetailView&module=$src_module&record=$record&parenttab=Marketing\">Click Here to Return to the $src_module Page</a>";
 
