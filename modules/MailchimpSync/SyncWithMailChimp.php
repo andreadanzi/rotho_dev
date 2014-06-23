@@ -30,11 +30,10 @@ $src_record = $_GET['src_record'];
 $src_module = $_GET['src_module'];
 if( $src_module == "MailchimpSync"  )
 {
-	$record_array = getTargetsToSync($src_record);
+	$record_array = getAllTargetsToSync();
 } else {
 	$record_array[] = $src_record;
 }
-
 foreach($record_array as $record_item) {
 	$record = $record_item;
 	echo "<h2> &nbsp; &nbsp; Starting Synchronization for $src_module $record </h2><blockquote>";
@@ -55,10 +54,10 @@ foreach($record_array as $record_item) {
 	// Set New sync date and update diff table
 	// setLastSyncDate();
 	updateVtigerSyncDiffTable();
-	syncCampaings();
-	// https://admin.mailchimp.com/campaigns/show?id=c_web_id
-	// https://admin.mailchimp.com/lists/members/view?id=m_web_id
 }
+syncCampaings();
+// https://admin.mailchimp.com/campaigns/show?id=c_web_id
+// https://admin.mailchimp.com/lists/members/view?id=m_web_id
 echo "<br /><br /> &nbsp; &nbsp; &nbsp; <a href=\"index.php?action=DetailView&module=$src_module&record=$record&parenttab=Marketing\">Click Here to Return to the $src_module Page</a>";
 
 

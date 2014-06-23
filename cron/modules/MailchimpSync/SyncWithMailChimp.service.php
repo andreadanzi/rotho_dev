@@ -43,30 +43,15 @@ global $module_name;
 global $table_prefix;
 
 $module_name = 'MailchimpSync';
-
-$db = PearDatabase::getInstance();
-
-$query = 'SELECT * FROM '.$table_prefix.'_mailchimpsync';
-
-$result = $db->query($query);
-
-while($donnee = $db->fetch_row($result)){
-	
-	$record = $donnee['mailchimpsyncid'];
-	$list_id = getListId();
-	//Synchronization from Vtiger To MailChimp
-	echo '<h2>syncSubscribedWithMailChimp</h2>';
-	syncSubscribedWithMailChimp();
+$record_array = getAllTargetsToSync();
+foreach($record_array as $record_item) {
+	$record = $record_item;
+	// Add subscribed contact to mailchimp since last sync
+	syncTargetsWithMailChimp();
 	syncUnsubscribedWithMailChimp();
-	//Synchronization from MailChimp to Vtiger
-	echo '<h2>getupdatedmembers</h2>';
-	getListMembers('updated');
-	echo '<h2>getunsubscribedmembers</h2>';
-	getListMembers('unsubscribed');
-	//Set New sync date and update diff table
-	setLastSyncDate();
-	updateVtigerDiffTable();
+	updateVtigerSyncDiffTable();
 }
+syncCampaings();
 
 
 /** Close and remove the PID file. */

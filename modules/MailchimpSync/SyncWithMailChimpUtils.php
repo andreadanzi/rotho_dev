@@ -55,6 +55,37 @@ function getTargetsToSync($mailchimpid) {
 }
 
 
+function getAllTargetsToSync() {
+	global $record;
+	global $module_name;
+	global $list_id;
+	global $MailChimpAPIKey;
+	global $table_prefix;
+	$api = new MCAPI($MailChimpAPIKey);
+	$record_array = array();
+	$db = PearDatabase::getInstance();
+	$sql = "SELECT 
+			".$table_prefix."_targets.targetsid
+			,".$table_prefix."_targets.targetname
+			,".$table_prefix."_targets.target_type
+			FROM ".$table_prefix."_targets
+			JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0 
+			WHERE ".$table_prefix."_targets.target_type = 'MailChimp'";
+	$result = $db->query($sql);
+	while($row = $db->fetch_row($result))
+	{
+		$record_array[] = $row['targetsid'];
+	}
+	return $record_array;
+}
+
+function splitMultiSelect($value, $group_name, &$groupings_array) {
+	$valueArray = ($value != "") ? explode(' |##| ',$value) : array();
+	foreach( $valueArray as $valueItem )  {
+		$groupings_array[] = array('name'=>$group_name, 'groups'=>$valueItem);
+	}
+}
+
 function syncTargetsWithMailChimp() {
 	global $record;
 	global $module_name;
@@ -83,7 +114,11 @@ function syncTargetsWithMailChimp() {
 			, ".$table_prefix."_leaddetails.email AS entity_email1
 			, '' AS entity_email2
 			, 'default' AS entity_cat
-			, 'default' AS entity_subcat
+			, 'default' AS entity_subcat_1
+			, 'default' AS entity_subcat_2
+			, 'default' AS entity_subcat_3
+			, 'default' AS entity_subcat_4
+			, 'default' AS entity_subcat_5
 			, lead_entity.setype as entity_type
 			 from ".$table_prefix."_targets
 			 JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0
@@ -108,7 +143,11 @@ function syncTargetsWithMailChimp() {
 			, ".$table_prefix."_account.email1 AS entity_email1
 			, ".$table_prefix."_account.email2 AS entity_email2
 			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_762 ) AS entity_cat
-			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat_1
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_902 ) AS entity_subcat_2
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_903 ) AS entity_subcat_3
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_895 ) AS entity_subcat_4
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_904 ) AS entity_subcat_5
 			, account_entity.setype as entity_type
 			 from ".$table_prefix."_targets
 			 JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0
@@ -134,7 +173,11 @@ function syncTargetsWithMailChimp() {
 			, ".$table_prefix."_contactdetails.email AS entity_email1
 			, ".$table_prefix."_account.email1 AS entity_email2
 			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_762 ) AS entity_cat
-			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat_1
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_902 ) AS entity_subcat_2
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_903 ) AS entity_subcat_3
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_895 ) AS entity_subcat_4
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_904 ) AS entity_subcat_5
 			, contact_entity.setype as entity_type
 			 from ".$table_prefix."_targets
 			 JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0
@@ -181,11 +224,16 @@ function syncTargetsWithMailChimp() {
 		$groupings_array[] = array('name'=>'Clients+ Targets', 'groups'=>$donnee['targetname']);
 		$groupings_array[] = array('name'=>'Clients+ Entity Type', 'groups'=>$donnee['entity_type']);
 		$groupings_array[] = array('name'=>'Clients+ Category', 'groups'=>$donnee['entity_cat']);
-		$groupings_array[] = array('name'=>'Clients+ Sub Category', 'groups'=>$donnee['entity_subcat']);  // danzi.tn@20140622 da gestire split sottocategorie
+		// splitting multi select , like ARCH. |##| GEOM.
+		splitMultiSelect($donnee['entity_subcat_1'], 'Clients+ Sub Category 1', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_2'], 'Clients+ Sub Category 2', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_3'], 'Clients+ Sub Category 3', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_4'], 'Clients+ Sub Category 4', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_5'], 'Clients+ Sub Category 5', &$groupings_array);
 		while($grprow = $db->fetch_row($grp_result)) {
-			$groupings_array[] = array('name'=>'Clients+ Targets', 'groups'=>$grprow['targetname']);
+			// $groupings_array[] = array('name'=>'Clients+ Targets', 'groups'=>$grprow['targetname']);
 		}
-		$batch[] = array('RELID'=>$donnee['entity_id'], 'EMAIL'=>$donnee['entity_email1'], 'FNAME'=>$donnee['entity_firstname'], 'LNAME'=>$donnee['entity_lastname'], 'COMPANY'=>$donnee['entity_company'], 'GROUPINGS' => $groupings_array);
+		$batch[] = array('RELID'=>$donnee['entity_id'], 'EMAIL'=>$donnee['entity_email1'], 'FNAME'=>$donnee['entity_firstname'], 'LNAME'=>$donnee['entity_lastname'], 'COMPANY'=>$donnee['entity_company'],'CRMTYPE'=>$donnee['entity_type'], 'GROUPINGS' => $groupings_array);
 		$tot_groupings_array = array_merge($groupings_array,$tot_groupings_array);
 	}
 	
@@ -210,7 +258,11 @@ function syncTargetsWithMailChimp() {
 			, ".$table_prefix."_leaddetails.email AS entity_email1
 			, '' AS entity_email2
 			, 'default' AS entity_cat
-			, 'default' AS entity_subcat
+			, 'default' AS entity_subcat_1
+			, 'default' AS entity_subcat_2
+			, 'default' AS entity_subcat_3
+			, 'default' AS entity_subcat_4
+			, 'default' AS entity_subcat_5
 			, lead_entity.setype as entity_type
 			 from ".$table_prefix."_targets
 			 JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0
@@ -236,7 +288,11 @@ function syncTargetsWithMailChimp() {
 			, ".$table_prefix."_account.email1 AS entity_email1
 			, ".$table_prefix."_account.email2 AS entity_email2
 			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_762 ) AS entity_cat
-			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat_1
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_902 ) AS entity_subcat_2
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_903 ) AS entity_subcat_3
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_895 ) AS entity_subcat_4
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_904 ) AS entity_subcat_5
 			, account_entity.setype as entity_type
 			 from ".$table_prefix."_targets
 			 JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0
@@ -263,7 +319,11 @@ function syncTargetsWithMailChimp() {
 			, ".$table_prefix."_contactdetails.email AS entity_email1
 			, ".$table_prefix."_account.email1 AS entity_email2
 			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_762 ) AS entity_cat
-			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_894 ) AS entity_subcat_1
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_902 ) AS entity_subcat_2
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_903 ) AS entity_subcat_3
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_895 ) AS entity_subcat_4
+			, CONVERT( varchar(255), ".$table_prefix."_accountscf.cf_904 ) AS entity_subcat_5
 			, contact_entity.setype as entity_type
 			 from ".$table_prefix."_targets
 			 JOIN ".$table_prefix."_crmentity target_entity ON target_entity.crmid = ".$table_prefix."_targets.targetsid AND target_entity.deleted = 0
@@ -300,11 +360,15 @@ function syncTargetsWithMailChimp() {
 		$groupings_array[] = array('name'=>'Clients+ Targets', 'groups'=>$donnee['targetname']);
 		$groupings_array[] = array('name'=>'Clients+ Entity Type', 'groups'=>$donnee['entity_type']);
 		$groupings_array[] = array('name'=>'Clients+ Category', 'groups'=>$donnee['entity_cat']);
-		$groupings_array[] = array('name'=>'Clients+ Sub Category', 'groups'=>$donnee['entity_subcat']); // danzi.tn@20140622 da gestire split sottocategorie
+		splitMultiSelect($donnee['entity_subcat_1'], 'Clients+ Sub Category 1', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_2'], 'Clients+ Sub Category 2', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_3'], 'Clients+ Sub Category 3', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_4'], 'Clients+ Sub Category 4', &$groupings_array);
+		splitMultiSelect($donnee['entity_subcat_5'], 'Clients+ Sub Category 5', &$groupings_array);
 		while($grprow = $db->fetch_row($grp_result)) {
-			$groupings_array[] = array('name'=>'Clients+ Targets', 'groups'=>$grprow['targetname']);
+			// $groupings_array[] = array('name'=>'Clients+ Targets', 'groups'=>$grprow['targetname']);
 		}
-		$batch[] = array('RELID'=>$donnee['entity_id'], 'EMAIL'=>$donnee['entity_email1'], 'FNAME'=>$donnee['entity_firstname'], 'LNAME'=>$donnee['entity_lastname'], 'COMPANY'=>$donnee['entity_company'], 'GROUPINGS' => $groupings_array);
+		$batch[] = array('RELID'=>$donnee['entity_id'], 'EMAIL'=>$donnee['entity_email1'], 'FNAME'=>$donnee['entity_firstname'], 'LNAME'=>$donnee['entity_lastname'], 'COMPANY'=>$donnee['entity_company'],'CRMTYPE'=>$donnee['entity_type'], 'GROUPINGS' => $groupings_array);
 		$tot_groupings_array = array_merge($groupings_array,$tot_groupings_array);
 	}
 	
@@ -732,6 +796,8 @@ function syncCampaings() {
 		while($row = $db->fetch_row($result))
 		{
 			$mailchimpsyncid = $row['mailchimpsyncid'];
+			$sql = "UPDATE ".$table_prefix."_mailchimpsync SET mailchimp_state=? , lastsynchronization=? WHERE mailchimpsyncid = ?";
+			$db->pquery($sql, array($item['status'],date('Y-m-d H:i:s'),$mailchimpsyncid));
 			$bCFound = true;
 		}
 		if(!$bCFound) {
@@ -742,6 +808,8 @@ function syncCampaings() {
 			$newMCSync->column_fields['mailchimp_type'] = $item['type'];
 			$newMCSync->column_fields['mailchimp_state'] = $item['status'];
 			$newMCSync->column_fields['mailchimp_uid'] = $item['id'];
+			//$date_var = date('Y-m-d H:i:s');
+			$newMCSync->column_fields['lastsynchronization'] = date('Y-m-d H:i:s');
 			$newMCSync->column_fields['mailchimp_link'] = "admin.mailchimp.com/campaigns/show?id=".$item['c_web_id'];
 			$newMCSync->save($module_name='MailchimpSync',$longdesc=false);
 			$mailchimpsyncid = $newMCSync->id;
@@ -778,7 +846,7 @@ function getAllCamapigns(){
 	
 	
 	$batch = array();
-	$result = $api->campaigns(array("list_id"=>$list_id));
+	$result = $api->campaigns(array("list_id"=>$list_id,"status"=>"sent"));
 	
 	if ($api->errorCode){
 		echo "campaigns retrieve failed!<br/>";

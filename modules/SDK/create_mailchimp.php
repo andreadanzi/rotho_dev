@@ -101,7 +101,7 @@ $field5 = new Vtiger_Field();
 $field5->name = 'lastsynchronization';
 $field5->label= 'Last Synchronization';
 $field5->table = $module->basetable;
-$field5->uitype = 6;
+$field5->uitype = 70;
 $field5->typeofdata = 'T~O';
 $field5->displaytype = 2;
 $block1->addField($field5);
