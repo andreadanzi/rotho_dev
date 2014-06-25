@@ -11,6 +11,7 @@
 // Switch the working directory to base
 // chdir(dirname(__FILE__) . '/../..');
 // danzi.tn@20140417 default newsletter permission a True
+// danzi.tn@20140625 GESTIRE FORM RUSSA: nuovo leadsource "Web Form", nuovo pids_list_download e nuovo generated_form_ids
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -38,6 +39,7 @@ class RothoBus {
 	var $group_mapping = Array();
 	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504);
 	var $pids_list_download = Array(137,139,141,143,200,205);
+	var $pids_list_forms = Array(505);
 	var $pids_list_newsletter = Array(124);
 	
 	function __construct() { 
@@ -78,6 +80,7 @@ class RothoBus {
 	function populateNow() {
 		global $adb,$table_prefix;
 		$generated_corso_ids = Array();
+		$generated_form_ids = Array();
 		$generated_download_ids = Array();
 		$generated_safe_ids = Array();
 		$generated_safe_tt_address_ids = Array();
@@ -115,6 +118,9 @@ class RothoBus {
 			if(  !empty($idtarget) && $tt_address["leadsource"] == 'Corso' ) {
 				$generated_corso_ids[$idtarget]=1;
 			}
+			if(  !empty($idtarget) && $tt_address["leadsource"] == 'Web Form' ) {
+				$generated_form_ids[$idtarget]=1;
+			}
 		}
 		$sql_safe_tt_address = $this->_get_web_temp_safe_tt_address();
 		$wsresult = $adb->query($sql_safe_tt_address);
@@ -136,11 +142,15 @@ class RothoBus {
 			$this->_process_campaigns($generated_corso_ids,"Corso","Pianificato",167);
 			$this->_process_targets($generated_corso_ids,"Iscrizione Corso","Pronto",167);
 		}
+		if(count($generated_form_ids)) {
+			$this->_process_campaigns($generated_form_ids,"Web Form","Pianificato",167);
+			$this->_process_targets($generated_form_ids,"Web Form","Pronto",167);
+		}
 		if(count($generated_safe_tt_address_ids)) {
 			$this->_process_campaigns($generated_safe_tt_address_ids,"Newsletter Safe","Attivo",167);
 			$this->_process_targets($generated_safe_tt_address_ids,"Newsletter Safe","Pronto",167);
 		}
-		$generated_ids = array_merge($generated_corso_ids,$generated_safe_ids,$generated_download_ids,$generated_safe_tt_address_ids);
+		$generated_ids = array_merge($generated_corso_ids,$generated_safe_ids,$generated_download_ids,$generated_safe_tt_address_ids,$generated_form_ids);
 		if(count($generated_ids)) {
 			$this->_process_relations($generated_ids);
 		}
@@ -497,6 +507,50 @@ class RothoBus {
 		$tmp_page_title = $tt_address['tmp_page_title'];
 		$idtarget = $tt_address['tmp_idtarget'];
 		$formula = "--Nessuno--";
+		// danzi.tn@20140625 GESTIRE FROM RUSSA
+		if(count($arr)>0 && $tt_address['pid'] == '505' ) {
+			$language = "nd";
+			foreach( $arr as $item) {
+				if($this->log_active) echo "\nForm Russia item =".$item."\n";
+				/* GESTIRE FORM RUSSE 505
+				interest ???????? ???? 2014 - Flexiband
+				request Servus! TEST
+				language ru
+				*/
+				if( substr($item,0,8) == "interest" ) {
+					$interest = substr($item,9);
+					if($this->log_active) echo "interest item =".$interest."\n";
+				}
+				if( substr($item,0,7) == "request" ) {
+					$request = substr($item,8);
+					if($this->log_active) echo "request item =".$request."\n";
+				}
+				if( substr($item,0,8) == "language" ) {
+					$language = substr($item,9);
+					if($this->log_active) echo "software_download item =".$language."\n";
+					$tt_address['page_title'] = $tmp_page_title . " " . $language;
+					$ret_id_target = $idtarget.$tmp_page_title."_".$language;
+					$ret_id_target = strtolower(str_replace(' ', '_',$ret_id_target));
+					if($this->log_active) echo "Forms ret_id_target = ".$ret_id_target."\n";
+					$tt_address['idtarget'] = $ret_id_target;
+				}
+			}
+			if(empty($tt_address['page_title']) ) $tt_address['page_title'] = $tmp_page_title;
+			if(empty($ret_id_target)) {
+				$tmp_page_title_str = str_replace(' ', '_',$tmp_page_title);
+				$ret_id_target = $idtarget.$tmp_page_title_str;
+				$ret_id_target = strtolower($ret_id_target);
+				$tt_address['idtarget'] = strtolower($ret_id_target);
+			}
+			$tt_address['formula'] = "ND";
+			$tt_address['codfatt'] = "ND";
+			$tt_address['costo'] = "ND";
+			$tt_address['date'] = "ND";
+			$tt_address['descr'] = $tt_address['idtarget'] . " date: ". $tt_address['insertdate'] . " uid=" .$tt_address['uid']." pid=".$tt_address['pid']. " \ninterest = ".$interest. " \nrequest = ".$request;
+			$activitysubject = "Form interest " .$interest ." per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
+			$activitytype = "Form - Web";
+			$activitydescr = $tt_address['descr'] . " per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
+		}
 		if((count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_download)) || in_array($tt_address['pid'],$this->pids_list_download) ) {
 			foreach( $arr as $item) {
 				if($this->log_active) echo "\nDownload item =".$item."\n";
@@ -521,14 +575,16 @@ class RothoBus {
 					if($this->log_active) echo "software_download item =".$software_download."\n";
 					$tt_address['page_title'] = $tmp_page_title . " " . $software_download;
 					$ret_id_target = $idtarget.$software_download;
+					$ret_id_target = strtolower($ret_id_target);
 					if($this->log_active) echo "Download ret_id_target = ".$ret_id_target."\n";
-					$tt_address['idtarget'] = strtolower($ret_id_target);
+					$tt_address['idtarget'] = $ret_id_target;
 				}
 			}
 			if(empty($tt_address['page_title']) ) $tt_address['page_title'] = $tmp_page_title;
 			if(empty($ret_id_target)) {
 				$ret_id_target = strtolower($idtarget.$tmp_page_title);
-				$tt_address['idtarget'] = strtolower($ret_id_target);
+				$ret_id_target = strtolower($ret_id_target);
+				$tt_address['idtarget'] = $ret_id_target;
 			}
 			$tt_address['formula'] = $formula;
 			$tt_address['codfatt'] = "ND";
@@ -614,8 +670,9 @@ class RothoBus {
 			$tt_address['formula'] = $formula;
 			$tt_address['taxid'] = $tax_corso;
 			$ret_id_target = $idtarget.$tt_address['date'];
+			$ret_id_target = strtolower($ret_id_target);
 			if($this->log_active) echo "Course ret_id_target = ".$ret_id_target."\n";
-			$tt_address['idtarget'] = strtolower($ret_id_target);
+			$tt_address['idtarget'] = $ret_id_target;
 			$tt_address['descr'] = $tt_address['idtarget'] . " date: ". $tt_address['insertdate'] . " uid=" .$tt_address['uid']." pid=".$tt_address['pid'];
 			$activitysubject = "Corso " .$tt_address['page_title']. " per ".$tt_address['first_name']." " .$tt_address['last_name']." - ".$tt_address['email'];
 			$activitytype = "Iscrizione Corso - Web";
@@ -664,6 +721,10 @@ class RothoBus {
 						$ret_campaigns = $this->_process_campaigns($ret_id_targets,"Corso","Pianificato",167);
 						$ret_targets = $this->_process_targets($ret_id_targets,"Iscrizione Corso","Pronto",167);
 					} */
+					if( $tt_address["leadsource"] == 'Web Form' ) {
+						$ret_campaigns = $this->_process_campaigns($ret_id_targets,"Web Form","Pianificato",167);
+						$ret_targets = $this->_process_targets($ret_id_targets,"Web Form","Pronto",167);
+					} 
 					$this->_insert_relations_for_entity($ret_targets,$ret_campaigns,$entity);
 					$this->_create_event($entity,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 					$this->import_result['records_updated']++;
@@ -829,8 +890,14 @@ class RothoBus {
 	// provides the sql query string for retrieving data from web_temp_tt_address
 	private function _get_web_temp_tt_address() {
 		$wsquery = "select uid, pid, name, SUBSTRING( first_name,0,20) AS first_name, SUBSTRING(last_name,0,30) AS last_name, email, phone, mobile, www, address, company, city, zip, region, country, description, fax,  'web' as type 
-					, CASE WHEN pid in (".implode(", ",$this->pids_list_corso).") THEN 'Corso' WHEN pid in (".implode(", ",$this->pids_list_download).") THEN 'Download' END as leadsource
-					, CASE WHEN pid in (".implode(", ",$this->pids_list_corso).") THEN 'Qualified' WHEN pid in (".implode(", ",$this->pids_list_download).") THEN 'Held' END as leadstatus
+					, CASE WHEN pid in (".implode(", ",$this->pids_list_corso).") THEN 'Corso' 
+					       WHEN pid in (".implode(", ",$this->pids_list_download).") THEN 'Download' 
+					       WHEN pid in (".implode(", ",$this->pids_list_forms).") THEN 'Web Form' 
+					  END as leadsource
+					, CASE WHEN pid in (".implode(", ",$this->pids_list_corso).") THEN 'Qualified' 
+					       WHEN pid in (".implode(", ",$this->pids_list_download).") THEN 'Held' 
+					       WHEN pid in (".implode(", ",$this->pids_list_forms).") THEN 'Held' 
+					  END as leadstatus
 					, '167' as assigned_user_id
 					, insertdate 
 					, STR(pid) + '_' as tmp_idtarget
@@ -846,7 +913,7 @@ class RothoBus {
 					web_temp_tt_address 
 					where imported is NULL and email <>'' 
 					AND email IS NOT NULL
-					AND pid in (".implode(", ",array_merge($this->pids_list_corso,$this->pids_list_download)).")";
+					AND pid in (".implode(", ",array_merge($this->pids_list_corso,$this->pids_list_download, $this->pids_list_forms)).")";
 		return $wsquery;
 	}
 	

@@ -232,7 +232,8 @@ class Xlsx_File_Form_Import {
 				$parameters['cf_728'] = 'ND';
 				$parameters['cf_733'] = 'ND';
 				$parameters['cf_756'] = 'ND';
-				$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere',$account_no);
+				$retVal = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere',$account_no);
+				$bFound = $retVal[0];
 				if(!$bFound)
 				{	
 					$acc_record = vtws_create('Accounts', $acc_parameters, $this->adminuser);
@@ -253,7 +254,8 @@ class Xlsx_File_Form_Import {
 						{
 							vtws_insertWebserviceRelatedNotes($conId, $docId);
 						}							
-						$bFound = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
+						$retVal = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere');
+						$bFound = $retVal[0];
 					}
 				} 
 				// danzi.tn@20131209 e
