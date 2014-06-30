@@ -13,11 +13,11 @@ $sql = "SELECT
 		sum(temp_acc_ratings.valore) as sumvalore,
 		vtiger_account.accountname,
 		vtiger_account.account_no
-		, max(vtiger_visitreport.visitreportid) as visit_id 
+		--, max(vtiger_visitreport.visitreportid) as visit_id 
 		from 
 		 temp_acc_ratings 
 		JOIN vtiger_account ON vtiger_account.accountid = temp_acc_ratings.accountid
-		LEFT JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid 
+		-- LEFT JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid 
 		 WHERE temp_acc_ratings.accountid = ?
 		group by 
 		temp_acc_ratings.categoria,
@@ -52,6 +52,7 @@ switch($sdk_mode) {
 	case 'detail':
 		$result = $adb->pquery($sql,array($focus->id));
 		$html_str = "<table id='pointstable'><tbody>";
+		$html_str .= "<!-- danzi.tn@20140630 modifica per downloads -->";
 		$totsumvalore = 0;
 		$bFirst = true;
 		while($row=$adb->fetchByAssoc($result))
@@ -92,6 +93,7 @@ switch($sdk_mode) {
 	case 'edit':
 		$result = $adb->pquery($sql,array($focus->id));
 		$html_str = "<table id='pointstable'><tbody>";
+		$html_str .= "<!-- danzi.tn@20140630 modifica per downloads -->";
 		$totsumvalore = 0;
 		$bFirst = true;
 		while($row=$adb->fetchByAssoc($result))

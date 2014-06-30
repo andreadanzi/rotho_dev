@@ -1,5 +1,7 @@
 codiceCorsoCampagnaField = cf_742 and log_active = 1 
-_get_target_campaign_sql query= SELECT DISTINCT 
+_get_target_campaign_sql query= 
+
+SELECT DISTINCT 
 			vtiger_account.accountid, 
 			vtiger_account.account_no,
 			vtiger_account.accountname,
@@ -12,38 +14,24 @@ _get_target_campaign_sql query= SELECT DISTINCT
 			vtiger_campaignscf.cf_742 as codice_corso_campagna,
 			vtiger_campaignscf.cf_745 as prog_rating_date,
 			vtiger_campaignscf.cf_759 as codice_fatturazione, -- Per i download = 'ND'
-			CASE WHEN vtiger_campaignscf.cf_759 IN ('RFCACN','RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END as prog_rating_value ,
+			2 as prog_rating_value ,
 			count(*) as targetsum
 			FROM vtiger_account 
 			JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_account.accountid AND vtiger_crmentity.deleted = 0
-			JOIN vtiger_accountscf on vtiger_accountscf.accountid =  vtiger_account.accountid AND vtiger_accountscf.cf_762 = 'RP / PROG' 
-			JOIN vtiger_accountbillads on vtiger_accountbillads.accountaddressid =  vtiger_account.accountid AND ( 
-			vtiger_accountbillads.bill_country like 'IT%' OR  
-			vtiger_accountbillads.bill_country like 'ES%' OR  
-			vtiger_accountbillads.bill_country like 'PT%' OR  
-			vtiger_accountbillads.bill_country like 'DE%' OR  
-			vtiger_accountbillads.bill_country like 'AT%' OR  
-			vtiger_accountbillads.bill_country like 'CH%' OR
-			vtiger_accountbillads.bill_country like 'FR%' OR  
-			vtiger_accountbillads.bill_country like 'GB%' OR  
-			vtiger_accountbillads.bill_country like 'PL%' OR  
-			vtiger_accountbillads.bill_country like 'RO%' OR  
-			vtiger_accountbillads.bill_country like 'IE%' OR
-			vtiger_accountbillads.bill_country like 'RU%' OR
-			vtiger_accountbillads.bill_country like 'SE%' OR
-			vtiger_accountbillads.bill_country like 'NO%' OR
-			vtiger_accountbillads.bill_country like 'FI%'  )
+			JOIN vtiger_accountscf on vtiger_accountscf.accountid =  vtiger_account.accountid AND vtiger_accountscf.cf_762 = 'RC / CARP' 
+			JOIN vtiger_accountbillads on vtiger_accountbillads.accountaddressid =  vtiger_account.accountid 
 			JOIN vtiger_crmentityrel on vtiger_crmentityrel.relcrmid = vtiger_accountscf.accountid AND vtiger_crmentityrel.module = 'Targets'
 			JOIN vtiger_targets on vtiger_targets.targetsid = vtiger_crmentityrel.crmid
 			JOIN vtiger_targetscf on vtiger_targetscf.targetsid = vtiger_targets.targetsid AND vtiger_targetscf.cf_1006 <>''  AND vtiger_targetscf.cf_1006 IS NOT NULL
 			JOIN vtiger_crmentityrel as campaigns_crmentityrel on campaigns_crmentityrel.crmid = vtiger_targets.targetsid AND campaigns_crmentityrel.module = 'Targets' AND campaigns_crmentityrel.relmodule = 'Campaigns'
-			JOIN vtiger_campaign on vtiger_campaign.campaignid = campaigns_crmentityrel.relcrmid
+			JOIN vtiger_campaign on vtiger_campaign.campaignid = campaigns_crmentityrel.relcrmid AND vtiger_campaign.campaigntype = 'Download'
 			JOIN vtiger_campaignscf on vtiger_campaignscf.campaignid = vtiger_campaign.campaignid
 			JOIN vtiger_crmentity as campaign_crmentity on campaign_crmentity.crmid = vtiger_campaign.campaignid AND campaign_crmentity.deleted=0
 			WHERE (vtiger_account.rating = '' OR vtiger_account.rating = 'Active' OR vtiger_account.rating ='--None--' OR vtiger_account.rating ='Acquired') 
 			AND (vtiger_accountscf.cf_927 IS NULL OR vtiger_accountscf.cf_927='' OR vtiger_accountscf.cf_927='1'  OR vtiger_accountscf.cf_927='35' OR vtiger_accountscf.cf_927='36'   OR vtiger_accountscf.cf_927='Riattivato')
+			AND campaign_crmentity.createdtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
 			AND vtiger_campaignscf.cf_759 IN ('RFCBC','RFCAC','RFCACN','RFCAPC','RSCAP','RSCA','RSCBDPI','RHCB','RHCA','RHCT','RBFCACM','RHCI','ND') 
-			
+			AND vtiger_account.accountid = 281756
 			group by 
 			vtiger_account.accountid, 
 			vtiger_account.account_no,
@@ -57,8 +45,62 @@ _get_target_campaign_sql query= SELECT DISTINCT
 			vtiger_campaignscf.cf_745,
 			vtiger_campaignscf.cf_742,
 			vtiger_campaignscf.cf_759,
-			CASE WHEN vtiger_campaignscf.cf_759 IN ('RFCACN','RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END
-			order by vtiger_account.accountid 
+			CASE WHEN vtiger_campaignscf.cf_759 IN ('RFCACN','RFCAPC','RFCAPRING', 'RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END
+			order by vtiger_account.accountid
+
+_get_target_campaign_downloads_sql
+ 
+ SELECT DISTINCT 
+			vtiger_account.accountid, 
+			vtiger_account.account_no,
+			vtiger_account.accountname,
+			vtiger_accountbillads.bill_country, 
+			vtiger_targets.targetname,
+			vtiger_targetscf.cf_1006 as codice_corso_target,
+			vtiger_account.rating,
+			vtiger_accountscf.cf_927 as rating_attuale,
+			vtiger_campaign.campaignname,
+			vtiger_campaignscf.cf_742 as codice_corso_campagna,
+			vtiger_activity.date_start as prog_rating_date,
+			vtiger_campaignscf.cf_759 as codice_fatturazione, -- Per i download = 'ND'
+			2 as prog_rating_value ,
+			count(*) as targetsum
+			FROM vtiger_account 
+			JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_account.accountid AND vtiger_crmentity.deleted = 0
+			JOIN vtiger_accountscf on vtiger_accountscf.accountid =  vtiger_account.accountid AND vtiger_accountscf.cf_762 = 'RC / CARP' 
+			JOIN vtiger_accountbillads on vtiger_accountbillads.accountaddressid =  vtiger_account.accountid 
+			JOIN vtiger_crmentityrel on vtiger_crmentityrel.relcrmid = vtiger_accountscf.accountid AND vtiger_crmentityrel.module = 'Targets'
+			JOIN vtiger_targets on vtiger_targets.targetsid = vtiger_crmentityrel.crmid --AND vtiger_targets.target_type ='Download'
+			JOIN vtiger_targetscf on vtiger_targetscf.targetsid = vtiger_targets.targetsid AND vtiger_targetscf.cf_1006 <>''  AND vtiger_targetscf.cf_1006 IS NOT NULL
+			JOIN vtiger_crmentityrel as campaigns_crmentityrel on campaigns_crmentityrel.crmid = vtiger_targets.targetsid AND campaigns_crmentityrel.module = 'Targets' AND campaigns_crmentityrel.relmodule = 'Campaigns'
+			JOIN vtiger_campaign on vtiger_campaign.campaignid = campaigns_crmentityrel.relcrmid AND vtiger_campaign.campaigntype = 'Download'
+			JOIN vtiger_campaignscf on vtiger_campaignscf.campaignid = vtiger_campaign.campaignid
+			JOIN vtiger_crmentity as campaign_crmentity on campaign_crmentity.crmid = vtiger_campaign.campaignid AND campaign_crmentity.deleted=0
+		   JOIN vtiger_seactivityrel on vtiger_seactivityrel.crmid = vtiger_account.accountid
+			JOIN vtiger_activity ON vtiger_activity.activityid = vtiger_seactivityrel.activityid AND vtiger_activity.activitytype = 'Download - Web'
+			JOIN vtiger_crmentity actentity ON actentity.crmid = vtiger_activity.activityid AND actentity.deleted = 0
+			WHERE 
+			(vtiger_account.rating = '' OR vtiger_account.rating = 'Active' OR vtiger_account.rating ='--None--' OR vtiger_account.rating ='Acquired') 
+			AND (vtiger_accountscf.cf_927 IS NULL OR vtiger_accountscf.cf_927='' OR vtiger_accountscf.cf_927='1'  OR vtiger_accountscf.cf_927='35' OR vtiger_accountscf.cf_927='36'   OR vtiger_accountscf.cf_927='Riattivato')
+ 			AND vtiger_activity.date_start BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() AND vtiger_activity.activitytype = 'Download - Web'
+		--	AND campaign_crmentity.createdtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
+			AND vtiger_campaignscf.cf_759 IN ('ND') 
+			AND vtiger_account.accountid = 281756
+			group by 
+			vtiger_account.accountid, 
+			vtiger_account.account_no,
+			vtiger_account.accountname,
+			vtiger_accountbillads.bill_country, 
+			vtiger_targets.targetname,
+			vtiger_targetscf.cf_1006 ,
+			vtiger_account.rating,
+			vtiger_accountscf.cf_927,
+			vtiger_campaign.campaignname,		
+			vtiger_campaignscf.cf_742,
+			vtiger_activity.date_start,
+			vtiger_campaignscf.cf_759
+			order by vtiger_account.accountid
+ 
 _get_consulenze_sql query= SELECT 
 				vtiger_account.accountid, 
 				vtiger_account.account_no,

@@ -15,6 +15,7 @@
 // danzi.tn@20140224 - DISTINZIONE TRA RP / PROG E RC / CARP per Sudamerica - RICORDARSI DELETE MANUALE
 // danzi.tn@20140324 - TOLTO IL FILTRO AGLI STATI
 // danzi.tn@20140603 - filtro su ultimi 21 mesi BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() )
+// danzi.tn@20140630 - separazione tra corsi e downloads. Downloads adesso va a vedere la data sull'Evento di calendario _get_target_campaign_downloads_sql
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -90,7 +91,7 @@ class AccRatingClass {
 				// gestire prog_rating_date così com'è, cioè valore stringa
 				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
 				if($row['codice_fatturazione'] == 'ND') {
-					$account_rating_table[$row['accountid']]['Download'][$row['campaignname']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
+					$account_rating_table[$row['accountid']]['Altro'][$row['campaignname']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
 				} else {
 					if( array_key_exists($row['codice_fatturazione'],$this->_map_corsi) ) $keycorsi = $this->_map_corsi[$row['codice_fatturazione']];
 					else $keycorsi = $row['codice_fatturazione'];
@@ -98,6 +99,18 @@ class AccRatingClass {
 				}
 				$import_result['records_updated']+=1;
 			}		
+			
+			// DOWNLOADS danzi.tn@20140630 - separazione tra corsi e downloads 
+			$query = $this->_get_target_campaign_downloads_sql();
+			if($this->_log_active) echo "_get_target_campaign_downloads_sql query= ".$query." \n";
+			$result = $adb->query($query);
+			while($row=$adb->fetchByAssoc($result))
+			{
+				$account_rating[$row['accountid']] += intval($row['prog_rating_value']);
+				$account_rating_table[$row['accountid']]['Download'][$row['campaignname']][$row['prog_rating_date']] += intval($row['prog_rating_value']);
+				$import_result['records_updated']+=1;
+			}		
+			
 			// CONSULENZE
 			$query = $this->_get_consulenze_sql();
 			if($this->_log_active) echo "_get_consulenze_sql query= ".$query." \n";
@@ -304,7 +317,7 @@ class AccRatingClass {
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
 			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
 			JOIN ".$table_prefix."_crmentityrel as campaigns_crmentityrel on campaigns_crmentityrel.crmid = ".$table_prefix."_targets.targetsid AND campaigns_crmentityrel.module = 'Targets' AND campaigns_crmentityrel.relmodule = 'Campaigns'
-			JOIN ".$table_prefix."_campaign on ".$table_prefix."_campaign.campaignid = campaigns_crmentityrel.relcrmid
+			JOIN ".$table_prefix."_campaign on ".$table_prefix."_campaign.campaignid = campaigns_crmentityrel.relcrmid AND ".$table_prefix."_campaign.campaigntype <> 'Download' AND ".$table_prefix."_campaign.campaigntype <> 'Form Fiere'
 			JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid
 			JOIN ".$table_prefix."_crmentity as campaign_crmentity on campaign_crmentity.crmid = ".$table_prefix."_campaign.campaignid AND campaign_crmentity.deleted=0
 			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
@@ -324,6 +337,71 @@ class AccRatingClass {
 			".$table_prefix."_campaign.campaignname,
 			".$table_prefix."_campaignscf.".$this->_dataCorsoCampagnaField.",
 			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField.",
+			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField.",
+			CASE WHEN ".$table_prefix."_accountbillads.bill_country like 'IT%' THEN
+				CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN', 'RFCAPRING', 'RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END 
+			ELSE
+				2
+			END 
+			order by ".$table_prefix."_account.accountid";
+		return $sql;
+	}
+	
+	
+	
+	// danzi.tn@20140630 per Downloads
+	private function _get_target_campaign_downloads_sql() {
+		global $table_prefix; // danzi.tn@20140129 - aggiunti codici paese FR GB IE PL e RO
+		$sql = "SELECT DISTINCT 
+			".$table_prefix."_account.accountid, 
+			".$table_prefix."_account.account_no,
+			".$table_prefix."_account.accountname,
+			".$table_prefix."_accountbillads.bill_country, 
+			".$table_prefix."_targets.targetname,
+			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." as codice_corso_target,
+			".$table_prefix."_account.rating,
+			".$table_prefix."_accountscf.".$this->_ratingField." as rating_attuale,
+			".$table_prefix."_campaign.campaignname,
+			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField." as codice_corso_campagna,
+			".$table_prefix."_activity.date_start as prog_rating_date,
+			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." as codice_fatturazione, -- Per i download = 'ND'
+			CASE WHEN ".$table_prefix."_accountbillads.bill_country like 'IT%' THEN
+				CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN', 'RFCAPRING', 'RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END 
+			ELSE
+				2
+			END AS prog_rating_value ,
+			count(*) as targetsum
+			FROM ".$table_prefix."_account 
+			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RP / PROG' 
+			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
+			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
+			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
+			JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." <>''  AND ".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." IS NOT NULL
+			JOIN ".$table_prefix."_crmentityrel as campaigns_crmentityrel on campaigns_crmentityrel.crmid = ".$table_prefix."_targets.targetsid AND campaigns_crmentityrel.module = 'Targets' AND campaigns_crmentityrel.relmodule = 'Campaigns'
+			JOIN ".$table_prefix."_campaign on ".$table_prefix."_campaign.campaignid = campaigns_crmentityrel.relcrmid AND ".$table_prefix."_campaign.campaigntype = 'Download'
+			JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid
+			JOIN ".$table_prefix."_crmentity as campaign_crmentity on campaign_crmentity.crmid = ".$table_prefix."_campaign.campaignid AND campaign_crmentity.deleted=0
+			JOIN ".$table_prefix."_seactivityrel on ".$table_prefix."_seactivityrel.crmid = ".$table_prefix."_account.accountid
+			JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid AND ".$table_prefix."_activity.activitytype = 'Download - Web'
+			JOIN ".$table_prefix."_crmentity actentity ON actentity.crmid = ".$table_prefix."_activity.activityid AND actentity.deleted = 0
+			WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
+			AND ".$table_prefix."_activity.date_start BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
+			AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL OR ".$table_prefix."_accountscf.".$this->_ratingField."='' OR ".$table_prefix."_accountscf.".$this->_ratingField."='1'  OR ".$table_prefix."_accountscf.".$this->_ratingField."='35' OR ".$table_prefix."_accountscf.".$this->_ratingField."='36'   OR ".$table_prefix."_accountscf.".$this->_ratingField."='Riattivato')
+			AND ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." = 'ND'
+			" .( $this->entity_id > 0 ? " AND ".$table_prefix."_account.accountid = ".$this->entity_id : "" ).  "
+			group by 
+			".$table_prefix."_account.accountid, 
+			".$table_prefix."_account.account_no,
+			".$table_prefix."_account.accountname,
+			".$table_prefix."_accountbillads.bill_country, 
+			".$table_prefix."_targets.targetname,
+			".$table_prefix."_targetscf.".$this->_codiceCorsoTargetField." ,
+			".$table_prefix."_account.rating,
+			".$table_prefix."_accountscf.".$this->_ratingField.",
+			".$table_prefix."_campaign.campaignname,
+			".$table_prefix."_campaignscf.".$this->_codiceCorsoCampagnaField.",
+			".$table_prefix."_activity.date_start,
 			".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField.",
 			CASE WHEN ".$table_prefix."_accountbillads.bill_country like 'IT%' THEN
 				CASE WHEN ".$table_prefix."_campaignscf.".$this->_codiceFatturazioneCorsoField." IN ('RFCACN', 'RFCAPRING', 'RFCAPC','RSCAP','RHCA','RHCT','RBCACM') THEN 2  ELSE 1 END 

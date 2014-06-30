@@ -52,6 +52,7 @@ $sql_visit = "SELECT DISTINCT 'Visitreport' as categoria,
 // danzi.tn@20130909 e
 $result = $adb->pquery($sql,array($recordid));
 echo "<table id='pointstable'><tbody>";
+echo "<!-- danzi.tn@20140630 modifica per downloads -->";
 $totsumvalore = 0;
 $bFirst = true;
 while($row=$adb->fetchByAssoc($result))
