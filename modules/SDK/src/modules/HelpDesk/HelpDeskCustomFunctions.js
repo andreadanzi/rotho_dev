@@ -7,7 +7,8 @@
  * All Rights Reserved.
  ***************************************************************************************/
 //crmv@36406
-function return_parent_to_helpdesk(recordid,value,target_fieldname, userid) {
+// danzi.tn@20140630 decodifica area_mng_name e area_mng_no
+function return_parent_to_helpdesk(recordid,value,target_fieldname, userid,area_mng_name,area_mng_no) {
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
 	if (form) {
@@ -18,6 +19,12 @@ function return_parent_to_helpdesk(recordid,value,target_fieldname, userid) {
 		if (userid != '') {
 			var agente_id = form.elements['agente_riferimento_rec'];
 			if(agente_id) agente_id.value = userid;
+		}
+		if (form.elements['area_mng_name']) {
+			form.elements['area_mng_name'].value = area_mng_name;
+		}
+		if (form.elements['area_mng_no']) {
+			form.elements['area_mng_no'].value = area_mng_no;
 		}
 		disableReferenceField(domnode_display);
 		return true;

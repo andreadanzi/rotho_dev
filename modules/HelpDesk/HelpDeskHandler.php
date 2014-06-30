@@ -72,6 +72,32 @@ class HelpDeskHandler extends VTEventHandler {
 		if ($result && $adb->num_rows($result)>0) {			
 			$ticketid = $adb->query_result($result,0,'ticketid');
 			$nonconformitiesid = $adb->query_result($result,0,'nonconformitiesid');
+		} else {
+			$query = "SELECT  	
+				".$table_prefix."_troubletickets.ticketid, 
+				".$table_prefix."_nonconformities.nonconformitiesid, 
+				".$table_prefix."_nonconformities.nonconformity_name,
+				prodnonconf.productname
+				FROM ".$table_prefix."_nonconformities
+				JOIN ".$table_prefix."_nonconformitiescf ON ".$table_prefix."_nonconformitiescf.nonconformitiesid = ".$table_prefix."_nonconformities.nonconformitiesid
+				JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_nonconformities.nonconformitiesid AND ".$table_prefix."_crmentity.deleted =0
+				JOIN ".$table_prefix."_ticketcf ON ".$table_prefix."_ticketcf.cf_777 = ".$table_prefix."_nonconformitiescf.cf_1257  
+				JOIN ".$table_prefix."_troubletickets ON ".$table_prefix."_troubletickets.ticketid = ".$table_prefix."_ticketcf.ticketid 
+				JOIN ".$table_prefix."_products prodtickets ON prodtickets.productid = ".$table_prefix."_troubletickets.product_id
+				JOIN ".$table_prefix."_products prodnonconf ON prodnonconf.productid = ".$table_prefix."_nonconformities.productid 
+				LEFT JOIN ".$table_prefix."_crmentityrel ON ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_nonconformities.nonconformitiesid AND module='HelpDesk' AND relmodule='Nonconformities' 
+				AND ".$table_prefix."_troubletickets.ticketid = ".$table_prefix."_crmentityrel.crmid 
+				WHERE 
+				prodnonconf.productname = prodtickets.productname
+				AND ".$table_prefix."_crmentityrel.crmid IS NULL
+				AND ".$table_prefix."_troubletickets.ticketid = ?
+				ORDER BY ".$table_prefix."_crmentity.createdtime DESC";
+			$result = $adb->pquery($query,array($hd_id));
+			if ($result && $adb->num_rows($result)>0) {			
+				$nonconformitiesid = $adb->query_result($result,0,'nonconformitiesid');
+				$query = "INSERT INTO ".$table_prefix."_crmentityrel (crmid,module,relcrmid,relmodule) VALUES (?,'HelpDesk',?,'Nonconformities')";
+				$result = $adb->pquery($query,array($hd_id,$nonconformitiesid));
+			}
 		}
 		return $nonconformitiesid;
 	}
@@ -109,6 +135,12 @@ class HelpDeskHandler extends VTEventHandler {
 		// danzi.tn@20140603 assegnare al gruppo Ufficio Acquisti
 		$newNC->column_fields['assigned_user_id'] = 133018; //$data_array['assigned_user_id'];
 		$newNC->column_fields['smownerid'] = 133018; //$data_array['assigned_user_id'];
+		// danzi.tn@20140630 aggiunto numero lotto
+		$newNC->column_fields['cf_1257'] = $data_array['cf_777'];
+		if($data_array['ticketcategories'] == "Prodotto") { 
+			$newNC->column_fields['cf_1273'] = "Prodotto";
+		}
+		// danzi.tn@20140630e
 		$newNC->column_fields['nonconformity_state'] = "Aperta"; // picklist
 		$newNC->column_fields["description"] =  $data_array['description'].  " -- ". $data_array["ticket_title"] . " (".$data_array["ticket_no"].", '".$ticketsubcategories."', '".$cf_798."') --";
 		$newNC->save($module_name='Nonconformities');
