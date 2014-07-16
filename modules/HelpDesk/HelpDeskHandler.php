@@ -9,6 +9,7 @@
  *************************************************************************************/
 class HelpDeskHandler extends VTEventHandler {
 	//danzi.tn@20140423 Handler per HelpDesk
+	//danzi.tn@20140716 gestione Collegato a fisso su  Ticket Rothoblaas con id = 1306471 nel caso di categoria = Segnalazione prodotti
 	function handleEvent($eventName, $data) {
 		global $adb, $current_user,$log;
 		global $table_prefix;
@@ -31,6 +32,17 @@ class HelpDeskHandler extends VTEventHandler {
 		if($eventName == 'vtiger.entity.beforesave') {
 			// Entity is about to be saved, take required action
 			$log->debug("handleEvent vtiger.entity.beforesave entered");
+			//danzi.tn@20140716
+			$module = $data->getModuleName();
+			$focus = $data->focus;
+			if( $focus->column_fields['ticketcategories'] == 'Segnalazione prodotti') {
+				$acc_data = $this->_get_default_ticket_account(1306471); //account Ticket Rothoblaas
+				$focus->column_fields['parent_id'] = $acc_data['account_id'];
+				$focus->column_fields['agente_riferimento_rec'] = $acc_data['agente_riferimento_rec'];
+				$focus->column_fields['area_mng_name'] = $acc_data['area_mng_name'];
+				$focus->column_fields['area_mng_no'] = $acc_data['area_mng_no'];
+			}
+			//danzi.tn@20140716e
 			$log->debug("handleEvent vtiger.entity.beforesave treminated");
 		}
 
@@ -55,6 +67,27 @@ class HelpDeskHandler extends VTEventHandler {
 			$log->debug("handleEvent vtiger.entity.aftersave terminated");
 		}
 	}
+	
+	//danzi.tn@20140716
+	function _get_default_ticket_account($entity_id) {
+		global $adb,  $table_prefix;
+		$adb->pquery("select {$table_prefix}_users.id 
+								, {$table_prefix}_account.area_mng_no, {$table_prefix}_account.area_mng_name
+								from {$table_prefix}_crmentity
+								inner join {$table_prefix}_users on {$table_prefix}_users.id = {$table_prefix}_crmentity.smownerid
+								left join {$table_prefix}_account on  {$table_prefix}_account.accountid = {$table_prefix}_crmentity.crmid
+								where {$table_prefix}_users.status = ? and {$table_prefix}_crmentity.crmid = ?",array('Active',$entity_id));
+		$userid = '';
+		$area_mng_name = '';
+		$area_mng_no = '';
+		if ($result1 && $adb->num_rows($result1)) {
+			$userid = $adb->query_result($result1,0,'id'); // agente_riferimento_rec
+			$area_mng_name = $adb->query_result($result1,0,'area_mng_name'); //area_mng_name
+			$area_mng_no = $adb->query_result($result1,0,'area_mng_no'); //area_mng_no
+		}
+		return array('account_id'=>$entity_id,'area_mng_name'=>$area_mng_name,'area_mng_no'=>$area_mng_no,'agente_riferimento_rec'=>$userid);
+	}
+	//danzi.tn@20140716e
 	
 	// danzi.tn@20140512 verifica se c'è una NC già relazionata
 	function _checkExistingNC($hd_id) {
