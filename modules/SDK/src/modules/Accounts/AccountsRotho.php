@@ -1,6 +1,6 @@
 <?php
 require_once('modules/Accounts/Accounts.php');
-
+// danzi.tn@20140717 creazione nuovo modulo Marketprices => get_marketprices
 class AccountsRotho extends Accounts {
 	
 	var $list_fields_name = Array(
@@ -187,5 +187,69 @@ class AccountsRotho extends Accounts {
 
 	}
 	//danzi.tn@20130813e
+	
+	//danzi.tn@20140717 creazione nuovo modulo Marketprices
+	function get_marketprices($id, $cur_tab_id, $rel_tab_id, $actions=false) {
+		global $log, $singlepane_view,$currentModule,$current_user,$table_prefix;
+		$log->debug("Entering get_marketprices(".$id.") method ...");
+		$this_module = $currentModule;
+
+        $related_module = vtlib_getModuleNameById($rel_tab_id);
+		$other = CRMEntity::getInstance($related_module);
+        vtlib_setup_modulevars($related_module, $other);		
+		$singular_modname = vtlib_toSingular($related_module);
+		
+		$parenttab = getParentTab();
+		
+		if($singlepane_view == 'true')
+			$returnset = '&return_module='.$this_module.'&return_action=DetailView&return_id='.$id;
+		else
+			$returnset = '&return_module='.$this_module.'&return_action=CallRelatedList&return_id='.$id;
+		
+		$button = '';
+				
+		if($actions) {
+			if(is_string($actions)) $actions = explode(',', strtoupper($actions));
+			if(in_array('SELECT', $actions) && isPermitted($related_module,4, '') == 'yes') {
+				$button .= "<input title='".getTranslatedString('LBL_SELECT')." ". getTranslatedString($related_module). "' class='crmbutton small edit' type='button' onclick=\"openPopup('index.php?module=$related_module&return_module=$currentModule&action=Popup&popuptype=detailview&select=enable&form=EditView&form_submit=false&recordid=$id&parenttab=$parenttab','test','width=640,height=602,resizable=0,scrollbars=0');\" value='". getTranslatedString('LBL_SELECT'). " " . getTranslatedString($related_module) ."'>&nbsp;"; // crmv@21048m
+			}
+			if(in_array('ADD', $actions) && isPermitted($related_module,1, '') == 'yes') {
+				$button .= "<input title='".getTranslatedString('LBL_ADD_NEW'). " ". getTranslatedString($singular_modname) ."' class='crmbutton small create'" .
+					" onclick='this.form.action.value=\"EditView\";this.form.module.value=\"$related_module\"' type='submit' name='button'" .
+					" value='". getTranslatedString('LBL_ADD_NEW'). " " . getTranslatedString($singular_modname) ."'>&nbsp;";
+			}
+		} 
+
+		$query = "SELECT ".$table_prefix."_marketprices.*,
+			".$table_prefix."_crmentity.crmid,
+                        ".$table_prefix."_crmentity.smownerid,
+			".$table_prefix."_account.accountname,
+			case when (".$table_prefix."_users.user_name is not null) then ".$table_prefix."_users.user_name else ".$table_prefix."_groups.groupname end as user_name
+			FROM ".$table_prefix."_marketprices
+			INNER JOIN ".$table_prefix."_marketpricescf
+				ON ".$table_prefix."_marketpricescf.marketpricesid = ".$table_prefix."_marketprices.marketpricesid
+			INNER JOIN ".$table_prefix."_crmentity
+				ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_marketprices.marketpricesid
+			LEFT JOIN ".$table_prefix."_account as comp
+				ON comp.accountid = ".$table_prefix."_marketprices.competitor 
+			LEFT JOIN ".$table_prefix."_account as cust
+				ON cust.accountid = ".$table_prefix."_marketprices.accounts_customer 
+			LEFT JOIN ".$table_prefix."_groups
+				ON ".$table_prefix."_groups.groupid = ".$table_prefix."_crmentity.smownerid
+			LEFT JOIN ".$table_prefix."_users
+				ON ".$table_prefix."_crmentity.smownerid = ".$table_prefix."_users.id
+			WHERE ".$table_prefix."_crmentity.deleted = 0
+			AND (comp.accountid = ".$id." OR cust.accountid = ".$id.")";
+	
+		$return_value = GetRelatedList($this_module, $related_module, $other, $query, $button, $returnset); 
+		
+		if($return_value == null) $return_value = Array();
+		$return_value['CUSTOM_BUTTON'] = $button;
+		
+		$log->debug("Exiting get_marketprices method ...");		
+		return $return_value;
+
+	}
+	//danzi.tn@20140717e
 }
 ?>
