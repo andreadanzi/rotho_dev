@@ -8,11 +8,14 @@
  * All Rights Reserved.
  ************************************************************************************/
 require_once('include/PHPExcel/PHPExcel.php');
-global $currentModule, $log,$adb,$root_directory,$tmp_dir;
+global $currentModule,$current_user, $log,$adb,$root_directory,$tmp_dir;
 $modObj = CRMEntity::getInstance($currentModule);
 $filename = getTranslatedString('Inspections',$currentModule)."_".date('YmdHis').".xls";
 $fname = str_replace('.php', '.xls', __FILE__);
 $action = $_REQUEST["action"];
+$user_first_name = $current_user->column_fields['first_name'];
+$user_last_name = $current_user->column_fields['last_name'];
+
 if($action == 'InspectionsAjax')
 {
 	$ajaxaction = $_REQUEST["ajaxaction"];
@@ -43,6 +46,7 @@ if($action == 'InspectionsAjax')
 			
 			$xlsStyle1 = new PHPExcel_Style();
 			$xlsStyle2 = new PHPExcel_Style();
+			$xlsStyle2_centered = new PHPExcel_Style();
 			$xlsStyle1_1 = new PHPExcel_Style();
 			$xlsStyle1_2 = new PHPExcel_Style();
 			$xlsStyle2_1 = new PHPExcel_Style();
@@ -53,7 +57,7 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 11,
+					'size' => 14,
 					'color' => array( 'rgb' => '000000' )
 				),
 				'fill' => array(
@@ -71,8 +75,22 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => false,
-					'size' => 10,
+					'size' => 12,
 				),
+				'borders' => array(
+					'allborders' => array(
+						'style' => PHPExcel_Style_Border::BORDER_THIN )
+					)
+				)
+			);
+			// PHPExcel_Style_Alignment::HORIZONTAL_CENTER
+			$xlsStyle2_centered->applyFromArray(
+				array(
+				'font' => array(
+					'name' => 'Arial',
+					'bold' => false,
+					'size' => 12,
+					),
 				'borders' => array(
 					'allborders' => array(
 						'style' => PHPExcel_Style_Border::BORDER_THIN )
@@ -84,7 +102,7 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 11,
+					'size' => 14,
 					'color' => array( 'rgb' => 'FF6600' )
 				),
 				'fill' => array(
@@ -103,7 +121,7 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 11,
+					'size' => 14,
 					'color' => array( 'rgb' => '000000' )
 				),
 				'fill' => array(
@@ -122,7 +140,7 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 12,
+					'size' => 14,
 					'color' => array( 'rgb' => 'FF6600' )
 					)
 				)
@@ -132,7 +150,7 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 11,
+					'size' => 14,
 					'color' => array( 'rgb' => '000000' )
 					)
 				)
@@ -142,7 +160,7 @@ if($action == 'InspectionsAjax')
 				array('font' => array(
 					'name' => 'Arial',
 					'bold' => true,
-					'size' => 11,
+					'size' => 14,
 					'color' => array( 'rgb' => '000000' )
 				),
 				'borders' => array(
@@ -189,14 +207,14 @@ if($action == 'InspectionsAjax')
 			$sheet1 = $objPHPExcel->getActiveSheet ();
 			// $sheet1 = new PHPExcel_Worksheet($objPHPExcel, getTranslatedString('Inspections',$currentModule));
 			$sheet1->setTitle(getTranslatedString('Inspections',$currentModule));
-			$sheet1->getColumnDimension('A')->setWidth(23);
-			$sheet1->getColumnDimension('B')->setWidth(35);
-			$sheet1->getColumnDimension('C')->setWidth(20);
-			$sheet1->getColumnDimension('D')->setWidth(35);
-			$sheet1->getColumnDimension('E')->setWidth(20);
-			$sheet1->getColumnDimension('F')->setWidth(20);
-			$sheet1->getColumnDimension('G')->setWidth(32);
-			$sheet1->getColumnDimension('H')->setWidth(15);
+			$sheet1->getColumnDimension('A')->setWidth(13);
+			$sheet1->getColumnDimension('B')->setWidth(37);
+			$sheet1->getColumnDimension('C')->setWidth(19);
+			$sheet1->getColumnDimension('D')->setWidth(33);
+			$sheet1->getColumnDimension('E')->setWidth(16);
+			$sheet1->getColumnDimension('F')->setWidth(16);
+			$sheet1->getColumnDimension('G')->setWidth(21);
+			$sheet1->getColumnDimension('H')->setWidth(8);
 			$sheet1->getColumnDimension('I')->setWidth(40);
 			// $objPHPExcel->addSheet($sheet1);
 			$sheet1->setSharedStyle($xlsStyle2_1,'A2');
@@ -205,11 +223,14 @@ if($action == 'InspectionsAjax')
 			$sheet1->setSharedStyle($xlsStyle1_1,'B6');
 			$sheet1->setSharedStyle($xlsStyle1_2,'F6:H6');
 			$sheet1->setSharedStyle($xlsStyle1_1,'I6');
+			$sheet1->getStyle('A6')->getAlignment()->setWrapText(true);
+			$sheet1->getStyle('E6:H6')->getAlignment()->setWrapText(true);
+			$sheet1->getStyle('A6:I6')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 			//Codice Articolo	Marca	Nr. Matricola	Data primo utilizzo	Data di Acquisto	Data Prossima Revisione	Esito	Nota
 			$sheet1->setCellValue('A6',"Codice Articolo");
 			$sheet1->setCellValue('B6',"Marca");
 			$sheet1->setCellValue('C6',"Nr. Matricola");
-			$sheet1->setCellValue('D6',"Descr. Articolo");
+			$sheet1->setCellValue('D6',"Descrizione Articolo");
 			$sheet1->setCellValue('E6',"Data primo utilizzo");
 			$sheet1->setCellValue('F6',"Data di Acquisto");
 			$sheet1->setCellValue('G6',"Data Prossima Revisione");
@@ -237,18 +258,18 @@ if($action == 'InspectionsAjax')
 					//} elseif($key=='inspection_state') {
 					//	$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, getTranslatedString($value,$currentModule));
 					} elseif($key == 'salesdate') {
-						$my_date1 = strtotime( $value);
+						$my_date1 = new DateTime( $value);
 						$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, PHPExcel_Shared_Date::PHPToExcel($my_date1));
 						$dcount = $dcount + 1;
 					} elseif($key == 'nextinspdate') {
-						$my_date2 = strtotime( $value);
+						$my_date2 = new DateTime( $value);
 						$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, PHPExcel_Shared_Date::PHPToExcel($my_date2));
 						$dcount = $dcount + 1;
 					} elseif($key == 'first_time_use') {
 						if($value == "") {
 							$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, "ND");
 						} else {
-							$my_date3 = strtotime( $value);
+							$my_date3 = new DateTime( $value);
 							$sheet1->setCellValueByColumnAndRow($dcount, $rowcount, PHPExcel_Shared_Date::PHPToExcel($my_date3));
 						}
 						$dcount = $dcount + 1;
@@ -257,6 +278,7 @@ if($action == 'InspectionsAjax')
 						$dcount = $dcount + 1;
 					}
 				}
+				$sheet1->getRowDimension( $rowcount)->setRowHeight(22);
 				$rowcount++;
 			}
 			$sheet1->setSharedStyle($xlsStyle2_2,'F2');
@@ -265,15 +287,18 @@ if($action == 'InspectionsAjax')
 			$sheet1->setSharedStyle($xlsStyle2_3,'G2:H2');
 			$sheet1->setCellValue('G2', $account_name);
 			$sheet1->setSharedStyle($xlsStyle2_2,'F4');
-			$sheet1->setCellValue('F4', getTranslatedString('Data di Revisione:',$currentModule));
+			$sheet1->setCellValue('F4', getTranslatedString('Data:',$currentModule));
 			$sheet1->setSharedStyle($xlsStyle2_3,'G4');
 			// $sheet1->setCellValue('G4', $inspection_date);
-			$my_date = strtotime($inspection_date);
+			$my_date = new DateTime($inspection_date);
 			$sheet1->setCellValue('G4', PHPExcel_Shared_Date::PHPToExcel($my_date));
-			$sheet1->getStyle('G4')->getNumberFormat()->setFormatCode('dd.mm.yyyy');
 			//$sheet1->setCellValue('G4', $inspection_date);
+			$sheet1->getStyle('G4')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER); 
+			$sheet1->getStyle('G4')->getNumberFormat()->setFormatCode('dd.mm.yyyy');
 			if($rowcount>2) $rowcount=$rowcount-1;
 			$sheet1->setSharedStyle($xlsStyle2, 'A7:I'.$rowcount);
+			$sheet1->getStyle('E7:H'.$rowcount)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+			$sheet1->getStyle('A7:I'.$rowcount)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 			for($i=7;$i<=$rowcount; $i++) {
 				$sheet1->getStyleByColumnAndRow(4, $i)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
 				$sheet1->getStyleByColumnAndRow(5, $i)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
@@ -291,7 +316,10 @@ if($action == 'InspectionsAjax')
 			$coords = sprintf("A%d",$rowcount+4);
 			$objDrawing->setCoordinates($coords);
 			$objDrawing->setWorksheet($sheet1);
+			$sheet1->getStyleByColumnAndRow($dcount-3, $rowcount+3)->getFont()->setSize(12);
+			$sheet1->getStyleByColumnAndRow($dcount-3, $rowcount+4)->getFont()->setSize(12);
 			$sheet1->setCellValueByColumnAndRow($dcount-3, $rowcount+3, "Addetto alla verifica revisione DPI");
+			$sheet1->setCellValueByColumnAndRow($dcount-3, $rowcount+4, $user_first_name  . " " .$user_last_name );
 			$sheet1->setPageSetup($objPageSetup);
 			// firma e
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
