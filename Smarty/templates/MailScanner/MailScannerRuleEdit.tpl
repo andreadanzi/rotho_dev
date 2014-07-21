@@ -158,6 +158,10 @@
 									<option value="CREATERUMO,Rumors,FROM" {if $RULEACTIONTEXT eq 'CREATERUMO,Rumors,FROM'}selected=true{/if}
 									>{$MOD.LBL_CREATE} Rumors</option>
 									{*//danzi.tn@20140407 e*}									
+									{*//danzi.tn@20140721*}
+									<option value="CREATEMKPC,Marketprices,FROM" {if $RULEACTIONTEXT eq 'CREATEMKPC,Marketprices,FROM'}selected=true{/if}
+									>{$MOD.LBL_CREATE} Market Prices</option>
+									{*//danzi.tn@20140721 e*}									
 									<option value="CREATE,HelpDesk,FROM" {if $RULEACTIONTEXT eq 'CREATE,HelpDesk,FROM'}selected=true{/if}
 									>{$MOD.LBL_CREATE} {$MOD.LBL_TICKET}</option>
 									<option value="UPDATE,HelpDesk,SUBJECT" {if $RULEACTIONTEXT eq 'UPDATE,HelpDesk,SUBJECT'}selected=true{/if}

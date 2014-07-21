@@ -10,6 +10,9 @@
  ********************************************************************************/
  
  // danzi.tn@20140207 Creazione ticket interno
+ // danzi.tn@20140407 Creazione nuovo record in modulo Rumors
+ // danzi.tn@20140721 Creazione nuovo record in modulo Market Price
+
 
 require_once('modules/Users/Users.php');
 
@@ -147,7 +150,12 @@ class Vtiger_MailScannerAction {
 			if($this->module == 'Rumors') {
 				$returnid = $this->__CreateRumor($mailscanner, $mailrecord); 
 			}
-		} /*danzi.tn@20140407*/
+		} /*danzi.tn@20140407e*//*danzi.tn@20140721 aggancio a Market Prices*/		
+		elseif($this->actiontype == 'CREATEMKPC') {
+			if($this->module == 'Marketprices') {
+				$returnid = $this->__CreateMarketPrice($mailscanner, $mailrecord); 
+			}
+		} /*danzi.tn@20140721e*/
 		else if($this->actiontype == 'LINK') {
 			$returnid = $this->__LinkToRecord($mailscanner, $mailrecord);
 		} else if($this->actiontype == 'UPDATE') {
@@ -770,5 +778,74 @@ class Vtiger_MailScannerAction {
 		return $rumor->id;
 	}
 	// danzi.tn@20140407 e
+	
+	// danzi.tn@20140721 Creazione nuovo record in modulo Marketprices
+	/**
+	 * Create market price action.
+	 */
+	function __CreateMarketPrice($mailscanner, $mailrecord) {
+		// Prepare data to create rumor
+		$usetitle = $mailrecord->_subject;
+		$description = $mailrecord->getBodyText();
+		//crmv@2043m
+		$matches = preg_match('/<body[^>]*>(.*)/ims',$description,$tmp);
+		if ($matches) {
+			$description = $tmp[1];
+		}
+		if (strpos($description,'</body>') !== false) {
+			$description = substr($description,0,strpos($description,'</body>'));
+		}
+		//crmv@2043me
+
+		// There will be only on FROM address to email, so pick the first one
+		$fromemail = $mailrecord->_from[0];	
+		$linktoid = $mailscanner->LookupUser($fromemail);
+		if (!$linktoid){
+			return false;
+		}
+		/** Now Create Marketprice **/
+		global $current_user;
+		if(!$current_user) $current_user = new Users();
+		$current_user->id = 1;
+		$this->log("process __CreateMarketPrice for subject ".$usetitle." from ". $fromemail);
+		// Create trouble marketprice record
+		$marketprice = CRMEntity::getInstance('Marketprices');
+		$marketprice->column_fields['marketprice_name'] = "lbl_mkp_price"; //$usetitle;
+		$marketprice->column_fields['description'] = $description;
+		$marketprice->column_fields['marketprice_subject'] = $usetitle;
+		$marketprice->column_fields['infosender'] = $fromemail;
+		$marketprice->column_fields['product_cat'] = '06';
+		$marketprice->column_fields['product_cat_descr'] = 'ALTRO';
+		$marketprice->column_fields['assigned_user_id'] = $linktoid; //132947; // ASSEGNATO a Benchmarking
+		$retVals = $this->__get_am_for_user($linktoid);
+		$marketprice->column_fields['area_mng_name'] = $retVals['area_mng_name'];
+		$marketprice->column_fields['area_mng_no'] = $retVals['area_mng_no'];
+		$marketprice->save('Marketprices');
+		//crmv@2043m
+		$mailrecord->_subject .= ' - Market Price Id: '.$marketprice->id;
+		$this->__CreateNewEmail($mailrecord, $this->module, $marketprice);
+		//crmv@2043me
+		return $marketprice->id;
+	}
+	
+	function __get_am_for_user($user_id) {
+		global $adb,$table_prefix;
+		$agent_cod_capoarea = "";
+		$agent_name_capoarea = "";
+		$query = "SELECT  vtiger_users.agent_cod_capoarea,
+							amuser.first_name + ' '+ amuser.last_name as agent_name_capoarea
+							from  {$table_prefix}_users 
+							LEFT JOIN {$table_prefix}_users as amuser on amuser.erp_code = {$table_prefix}_users.agent_cod_capoarea
+							WHERE  {$table_prefix}_users.agent_cod_capoarea <> '' AND {$table_prefix}_users.id = ?";
+		$result = $adb->pquery($query,array($user_id));
+		if ($result && $adb->num_rows($result)>0) {
+			$agent_cod_capoarea = $adb->query_result($result,0,'agent_cod_capoarea');
+			$agent_name_capoarea = $adb->query_result($result,0,'agent_name_capoarea');
+		}
+		return array('area_mng_name'=>$agent_name_capoarea,'area_mng_no'=>$agent_cod_capoarea);
+	}
+	// danzi.tn@20140721 e
+	
+	
 }
 ?>

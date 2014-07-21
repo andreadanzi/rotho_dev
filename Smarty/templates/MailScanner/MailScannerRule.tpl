@@ -162,6 +162,7 @@
 								{* mycrmv@3147m *}{elseif $SCANNERRULE->useaction->actiontext eq 'CREATEUSR,HelpDesk,FROM'} {$MOD.LBL_CREATE} {$MOD.LBL_TICKET} ({'Users'|getTranslatedString:'Users'}){* mycrmv@3147me *}
 								{* danzi.tn@20140207m *}{elseif $SCANNERRULE->useaction->actiontext eq 'CREATEINT,HelpDesk,FROM'} {$MOD.LBL_CREATE} {$MOD.LBL_TICKET} (Interni){* danzi.tn@20140207me *}
 								{* danzi.tn@20140407m *}{elseif $SCANNERRULE->useaction->actiontext eq 'CREATERUMO,Rumors,FROM'} {$MOD.LBL_CREATE} Rumors {* danzi.tn@20140407me *}
+								{* danzi.tn@20140721m *}{elseif $SCANNERRULE->useaction->actiontext eq 'CREATEMKPC,Marketprices,FROM'} {$MOD.LBL_CREATE} Market Prices {* danzi.tn@20140721me *}
 								{elseif $SCANNERRULE->useaction->actiontext eq 'UPDATE,HelpDesk,SUBJECT'} {$MOD.LBL_UPDATE} {$MOD.LBL_TICKET}
 								{elseif $SCANNERRULE->useaction->actiontext eq 'LINK,Contacts,FROM'}{$MOD.LBL_ADD} {$MOD.LBL_TO} {$MOD.LBL_CONTACT} [{$MOD.LBL_FROM_CAPS}]
 								{elseif $SCANNERRULE->useaction->actiontext eq 'LINK,Contacts,TO'}{$MOD.LBL_ADD} {$MOD.LBL_TO} {$MOD.LBL_CONTACT} [{$MOD.LBL_TO_CAPS}]

@@ -22,7 +22,7 @@ if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 							join {$table_prefix}_accountbillads on  {$table_prefix}_accountbillads.accountaddressid = {$table_prefix}_crmentity.crmid
 							left join {$table_prefix}_users on {$table_prefix}_users.id = ?
 							LEFT JOIN {$table_prefix}_users as amuser on amuser.erp_code = {$table_prefix}_users.agent_cod_capoarea
-							where {$table_prefix}_crmentity.crmid = ?";
+							where {$table_prefix}_users.agent_cod_capoarea <> '' AND {$table_prefix}_crmentity.crmid = ?";
 
 	$log->debug("AccountToMarketprices.php customquery ".$query);
 	$result = $adb->pquery($query,array($current_user->id,$entity_id));
