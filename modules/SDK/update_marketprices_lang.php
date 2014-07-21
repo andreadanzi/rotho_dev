@@ -117,5 +117,12 @@ SDK::setLanguageEntry('Marketprices','en_us', 'lbl_mkp_other' , 'Other');
 SDK::setLanguageEntry('Marketprices','de_de', 'lbl_mkp_other' , 'Other');
 
 
+SDK::setLanguageEntry('Products','it_it', 'SINGLE_Marketprices' , 'Market Price');
+SDK::setLanguageEntry('Products','en_us', 'SINGLE_Marketprices' , 'Market Price');
+SDK::setLanguageEntry('Products','de_de', 'SINGLE_Marketprices' , 'Market Price');
+
+SDK::setLanguageEntry('Accounts','it_it', 'SINGLE_Marketprices' , 'Market Price');
+SDK::setLanguageEntry('Accounts','en_us', 'SINGLE_Marketprices' , 'Market Price');
+SDK::setLanguageEntry('Accounts','de_de', 'SINGLE_Marketprices' , 'Market Price');
 
 ?>
