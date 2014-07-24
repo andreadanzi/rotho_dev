@@ -8,7 +8,7 @@
  ***************************************************************************************/
 //crmv@36406
 // danzi.tn@20140630 decodifica area_mng_name e area_mng_no
-function return_parent_to_helpdesk(recordid,value,target_fieldname, userid,area_mng_name,area_mng_no) {
+function return_parent_to_helpdesk(recordid,value,target_fieldname, userid,area_mng_name,area_mng_no,agent_cod_capoarea,agent_name_capoarea) {
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
 	if (form) {
