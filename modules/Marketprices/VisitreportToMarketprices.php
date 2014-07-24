@@ -1,33 +1,38 @@
 <?php
 global $default_charset,$adb,$table_prefix,$autocomplete_return_function,$log,$current_user;
 
-//danzi.tn@20140717 creazione nuovo modulo Marketprices
-//danzi.tn@20140724 fix query (agent_cod_capoarea <> '')
-$log->debug("Entering AccountToMarketprices.php ...");
+//danzi.tn@20140724 revisione 2 del modulo Marketprices
+$log->debug("Entering VisitreportToMarketprices.php.php ...");
 $forfield = htmlspecialchars($_REQUEST['forfield'], ENT_QUOTES, $default_charset);
 $list_result_count = $i-1;
 $value = getValue($ui_col_array,$list_result,$fieldname,$focus,$module,$entity_id,$list_result_count,"search",$focus->popup_type);
 if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 	$value1 = strip_tags($value);
 	$value = htmlspecialchars(addslashes(html_entity_decode(strip_tags($value), ENT_QUOTES,$default_charset)), ENT_QUOTES,$default_charset); // Remove any previous html conversion
+	$account_id = 0;
+	$accountname = '';
 	$customer_cat = '';
 	$country = '';
 	$area_mng_name = '';
 	$area_mng_no = '';
 		
-	$query = "SELECT  {$table_prefix}_account.area_mng_no, {$table_prefix}_account.area_mng_name, bill_country, cf_762 as category,  vtiger_users.agent_cod_capoarea,
+	$query = "SELECT  {$table_prefix}_account.accountid, {$table_prefix}_account.accountname,
+							{$table_prefix}_account.area_mng_no, {$table_prefix}_account.area_mng_name, bill_country, cf_762 as category,  {$table_prefix}_users.agent_cod_capoarea,
 							amuser.first_name + ' '+ amuser.last_name as agent_name_capoarea
 							from {$table_prefix}_crmentity
-							join {$table_prefix}_account on  {$table_prefix}_account.accountid = {$table_prefix}_crmentity.crmid
-							join {$table_prefix}_accountscf on  {$table_prefix}_accountscf.accountid = {$table_prefix}_crmentity.crmid
-							join {$table_prefix}_accountbillads on  {$table_prefix}_accountbillads.accountaddressid = {$table_prefix}_crmentity.crmid
+							join {$table_prefix}_visitreport on {$table_prefix}_visitreport.visitreportid = {$table_prefix}_crmentity.crmid
+							join {$table_prefix}_account on  {$table_prefix}_account.accountid = {$table_prefix}_visitreport.accountid
+							join {$table_prefix}_accountscf on  {$table_prefix}_accountscf.accountid = {$table_prefix}_account.accountid
+							join {$table_prefix}_accountbillads on  {$table_prefix}_accountbillads.accountaddressid = {$table_prefix}_account.accountid
 							left join {$table_prefix}_users on {$table_prefix}_users.id = ?
-							LEFT JOIN {$table_prefix}_users as amuser on amuser.erp_code = {$table_prefix}_users.agent_cod_capoarea AND {$table_prefix}_users.agent_cod_capoarea <> ''
-							where  {$table_prefix}_crmentity.crmid = ?";
+							LEFT JOIN {$table_prefix}_users as amuser on amuser.erp_code = {$table_prefix}_users.agent_cod_capoarea AND  {$table_prefix}_users.agent_cod_capoarea <> ''
+							where {$table_prefix}_crmentity.crmid = ?";
 
-	$log->debug("AccountToMarketprices.php customquery ".$query);
+	$log->debug("VisitreportToMarketprices.php customquery ".$query);
 	$result = $adb->pquery($query,array($current_user->id,$entity_id));
 	if ($result && $adb->num_rows($result)>0) {
+		$account_id = $adb->query_result($result,0,'accountid');
+		$accountname = $adb->query_result($result,0,'accountname');
 		$customer_cat = $adb->query_result($result,0,'category');
 		$area_mng_name = $adb->query_result($result,0,'area_mng_name');
 		$area_mng_no = $adb->query_result($result,0,'area_mng_no');
@@ -39,8 +44,8 @@ if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 			$area_mng_name = $agent_name_capoarea;
 		}
 	}
-	$autocomplete_return_function[$entity_id] = "return_account_to_marketprices($entity_id, \"$value\", \"$forfield\", \"$customer_cat\", \"$country\", \"$area_mng_name\", \"$area_mng_no\");";
+	$autocomplete_return_function[$entity_id] = "return_account_to_marketprices($entity_id, \"$value\", \"$forfield\",\"$account_id\", \"$accountname\", \"$customer_cat\", \"$country\", \"$area_mng_name\", \"$area_mng_no\");";
 	$value = "<a href='javascript:void(0);' onclick='{$autocomplete_return_function[$entity_id]}closePopup();'>$value1</a>"; //crmv@21048m
 }
-$log->debug("Exiting AccountToMarketprices.php ...");
+$log->debug("Exiting VisitreportToMarketprices.php ...");
 ?>

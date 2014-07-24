@@ -10,6 +10,7 @@
 require_once('data/CRMEntity.php');
 require_once('data/Tracker.php');
 //danzi.tn@20140717 creazione nuovo modulo Marketprices
+//danzi.tn@20140724 rev2 del modulo Marketprices, link a Report Visita
 
 class Marketprices extends CRMEntity {
 	var $db, $log; // Used in class functions of CRMEntity
@@ -42,7 +43,7 @@ class Marketprices extends CRMEntity {
 	var $list_fields = Array ();
 	var $list_fields_name = Array(
 		/* Format: Field Label => fieldname */
-		'Marketprice Name'=> 'marketprice_name',
+		'Market Price Number'=> 'marketprice_no',
 		'Assigned To' => 'assigned_user_id',
 		'Competitor' => 'competitor',
 		'Customer' => 'accounts_customer',
@@ -51,40 +52,40 @@ class Marketprices extends CRMEntity {
 	);
 
 	// Make the field link to detail view from list view (Fieldname)
-	var $list_link_field = 'marketprice_name';
+	var $list_link_field = 'marketprice_no';
 
 	// For Popup listview and UI type support
 	var $search_fields = Array();
 	var $search_fields_name = Array(
 		/* Format: Field Label => fieldname */
-		'Marketprice Name'=> 'marketprice_name'
+		'Market Price Number'=> 'marketprice_no'
 	);
 
 	// For Popup window record selection
-	var $popup_fields = Array('marketprice_name');
+	var $popup_fields = Array('marketprice_no');
 
 	// Placeholder for sort fields - All the fields will be initialized for Sorting through initSortFields
 	var $sortby_fields = Array();
 
 	// For Alphabetical search
-	var $def_basicsearch_col = 'marketprice_name';
+	var $def_basicsearch_col = 'marketprice_no';
 
 	// Column value to use on detail view record text display
-	var $def_detailview_recname = 'marketprice_name';
+	var $def_detailview_recname = 'marketprice_no';
 
 	// Required Information for enabling Import feature
-	var $required_fields = Array('marketprice_name'=>1);
+	var $required_fields = Array('competitor'=>1);
 
 	// Callback function list during Importing
 	var $special_functions = Array('set_import_assigned_user');
 
-	var $default_order_by = 'marketprice_name';
+	var $default_order_by = 'marketprice_no';
 	var $default_sort_order='ASC';
 	// Used when enabling/disabling the mandatory fields for the module.
 	// Refers to vte_field.fieldname values.
-	var $mandatory_fields = Array('createdtime', 'modifiedtime', 'marketprice_name');
+	var $mandatory_fields = Array('createdtime', 'modifiedtime');
 	//crmv@10759
-	var $search_base_field = 'marketprice_name';
+	var $search_base_field = 'marketprice_no';
 	//crmv@10759 e
 	
 	function __construct() {
@@ -101,7 +102,7 @@ class Marketprices extends CRMEntity {
 		$this->list_fields = Array(
 			/* Format: Field Label => Array(tablename, columnname) */
 			// danzi.tn@20140505 modifica colonne elenco related e anche su vtiger_cvcolumnlist
-			'Marketprice Name'=> Array($table_prefix.'_marketprices', 'marketprice_name'),
+			'Market Price Number'=> Array($table_prefix.'_marketprices', 'marketprice_no'),
 			'Assigned To' => Array($table_prefix.'_crmentity','smownerid'),
 			'Competitor' => Array($table_prefix.'_marketprices','competitor'),
 			'Customer' => Array($table_prefix.'_marketprices','accounts_customer'),
@@ -111,7 +112,7 @@ class Marketprices extends CRMEntity {
 		$this->search_fields = Array(
 			/* Format: Field Label => Array(tablename, columnname) */
 			// tablename should not have prefix 'vte_'
-			'Marketprice Name'=> Array($table_prefix.'_ruomors', 'marketprice_name')
+			'Market Price Number'=> Array($table_prefix.'_ruomors', 'marketprice_no')
 		);
 		$this->column_fields = getColumnFields($currentModule);
 		$this->db = PearDatabase::getInstance();
