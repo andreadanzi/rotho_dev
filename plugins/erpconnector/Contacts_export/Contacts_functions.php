@@ -1,6 +1,7 @@
 <?php
 
 // danzi.tn@20140213  - bisogna aggiungere il criterio vtiger_contactscf.cf_1229 <> 'XXX' in produzione è cf_1229 in _test è cf_1239
+// danzi.tn@20140729 utilizzo di html_entity_decode per nome cognome nome azienda etc
 function do_export_contacts($time_start) {
 	global $adb,$seq_log,$current_user,$root_directory;	
 	$invalid_characters = array("$", "%", "#", "<", ">", "|","\n","\r");
@@ -62,12 +63,12 @@ function do_export_contacts($time_start) {
 	$recordSelected = 0;
 	$result01x = $adb->query($sql);
 	while ($row = $adb->fetchByAssoc($result01x)) {
-		fputcsv( $fp, array($row['number'],str_replace($invalid_characters, "",$row['person_givenname']),
-		str_replace($invalid_characters, "",$row['person_surname']),
+		fputcsv( $fp, array($row['number'], html_entity_decode( str_replace($invalid_characters, "",$row['person_givenname']), ENT_QUOTES, 'UTF-8'),
+		html_entity_decode(str_replace($invalid_characters, "",$row['person_surname']), ENT_QUOTES, 'UTF-8'),
 		$row['human'],
 		$row['addressdata_postalcode'],
-		str_replace($invalid_characters, "", $row['addressdata_street']),
-		str_replace($invalid_characters, "",$row['addressdata_city']),
+		html_entity_decode(str_replace($invalid_characters, "", $row['addressdata_street']), ENT_QUOTES, 'UTF-8'),
+		html_entity_decode(str_replace($invalid_characters, "",$row['addressdata_city']), ENT_QUOTES, 'UTF-8'),
 		$row['addressdata_region_code'],
 		$row['addressdata_country_isocode'],
 		$row['language_isocode'],
