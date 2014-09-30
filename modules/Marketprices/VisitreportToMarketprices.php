@@ -44,7 +44,7 @@ if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 			$area_mng_name = $agent_name_capoarea;
 		}
 	}
-	$autocomplete_return_function[$entity_id] = "return_account_to_marketprices($entity_id, \"$value\", \"$forfield\",\"$account_id\", \"$accountname\", \"$customer_cat\", \"$country\", \"$area_mng_name\", \"$area_mng_no\");";
+	$autocomplete_return_function[$entity_id] = "return_visit_to_marketprices($entity_id, \"$value\", \"$forfield\",\"$account_id\", \"$accountname\", \"$customer_cat\", \"$country\", \"$area_mng_name\", \"$area_mng_no\");";
 	$value = "<a href='javascript:void(0);' onclick='{$autocomplete_return_function[$entity_id]}closePopup();'>$value1</a>"; //crmv@21048m
 }
 $log->debug("Exiting VisitreportToMarketprices.php ...");

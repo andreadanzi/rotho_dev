@@ -314,7 +314,8 @@ class Nonconformities extends CRMEntity {
 	 * Function which will give the basic query to find duplicates
 	 */
 	function getDuplicatesQuery($module,$table_cols,$field_values,$ui_type_arr,$select_cols='') {
-	global $table_prefix;
+		global $table_prefix, $log;
+		$log->debug("Entering Nonconformities::getDuplicatesQuery(".$module.") method ...");
 		$select_clause = "SELECT ". $this->table_name .".".$this->table_index ." AS recordid, {$table_prefix}_users_last_import.deleted,".$table_cols;
 
 		// Select Custom Field Table Columns if present
@@ -352,7 +353,8 @@ class Nonconformities extends CRMEntity {
 					" INNER JOIN (" . $sub_query . ") temp ON ".get_on_clause($field_values,$ui_type_arr,$module) .
 					$where_clause .
 					" ORDER BY $table_cols,". $this->table_name .".".$this->table_index ." ASC";
-					
+
+		$log->debug("Exiting Nonconformities::getDuplicatesQuery(".$module.") method, the query is: ".$query);					
 		return $query;		
 	}
 

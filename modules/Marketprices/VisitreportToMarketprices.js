@@ -1,4 +1,4 @@
-function return_account_to_marketprices(recordid,value,target_fieldname,account_id, account_name, customer_cat,country,area_mng_name,area_mng_no) {
+function return_visit_to_marketprices(recordid,value,target_fieldname,account_id, account_name, customer_cat,country,area_mng_name,area_mng_no) {
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
 	if (form) {
