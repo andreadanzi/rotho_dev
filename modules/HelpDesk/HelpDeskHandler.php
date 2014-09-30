@@ -10,6 +10,7 @@
 class HelpDeskHandler extends VTEventHandler {
 	//danzi.tn@20140423 Handler per HelpDesk
 	//danzi.tn@20140716 gestione Collegato a fisso su  Ticket Rothoblaas con id = 1306471 nel caso di categoria = Segnalazione prodotti
+	//danzi.tn@20140730 gestione A.M. associati a agenti di riferimento 
 	function handleEvent($eventName, $data) {
 		global $adb, $current_user,$log;
 		global $table_prefix;
@@ -35,14 +36,21 @@ class HelpDeskHandler extends VTEventHandler {
 			//danzi.tn@20140716
 			$module = $data->getModuleName();
 			$focus = $data->focus;
+			$area_mng_no = trim($focus->column_fields['area_mng_no']);
+			$agente_riferimento_rec_id = $focus->column_fields['agente_riferimento_rec'];
 			if( $focus->column_fields['ticketcategories'] == 'Segnalazione prodotti') {
-				$acc_data = $this->_get_default_ticket_account(1306471); //account Ticket Rothoblaas
-				$focus->column_fields['parent_id'] = $acc_data['account_id'];
-				$focus->column_fields['agente_riferimento_rec'] = $acc_data['agente_riferimento_rec'];
-				$focus->column_fields['area_mng_name'] = $acc_data['area_mng_name'];
-				$focus->column_fields['area_mng_no'] = $acc_data['area_mng_no'];
+				$focus->column_fields['parent_id'] = 1306471; //account Ticket Rothoblaas
+				//$focus->column_fields['agente_riferimento_rec'] = $acc_data['agente_riferimento_rec'];
+				//$focus->column_fields['area_mng_name'] = $acc_data['area_mng_name'];
+				//$focus->column_fields['area_mng_no'] = $acc_data['area_mng_no'];
+			} //danzi.tn@20140716e
+			
+			if( $focus->column_fields['parent_id'] == 1306471  ) { //danzi.tn@20140730
+				$user_data = $this->_get_related_area_manager($agente_riferimento_rec_id); //account Ticket Rothoblaas
+				$focus->column_fields['area_mng_name'] = $user_data['area_mng_name'];
+				$focus->column_fields['area_mng_no'] = $user_data['area_mng_no'];
 			}
-			//danzi.tn@20140716e
+			//danzi.tn@20140730e
 			$log->debug("handleEvent vtiger.entity.beforesave treminated");
 		}
 
@@ -71,7 +79,7 @@ class HelpDeskHandler extends VTEventHandler {
 	//danzi.tn@20140716
 	function _get_default_ticket_account($entity_id) {
 		global $adb,  $table_prefix;
-		$adb->pquery("select {$table_prefix}_users.id 
+		$result1 = $adb->pquery("select {$table_prefix}_users.id 
 								, {$table_prefix}_account.area_mng_no, {$table_prefix}_account.area_mng_name
 								from {$table_prefix}_crmentity
 								inner join {$table_prefix}_users on {$table_prefix}_users.id = {$table_prefix}_crmentity.smownerid
@@ -88,6 +96,27 @@ class HelpDeskHandler extends VTEventHandler {
 		return array('account_id'=>$entity_id,'area_mng_name'=>$area_mng_name,'area_mng_no'=>$area_mng_no,'agente_riferimento_rec'=>$userid);
 	}
 	//danzi.tn@20140716e
+	
+	
+	//danzi.tn@20140730
+	function _get_related_area_manager($entity_id) {
+		global $adb,  $table_prefix;
+		$result1 = $adb->pquery("select {$table_prefix}_users.id , {$table_prefix}_users.agent_cod_capoarea,
+							    amuser.first_name + ' '+ amuser.last_name as agent_name_capoarea 
+								from {$table_prefix}_users
+								LEFT JOIN {$table_prefix}_users as amuser on amuser.erp_code = {$table_prefix}_users.agent_cod_capoarea AND {$table_prefix}_users.agent_cod_capoarea <> ''
+								where {$table_prefix}_users.status = ? and {$table_prefix}_users.id = ?",array('Active',$entity_id));
+		$userid = '';
+		$area_mng_name = '';
+		$area_mng_no = '';
+		if ($result1 && $adb->num_rows($result1)) {
+			$userid = $adb->query_result($result1,0,'id'); // agente_riferimento_rec
+			$area_mng_name = $adb->query_result($result1,0,'agent_name_capoarea'); //area_mng_name
+			$area_mng_no = $adb->query_result($result1,0,'agent_cod_capoarea'); //area_mng_no
+		}
+		return array('area_mng_name'=>$area_mng_name,'area_mng_no'=>$area_mng_no,'agente_riferimento_rec'=>$userid);
+	}
+	//danzi.tn@20140730e
 	
 	// danzi.tn@20140512 verifica se c'è una NC già relazionata
 	function _checkExistingNC($hd_id) {
