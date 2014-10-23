@@ -1,0 +1,446 @@
+<!doctype html>
+<!-- danzi.tn@20141023 implementazione dialog jquery -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Valutazione Non Conformit&agrave;</title>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="/resources/demos/style.css">
+ <style>
+body { font-size: 62.5%; }
+label, input { display:block; }
+input.text { margin-bottom:12px; width:95%; padding: .4em; }
+fieldset { padding:0; border:0; margin-top:25px; }
+h1 { font-size: 1.2em; margin: .6em 0; }
+div#nc-contain { width: 900px; margin: 20px 0; }
+div#nc-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+div#nc-contain table td, div#nc-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+.ui-dialog .ui-state-error { padding: .3em; }
+.validateTips { border: 1px solid transparent; padding: 0.3em; }
+.number_text {text-align:right; }
+</style>
+ <script>
+$(function() {
+    var dialog_danno_comm, dialog_dati_comm, form_danno, help_val, form_dati,selgest,
+    // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+    emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+    danno_comm_perd_ord = $( "#danno_comm_perd_ord" ),
+    danno_comm_entr_conc = $( "#danno_comm_entr_conc" ),
+    danno_comm_perd_mar = $( "#danno_comm_perd_mar" ),
+    danno_comm_perd_cli = $( "#danno_comm_perd_cli" ),
+    danno_comm_perd_fatt = $( "#danno_comm_perd_fatt" ),
+    danno_comm_dann_imm = $( "#danno_comm_dann_imm" ),
+    danno_comm_varie = $( "#danno_comm_varie" ),
+    danno_comm_totale =  $( "#danno_comm_totale"),
+    dati_comm_fatt_dann = $( "#dati_comm_fatt_dann" ),
+    dati_comm_note_acc = $( "#dati_comm_note_acc" ),
+    dati_comm_fermo_can = $( "#dati_comm_fermo_can" ),
+    dati_comm_omaggio = $( "#dati_comm_omaggio" ),
+    dati_comm_totale = $( "#dati_comm_totale" ),
+    dati_comm = $( "#dati_comm" ),
+    danno_comm = $( "#danno_comm" ),
+    rilavorazione = $( "#rilavorazione" ),
+    logistica = $( "#logistica" ),
+    magazzino = $( "#magazzino" ),
+    acquisto = $( "#acquisto" ),
+    gestione = $( "#gestione" ),
+    totale_valutazione = $( "#totale_valutazione" ),
+    allFieldsDannoComm = $( [] ).add( danno_comm_perd_ord ).add( danno_comm_entr_conc ).add( danno_comm_perd_mar ).add( danno_comm_perd_fatt ).add( danno_comm_perd_cli ).add( danno_comm_dann_imm ).add( danno_comm_varie ).add( danno_comm ),
+    allFieldsDatiComm = $( [] ).add( dati_comm_fatt_dann ).add( dati_comm_note_acc ).add( dati_comm_fermo_can ).add( dati_comm_omaggio ).add( dati_comm ),
+    allOtherFields = $( [] ).add( rilavorazione ).add( logistica ).add( magazzino ).add( acquisto ).add( gestione ),
+    tips = $( ".validateTips" );
+    allFieldsDannoComm.val(0);
+    allFieldsDatiComm.val(0);
+    allOtherFields.val(0);
+    totale_valutazione.val(0);
+    danno_comm_totale.val(0);
+    dati_comm_totale.val(0);
+    danno_comm_totale.css("background", "#FF3300");
+    dati_comm_totale.css("background", "#FF3300");
+    totale_valutazione.css("background", "#FF3300");
+    
+    
+    gestione.prop('readonly', true);
+    dati_comm_totale.prop('readonly', true);
+    danno_comm_totale.prop('readonly', true);
+    dati_comm.prop('readonly', true);
+    danno_comm.prop('readonly', true);
+    totale_valutazione.prop('readonly', true);
+    
+    allFieldsDannoComm.change(function() {
+        tot_amount = parseFloat(danno_comm_perd_ord.val()) + parseFloat(danno_comm_entr_conc.val()) + parseFloat(danno_comm_perd_mar.val()) + parseFloat(danno_comm_perd_cli.val()) + parseFloat(danno_comm_perd_fatt.val()) + parseFloat(danno_comm_dann_imm.val()) + parseFloat(danno_comm_varie.val());
+        if(tot_amount>0) danno_comm_totale.css("background", "#CCFF00");
+        else danno_comm_totale.css("background", "#FF3300");
+        danno_comm_totale.val(tot_amount);
+    });
+    
+    allFieldsDatiComm.change(function() {
+        tot_amount = parseFloat(dati_comm_fatt_dann.val()) + parseFloat(dati_comm_note_acc.val()) + parseFloat(dati_comm_fermo_can.val()) + parseFloat(dati_comm_omaggio.val());
+        if(tot_amount>0) dati_comm_totale.css("background", "#CCFF00");
+        else dati_comm_totale.css("background", "#FF3300");
+        dati_comm_totale.val(tot_amount);
+    });
+    
+    allOtherFields.change(function() {
+        tot_amount = parseFloat(rilavorazione.val()) + parseFloat(logistica.val()) + parseFloat(magazzino.val()) + parseFloat(acquisto.val())+ parseFloat(gestione.val())+ parseFloat(danno_comm.val())+ parseFloat(dati_comm.val());
+        if(tot_amount>0) totale_valutazione.css("background", "#CCFF00");
+        else totale_valutazione.css("background", "#FF3300");
+        totale_valutazione.val(tot_amount);
+    });
+    
+    function updateTips( t ) {
+        tips
+        .text( t )
+        .addClass( "ui-state-highlight" );
+        setTimeout(function() {
+        tips.removeClass( "ui-state-highlight", 1500 );
+        }, 500 );
+    }
+    
+    function checkLength( o, n, min, max ) {
+        if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+        min + " and " + max + "." );
+        return false;
+        } else {
+        return true;
+        }
+    }
+    
+    function checkRegexp( o, regexp, n ) {
+        if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+        } else {
+        return true;
+        }
+    }
+    
+    function calcDannoComm() {
+        var valid = true;
+        var tot_amount = 0.0;
+        allFieldsDannoComm.removeClass( "ui-state-error" );
+        valid = valid && checkLength( danno_comm_perd_ord, "danno_comm_perd_ord", 1, 8 );
+        valid = valid && checkLength( danno_comm_entr_conc, "danno_comm_entr_conc", 1, 8  );
+        valid = valid && checkLength( danno_comm_perd_mar, "danno_comm_perd_mar", 1, 8  );
+        valid = valid && checkLength( danno_comm_perd_cli, "danno_comm_perd_cli", 1, 8 );
+        valid = valid && checkLength( danno_comm_perd_fatt, "danno_comm_perd_fatt", 1, 8  );
+        valid = valid && checkLength( danno_comm_dann_imm, "danno_comm_dann_imm", 1, 8  );
+        valid = valid && checkLength( danno_comm_varie, "danno_comm_varie", 1, 8  );
+        //valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+        //valid = valid && checkRegexp( email, emailRegex, "eg. ui@jquery.com" );
+        //valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+        if ( valid ) {
+            tot_amount = parseFloat(danno_comm_perd_ord.val()) + parseFloat(danno_comm_entr_conc.val()) + parseFloat(danno_comm_perd_mar.val()) + parseFloat(danno_comm_perd_cli.val()) + parseFloat(danno_comm_perd_fatt.val()) + parseFloat(danno_comm_dann_imm.val()) + parseFloat(danno_comm_varie.val());
+            danno_comm.val(tot_amount);
+            other_amount = parseFloat(rilavorazione.val()) + parseFloat(logistica.val()) + parseFloat(magazzino.val()) + parseFloat(acquisto.val()) + parseFloat(gestione.val());
+            if(tot_amount>0) danno_comm.css("background", "#CCFF00");
+            else danno_comm.css("background", "#FF3300");
+            tot_amount = tot_amount + other_amount + parseFloat(dati_comm.val());
+            if(tot_amount>0) totale_valutazione.css("background", "#CCFF00");
+            else totale_valutazione.css("background", "#FF3300");
+            totale_valutazione.val(tot_amount);
+            dialog_danno_comm.dialog( "close" );
+        }
+        return valid;
+    }
+    
+    
+    function calcDatiComm() {
+        var valid = true;
+        var tot_amount = 0.0;
+        allFieldsDatiComm.removeClass( "ui-state-error" );
+        valid = valid && checkLength( dati_comm_fatt_dann, "dati_comm_fatt_dann", 1, 8 );
+        valid = valid && checkLength( dati_comm_note_acc, "dati_comm_note_acc", 1, 8  );
+        valid = valid && checkLength( dati_comm_fermo_can, "dati_comm_fermo_can", 1, 8  );
+        valid = valid && checkLength( dati_comm_omaggio, "dati_comm_omaggio", 1, 8 );
+        if ( valid ) {
+            tot_amount = parseFloat(dati_comm_fatt_dann.val()) + parseFloat(dati_comm_note_acc.val()) + parseFloat(dati_comm_fermo_can.val()) + parseFloat(dati_comm_omaggio.val());
+            dati_comm.val(tot_amount);
+            other_amount = parseFloat(rilavorazione.val()) + parseFloat(logistica.val()) + parseFloat(magazzino.val()) + parseFloat(acquisto.val()) + parseFloat(gestione.val());
+            if(tot_amount>0) dati_comm.css("background", "#CCFF00");
+            else dati_comm.css("background", "#FF3300");
+            tot_amount = tot_amount + other_amount + parseFloat(danno_comm.val());
+            if(tot_amount>0) totale_valutazione.css("background", "#CCFF00");
+            else totale_valutazione.css("background", "#FF3300");
+            totale_valutazione.val(tot_amount);
+            dialog_dati_comm.dialog( "close" );
+        }
+        return valid;
+    }
+    
+    dialog_danno_comm = $( "#danno-comm-form" ).dialog({
+        autoOpen: false,
+        height: 540,
+        width: 300,
+        modal: true,
+        buttons: {
+        "Salva Valutazione Danno": calcDannoComm,
+        Cancel: function() {
+            allFieldsDannoComm.val(0);
+            danno_comm_totale.val(0);
+            danno_comm_totale.css("background", "#FF3300");
+        }
+        },
+        close: function() {
+        allFieldsDannoComm.removeClass( "ui-state-error" );
+        }
+    });
+    
+    
+    dialog_dati_comm = $( "#dati-comm-form" ).dialog({
+        autoOpen: false,
+        height: 410,
+        width: 300,
+        modal: true,
+        buttons: {
+        "Salva Dati": calcDatiComm,
+        Cancel: function() {
+            allFieldsDatiComm.val(0);
+            dati_comm_totale.val(0);
+            dati_comm_totale.css("background", "#FF3300");
+        }
+        },
+        close: function() {       
+        allFieldsDatiComm.removeClass( "ui-state-error" );
+        }
+    });
+    
+    help_val = $( "#help-val" ).dialog({
+        autoOpen: false,
+        height: 400,
+        width: 300,
+        modal: true,
+        buttons: {
+            Ok: function() {
+                $( this ).dialog( "close" );
+            }
+        }
+    });
+    
+    
+    form_danno = dialog_danno_comm.find( "#danno" ).on( "submit", function( event ) {
+        event.preventDefault();
+        calcDannoComm();
+    });
+    
+    
+    form_dati = dialog_dati_comm.find( "#dati" ).on( "submit", function( event ) {
+        event.preventDefault();
+        calcDatiComm();
+    });
+    
+    
+    selgest = $( "#selgest" );
+    selgest.change(function( event, ui ) {
+            gestione.prop('readonly', true);
+            selectdValue = selgest.val();
+            switch(selectdValue) {
+                case '25':
+                    gestione.val(25*10);
+                    break;
+                case '50':
+                    gestione.val(50*10);
+                    break;
+                case '100':
+                    gestione.val(100*10);
+                    break;
+                case 'NS':
+                    gestione.prop('readonly', false);
+                    gestione.focus();
+                    gestione.val('');
+                    break;
+                default:
+                    gestione.val(0);
+            } 
+            tot_amount = parseFloat(rilavorazione.val()) + parseFloat(logistica.val()) + parseFloat(magazzino.val()) + parseFloat(acquisto.val())+ parseFloat(gestione.val())+ parseFloat(danno_comm.val())+ parseFloat(dati_comm.val());
+            if(tot_amount>0) totale_valutazione.css("background", "#CCFF00");
+            else totale_valutazione.css("background", "#FF3300");
+            totale_valutazione.val(tot_amount);
+        }
+    );
+        
+    $( "#calc-danno-commerciale" ).button().on( "click", function() {
+        dialog_danno_comm.dialog( "open" );
+    });
+    
+    
+    
+    $( "#calc-dati-commerciali" ).button().on( "click", function() {
+        dialog_dati_comm.dialog( "open" );
+    });
+    
+    $( ".help_btn" ).button().on( "click", function() {
+        help_val.dialog( "open" );
+    });
+});
+</script>
+</head>
+<body>
+
+<div id="help-val" title="Help">
+<p>
+Help Here
+</p>
+</div>
+
+<div id="danno-comm-form" title="Danno Commerciale: (&euro;) ">
+    <p class="validateTips">Valorizzare tutti i campi, anche solo con 0.</p>
+    <div id="danno">
+    <fieldset>
+        <label for="name">Perdita ordine: (&euro;) </label>
+        <input name="danno_comm_perd_ord" id="danno_comm_perd_ord" value="0" class="text ui-widget-content ui-corner-all number_text">
+               
+        <label for="name">Entrata concorrenza: (&euro;) </label>
+        <input name="danno_comm_entr_conc" id="danno_comm_entr_conc" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Perdita margine: (&euro;) </label>
+        <input name="danno_comm_perd_mar" id="danno_comm_perd_mar" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Perdita cliente: (&euro;) </label>
+        <input name="danno_comm_perd_cli" id="danno_comm_perd_cli" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        
+        <label for="name">Perdita fatturato prodotto: (&euro;) </label>
+        <input name="danno_comm_perd_fatt" id="danno_comm_perd_fatt" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Danni immagine x probl grave: (&euro;) </label>
+        <input name="danno_comm_dann_imm" id="danno_comm_dann_imm" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Varie: (&euro;) </label>
+        <input name="danno_comm_varie" id="danno_comm_varie" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Totale: (&euro;) </label>
+        <input name="danno_comm_totale" id="danno_comm_totale" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        
+        <!-- Allow form submission with keyboard without duplicating the dialog button -->
+        <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+    </div>
+</div>
+
+
+<div id="dati-comm-form" title="Dati commerciali: (&euro;) ">
+    <p class="validateTips">Valorizzare tutti i campi, anche solo con 0.</p>
+    <div id="dati">
+    <fieldset>
+        <label for="name">Fatture danni: (&euro;) </label>
+        <input name="dati_comm_fatt_dann" id="dati_comm_fatt_dann" value="0" class="text ui-widget-content ui-corner-all number_text">
+               
+        <label for="name">Note di accredito: (&euro;) </label>
+        <input name="dati_comm_note_acc" id="dati_comm_note_acc" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Fatture fermo cantiere: (&euro;) </label>
+        <input name="dati_comm_fermo_can" id="dati_comm_fermo_can" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <label for="name">Omaggio: (&euro;) </label>
+        <input name="dati_comm_omaggio" id="dati_comm_omaggio" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+         <label for="name">Totale: (&euro;) </label>
+        <input name="dati_comm_totale" id="dati_comm_totale" value="0" class="text ui-widget-content ui-corner-all number_text">
+        
+        <!-- Allow form submission with keyboard without duplicating the dialog button -->
+        <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+    </div>
+</div>
+       
+
+<div id="nc-contain" class="ui-widget">
+<h1>Esempio Valutazione</h1>
+    <table>
+    <tbody>
+        <tr>
+            <td>
+                <table>
+                <tbody>
+                    <tr>
+                        <td colspan=4 class="detailedViewHeader">
+                        <b>Valutazione</b>
+                        </td>
+                    </tr>
+                    <tr style="height:25px">
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Rilavorazione: (&euro;) <img style='cursor:pointer' class='help_btn' onclick='vtlib_field_help_show(this, "rilavorazione");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input name="rilavorazione" id="rilavorazione" tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Logistica: (&euro;) <img style='cursor:pointer'  class='help_btn'  onclick='vtlib_field_help_show(this, "logistica");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input name="logistica" id="logistica" tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                    </tr>
+                    <tr style="height:25px">
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Magazzino: (&euro;) <img style='cursor:pointer'  class='help_btn'  onclick='vtlib_field_help_show(this, "magazzino");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input name="magazzino" id="magazzino" tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Acquisto: (&euro;) <img style='cursor:pointer' class='help_btn'  onclick='vtlib_field_help_show(this, "acquisto");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input name="acquisto" id="acquisto" tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                    </tr>
+                    <tr style="height:25px">
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Danno Commerciale: (&euro;) <img style='cursor:pointer' id="calc-danno-commerciale" border=0 src='themes/rothosofted/images/help_icon.gif'> 	
+                            <!--  onclick='vtlib_field_help_show(this, "danno_comm");'-->
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input id="danno_comm"  name="danno_comm" tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Dati commerciali: (&euro;) <img id="calc-dati-commerciali" style='cursor:pointer'  border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                            <!-- onclick='vtlib_field_help_show(this, "dati_comm");'-->
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input  id="dati_comm"  name="dati_comm" tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                    </tr>        
+
+                    <tr style="height:25px">
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Gestione: (&euro;)                             
+                            <select name="selgest" id="selgest">
+                                <option value="0">---</option>
+                                <option value="25">Basso</option>
+                                <option value="50">Medio</option>
+                                <option value="100">Alto</option>
+                                <option value="NS">Non Standard</option>
+                            </select>
+                            <img style='cursor:pointer' class='help_btn'  onclick='vtlib_field_help_show(this, "acquisto");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+
+                            <input name="gestione" id="gestione"  tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                        <td width="30%" class="dvtCellLabel" align=right>
+                            <font color="red"></font>Totale: (&euro;) 
+                        </td>
+                        <td width="20%" align=left class="dvtCellInfo">
+                            <input name="totale_valutazione" id="totale_valutazione"  tabindex="" type="text" class="number_text"   value="0">
+                        </td>
+                    </tr>                    
+                    <tr style="height:25px" ><td colspan=4>&nbsp;</td></tr>
+                </tbody>
+               <!-- Added to display the Product Details in Inventory-->
+                </table>
+            </td>
+        </tr>
+    </tbody>
+    </table>
+ </div>
+
+</body>
+</html>
