@@ -11,6 +11,7 @@ class HelpDeskHandler extends VTEventHandler {
 	//danzi.tn@20140423 Handler per HelpDesk
 	//danzi.tn@20140716 gestione Collegato a fisso su  Ticket Rothoblaas con id = 1306471 nel caso di categoria = Segnalazione prodotti
 	//danzi.tn@20140730 gestione A.M. associati a agenti di riferimento 
+    //danzi.tn@20140930 update del ticket => update della nc collegata
 	function handleEvent($eventName, $data) {
 		global $adb, $current_user,$log;
 		global $table_prefix;
@@ -71,6 +72,12 @@ class HelpDeskHandler extends VTEventHandler {
 				}
 			} else {
 				$log->debug("handleEvent vtiger.entity.aftersave found nonconformitiesid=".$nonconformitiesid);
+                // danzi.tn@20140930 se c'è una NC già relazionata allora vediamo di fare un UPDATE
+				if(	isset($when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']] ) ) {
+					$source = $when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']];
+                    $this->_updateNonCoformity($nonconformitiesid, $focus->column_fields,$source);
+                }
+                //danzi.tn@20140930e
 			}
 			$log->debug("handleEvent vtiger.entity.aftersave terminated");
 		}
@@ -164,6 +171,60 @@ class HelpDeskHandler extends VTEventHandler {
 		return $nonconformitiesid;
 	}
 	
+    //danzi.tn@20140930 update del ticket => update della nc collegata
+	function _updateNonCoformity($nc_id, $data_array, $nc_source) {
+		global $adb,  $current_user, $table_prefix;
+		// Dai CAMPI Del Ticket mi prendo: prodotto, categoria e relative informazioni, 
+		$product_id = $data_array['product_id'];
+        $product_description = "";
+        $vendor_id = "";
+		$product_category = $data_array['product_cat'];
+		if(!empty($product_id)) {
+			$query = "SELECT ".$table_prefix."_products.product_cat, 
+							 ".$table_prefix."_products.inspection_frequency, 
+							 ".$table_prefix."_crmentity.description , 
+							 ".$table_prefix."_products.vendor_id 		
+					FROM ".$table_prefix."_products
+					JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_products.productid = ".$table_prefix."_crmentity.crmid AND ".$table_prefix."_crmentity.deleted = 0
+					WHERE ".$table_prefix."_products.productid = ?";
+			$result = $adb->pquery($query,array($product_id));
+			if ($result && $adb->num_rows($result)>0) {			
+				$product_description = $adb->query_result($result,0,'description');
+				$product_category = $adb->query_result($result,0,'product_cat');
+				$vendor_id = $adb->query_result($result,0,'vendor_id');
+			}
+		}
+        $cf_parms = array();
+		$cf_1257 = $data_array['cf_777'];
+        array_push($cf_parms, $cf_1257);
+        $cf_1273 = "";
+		if($data_array['ticketcategories'] == "Prodotto") { 
+			$cf_1273 = "Prodotto";
+            array_push($cf_parms, $cf_1273);
+		}
+        // UPDATE Main Table
+		$nonconformity_state = "Aperta"; // picklist        
+		$update_sql="UPDATE ".$table_prefix."_nonconformities SET 
+                    nc_source = ? , 
+                    product_id = ? ,
+                    product_category = ? ,
+                    product_description = ? ,
+                    vendor_id = ?
+                    WHERE nonconformitiesid = ?";
+		$adb->pquery($update_sql,array($nc_source,$product_id, $product_category,$product_description,$vendor_id, $nc_id));    
+		// UPDATE Custom Fields
+        $update_sql="UPDATE ".$table_prefix."_nonconformitiescf SET 
+                    cf_1257 = ? ";
+        if(!empty($cf_1273)) {
+            $update_sql .= ", cf_1273 = ? ";
+        }
+        $update_sql .= " WHERE nonconformitiesid = ?";
+        array_push($cf_parms, $nc_id);
+		$adb->pquery($update_sql,$cf_parms);
+        // UPDATE crmentity ??? sarebbe il caso
+	}
+    //danzi.tn@20140930e
+    
 	function _newNonCoformity($hd_id, $data_array, $source) {
 		global $adb,  $current_user, $table_prefix;
 		$product_id = $data_array['product_id'];
