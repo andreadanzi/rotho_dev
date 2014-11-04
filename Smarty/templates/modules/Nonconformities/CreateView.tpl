@@ -121,13 +121,13 @@ function sensex_info()
                                     </tr>
                                     <tr style="height:25px">
                                         <td width="20%" class="dvtCellLabel" align=right>
-                                            <font color="red"></font>Rilavorazione: (&euro;) <img style='cursor:pointer' class='help_btn' onclick='vtlib_field_help_show(this, "rilavorazione");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                                            <font color="red"></font>Rilavorazione: (&euro;) <img style='cursor:pointer' class='help_btn' id='btn_help_rilavorazione' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
                                         </td>
                                         <td width="30%" align=left class="dvtCellInfo">
                                             <input name="rilavorazione" id="rilavorazione" tabindex="" type="text" class="number_text"   value="0">
                                         </td>
                                         <td width="20%" class="dvtCellLabel" align=right>
-                                            <font color="red"></font>Logistica: (&euro;) <img style='cursor:pointer'  class='help_btn'  onclick='vtlib_field_help_show(this, "logistica");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                                            <font color="red"></font>Logistica: (&euro;) <img style='cursor:pointer'  class='help_btn'  id='btn_help_logistica' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
                                         </td>
                                         <td width="30%" align=left class="dvtCellInfo">
                                             <input name="logistica" id="logistica" tabindex="" type="text" class="number_text"   value="0">
@@ -135,13 +135,13 @@ function sensex_info()
                                     </tr>
                                     <tr style="height:25px">
                                         <td width="20%" class="dvtCellLabel" align=right>
-                                            <font color="red"></font>Magazzino: (&euro;) <img style='cursor:pointer'  class='help_btn'  onclick='vtlib_field_help_show(this, "magazzino");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                                            <font color="red"></font>Magazzino: (&euro;) <img style='cursor:pointer'  class='help_btn'  id='btn_help_magazzino' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
                                         </td>
                                         <td width="30%" align=left class="dvtCellInfo">
                                             <input name="magazzino" id="magazzino" tabindex="" type="text" class="number_text"   value="0">
                                         </td>
                                         <td width="20%" class="dvtCellLabel" align=right>
-                                            <font color="red"></font>Acquisto: (&euro;) <img style='cursor:pointer' class='help_btn'  onclick='vtlib_field_help_show(this, "acquisto");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                                            <font color="red"></font>Acquisto: (&euro;) <img style='cursor:pointer' class='help_btn'  id='btn_help_acquisto' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
                                         </td>
                                         <td width="30%" align=left class="dvtCellInfo">
                                             <input name="acquisto" id="acquisto" tabindex="" type="text" class="number_text"   value="0">
@@ -174,7 +174,7 @@ function sensex_info()
                                                 <option value="100">Alto</option>
                                                 <option value="NS">Non Standard</option>
                                             </select>
-                                            <img style='cursor:pointer' class='help_btn'  onclick='vtlib_field_help_show(this, "acquisto");' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
+                                            <img style='cursor:pointer' class='help_btn'  id='btn_help_gestione' border=0 src='themes/rothosofted/images/help_icon.gif'> 			
                                         </td>
                                         <td width="30%" align=left class="dvtCellInfo">
 
@@ -206,9 +206,9 @@ function sensex_info()
                                         <td colspan=4>
                                         
                                             <div id="help-val" title="Help">
-                                                <p>
-                                                Help Here
-                                                </p>
+                                                <ul id="help-info">
+                                                    <li></li>
+                                                </ul>
                                             </div>
                                             
                                             <div id="danno-comm-form" title="Danno Commerciale: (&euro;) ">
@@ -670,13 +670,48 @@ function sensex_info()
         dialog_danno_comm.dialog( "open" );
     });
     
-    
-    
     jQuery( "#calc-dati-commerciali" ).button().click(  function() {
         dialog_dati_comm.dialog( "open" );
     });
     
-    jQuery( ".help_btn" ).button().click(  function() {
+    /* danzi.tn@20141104 dialog di help per i campi senza distinta */
+    jQuery( "#btn_help_rilavorazione" ).button().click(  function() {
+        jQuery( "#help-info" ).html(
+          "<li>Etichette</li>" +
+          "<li>Bit</li>" +
+          "<li>Scatole</li>" +
+          "<li>Test esterni</li>" +
+          "<li>Costi rilavorazione (intrerni ed esterno IP serv.)</li>" +
+          "<li>Cernita</li>" );
+        help_val.dialog( "open" );
+    });
+
+    
+    jQuery( "#btn_help_logistica" ).button().click(  function() {
+        jQuery( "#help-info" ).html(
+          "<li>Spedizioni entrata</li>" +
+          "<li>Spedizioni uscita</li>" +
+          "<li>Spostamenti per rilavorazioni</li>" +
+          "<li>Richiamo materiale difettato</li>" );
+        help_val.dialog( "open" );
+    });
+    
+    jQuery( "#btn_help_magazzino" ).button().click(  function() {
+        jQuery( "#help-info" ).html(
+          "<li>Da decidere</li>"  );
+        help_val.dialog( "open" );
+    });
+    
+    jQuery( "#btn_help_acquisto" ).button().click(  function() {
+        jQuery( "#help-info" ).html(
+          "<li>Smaltimento</li>" +
+          "<li>Costi aggiuntivi riordino</li>" );
+        help_val.dialog( "open" );
+    });
+    
+    jQuery( "#btn_help_gestione" ).button().click(  function() {
+      jQuery( "#help-info" ).html(
+          "<li>Da decidere</li>" );
         help_val.dialog( "open" );
     });
 
