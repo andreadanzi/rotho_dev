@@ -16,16 +16,16 @@ class HelpDeskHandler extends VTEventHandler {
 		global $adb, $current_user,$log;
 		global $table_prefix;
 		$when = array();
-		$when['Prodotto incompleto']['Fornitore'] = "Vendor";
-		$when['Difetto prodotto']['Fornitore'] = "Vendor";
-		$when['Materiale danneggiato - confezione']['Fornitore'] = "Vendor";
-		$when['Materiale danneggiato - confezione']['Trasportatore'] = "Vendor";
-		$when['Quantita` errata']['Fornitore'] = "Vendor";
-		$when['Articolo sbagliato']['Fornitore'] = "Vendor";
-		$when['Consegna in ritardo']['Fornitore'] = "Vendor";
-		$when['Consegna in ritardo']['Trasportatore'] = "Vendor";
-		$when['Consegna in ritardo']['RB-Acquisto Interno'] = "Internal";
-		$when['Smarrito']['Fornitore'] = "Vendor";
+		$when['Prodotto incompleto']['Fornitore'] = array("Vendor","Prodotto");
+		$when['Difetto prodotto']['Fornitore'] = array("Vendor","Prodotto");
+		$when['Materiale danneggiato - confezione']['Fornitore'] = array("Vendor","Servizio");
+		$when['Materiale danneggiato - confezione']['Trasportatore'] = array("Vendor","Servizio");
+		$when['Quantita` errata']['Fornitore'] = array("Vendor","Servizio");
+		$when['Articolo sbagliato']['Fornitore'] = array("Vendor","Servizio");
+		$when['Consegna in ritardo']['Fornitore'] = array("Vendor","Servizio");
+		$when['Consegna in ritardo']['Trasportatore'] = array("Vendor","Servizio");
+		$when['Consegna in ritardo']['RB-Acquisto Interno'] = array("Internal","Servizio");
+		$when['Smarrito']['Fornitore'] = array("Vendor","Servizio");
 		// check irs a timcard we're saving.
 		if (!($data->focus instanceof HelpDesk)) {
 			return;
@@ -197,21 +197,22 @@ class HelpDeskHandler extends VTEventHandler {
         $cf_parms = array();
 		$cf_1257 = $data_array['cf_777'];
         array_push($cf_parms, $cf_1257);
-        $cf_1273 = "";
-		if($data_array['ticketcategories'] == "Prodotto") { 
-			$cf_1273 = "Prodotto";
-            array_push($cf_parms, $cf_1273);
-		}
+        $cf_1273 = $nc_source[1];
+        $nc_source_field = $nc_source[0];
+        array_push($cf_parms, $cf_1273);
         // UPDATE Main Table
 		$nonconformity_state = "Aperta"; // picklist        
-		$update_sql="UPDATE ".$table_prefix."_nonconformities SET 
-                    nc_source = ? , 
-                    product_id = ? ,
-                    product_category = ? ,
-                    product_description = ? ,
-                    vendor_id = ?
-                    WHERE nonconformitiesid = ?";
-		$adb->pquery($update_sql,array($nc_source,$product_id, $product_category,$product_description,$vendor_id, $nc_id));    
+		$update_sql = "UPDATE ".$table_prefix."_nonconformities SET 
+                    nc_source = '".$nc_source_field."' , 
+                    productid = ".$product_id."  ,
+                    product_category = '".$product_category."'  ,
+                    product_description = '".$product_description."' ,
+                    vendorid = ".$vendor_id."
+                    WHERE nonconformitiesid = ".$nc_id;
+		$adb->query($update_sql); 
+        echo "<pre>";
+        echo $update_sql;
+        echo "<pre/>";
 		// UPDATE Custom Fields
         $update_sql="UPDATE ".$table_prefix."_nonconformitiescf SET 
                     cf_1257 = ? ";
@@ -252,7 +253,7 @@ class HelpDeskHandler extends VTEventHandler {
 				$newNC->column_fields['vendor_id'] = $adb->query_result($result,0,'vendor_id');
 			}
 		}
-		$newNC->column_fields['nc_source'] = $source;
+		$newNC->column_fields['nc_source'] = $source[0];
 		$newNC->column_fields['createdtime'] = $data_array['createdtime'];
 		$newNC->column_fields['modifiedtime'] = $data_array['createdtime'];
 		// danzi.tn@20140603 assegnare al gruppo Ufficio Acquisti
@@ -260,9 +261,7 @@ class HelpDeskHandler extends VTEventHandler {
 		$newNC->column_fields['smownerid'] = 133018; //$data_array['assigned_user_id'];
 		// danzi.tn@20140630 aggiunto numero lotto
 		$newNC->column_fields['cf_1257'] = $data_array['cf_777'];
-		if($data_array['ticketcategories'] == "Prodotto") { 
-			$newNC->column_fields['cf_1273'] = "Prodotto";
-		}
+		$newNC->column_fields['cf_1273'] = $source[1];
 		// danzi.tn@20140630e
 		$newNC->column_fields['nonconformity_state'] = "Aperta"; // picklist
 		$newNC->column_fields["description"] =  $data_array['description'].  " -- ". $data_array["ticket_title"] . " (".$data_array["ticket_no"].", '".$ticketsubcategories."', '".$cf_798."') --";
