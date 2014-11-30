@@ -18,7 +18,9 @@ $codiceCorsoTargetField = 'cf_1006'; // dev=>cf_887 rotho_prod=>cf_1006
 $codiceCorsoCampagnaField = 'cf_742'; // dev=>cf_886 rotho_prod=>cf_742
 $dataCorsoCampagnaField = 'cf_745'; // dev=>cf_886 rotho_prod=>cf_742
 $codiceFatturazioneCorsoField = 'cf_759'; // dev=>cf_892 rotho_prod=>cf_759
-$codiceCategoriaField = 'cf_762'; // dev=>cf_799 rotho_prod=>cf_762
+//danzi.tn@20141126 nuova classificazione
+// $codiceCategoriaField = 'cf_762'; // dev=>cf_799 rotho_prod=>cf_762 
+//danzi.tn@20141126 nuova classificazione
 $tipoAffiliazioneField = 'cf_1178'; // dev=>cf_893 rotho_prod=>cf_1178
 
 $map_corsi=array();

@@ -46,21 +46,19 @@ class AccRatingClassCARP {
 		$this->_codiceCorsoCampagnaField = $p_codiceCorsoCampagnaField;
 		$this->_dataCorsoCampagnaField = $p_dataCorsoCampagnaField;
 		$this->_codiceFatturazioneCorsoField = $p_codiceFatturazioneCorsoField;
-		$this->_codiceCategoriaField = $p_codiceCategoriaField;
 		$this->_tipoAffiliazioneField = $p_tipoAffiliazioneField;
 		$this->_map_corsi = $p_map_corsi;
 	}
 	
 	function __construct()
 	{
-		global $log_active, $ratingField, $codiceCorsoTargetField, $codiceCorsoCampagnaField,$dataCorsoCampagnaField, $codiceCategoriaField, $tipoAffiliazioneField, $codiceFatturazioneCorsoField,  $map_corsi;
+		global $log_active, $ratingField, $codiceCorsoTargetField, $codiceCorsoCampagnaField,$dataCorsoCampagnaField, $tipoAffiliazioneField, $codiceFatturazioneCorsoField,  $map_corsi;
 		$this->_log_active = $log_active;
 		$this->_ratingField = $ratingField;
 		$this->_codiceCorsoTargetField = $codiceCorsoTargetField;
 		$this->_codiceCorsoCampagnaField = $codiceCorsoCampagnaField;
 		$this->_dataCorsoCampagnaField = $dataCorsoCampagnaField;
 		$this->_codiceFatturazioneCorsoField = $codiceFatturazioneCorsoField;
-		$this->_codiceCategoriaField = $codiceCategoriaField;
 		$this->_tipoAffiliazioneField = $tipoAffiliazioneField;
 		$this->_map_corsi = $map_corsi;
 	}
@@ -215,25 +213,15 @@ class AccRatingClassCARP {
 	
 	private function _check_temp_table() {
 		global $adb;
-		$create_sql = "IF NOT EXISTS (select * from sysobjects where name='temp_acc_ratings' and xtype='U')
-							CREATE TABLE temp_acc_ratings (
-								accountid INT NULL,
-								categoria VARCHAR(50) NULL,
-								gruppo VARCHAR(255) NULL,
-								valore INT NULL,
-								insdatetime DATETIME NULL,
-								eventdatetime VARCHAR(255) NULL
-							)";
-		$adb->query($create_sql);
-		$delete_sql= "delete from temp_acc_ratings " .( $this->entity_id > 0 ? " WHERE account_category = 'RC / CARP' AND accountid = ".$this->entity_id : " WHERE account_category = 'RC / CARP'" );
+		$delete_sql= "delete from temp_acc_ratings " .( $this->entity_id > 0 ? " WHERE account_client_type = 'UTILIZZATORE' AND accountid = ".$this->entity_id : " WHERE account_client_type = 'UTILIZZATORE'" );
 		$adb->query($delete_sql);
 	}
 	
 	private function _insert_temp_table($account_rating_table) {
 		global $adb;
 		$sql = "INSERT INTO temp_acc_ratings ";
-		$sql .= "(accountid,categoria,gruppo,valore,eventdatetime,insdatetime,account_category)";
-		$sql .= " VALUES (?,?,?,?,?,GETDATE(),'RC / CARP')";
+		$sql .= "(accountid,categoria,gruppo,valore,eventdatetime,insdatetime,account_client_type)";
+		$sql .= " VALUES (?,?,?,?,?,GETDATE(),'UTILIZZATORE')";
 		foreach($account_rating_table as $key=>$val) {
 			foreach($val as $type_key=>$type_val) {
 				foreach($type_val as $type_val_key=>$type_val_date) {
@@ -303,7 +291,7 @@ class AccRatingClassCARP {
 			count(*) as targetsum
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
@@ -354,7 +342,7 @@ class AccRatingClassCARP {
 			count(*) as targetsum
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.module = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.crmid
@@ -409,7 +397,7 @@ class AccRatingClassCARP {
 			count(*) as targetsum
 			FROM ".$table_prefix."_account 
 			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+			JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 			JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 			JOIN ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ".$table_prefix."_accountscf.accountid AND ".$table_prefix."_crmentityrel.relmodule = 'Targets'
 			JOIN ".$table_prefix."_targets on ".$table_prefix."_targets.targetsid = ".$table_prefix."_crmentityrel.relcrmid
@@ -458,7 +446,7 @@ class AccRatingClassCARP {
 				2 as prog_rating_value
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_consulenza on ".$table_prefix."_consulenza.parent = ".$table_prefix."_account.accountid
 				JOIN ".$table_prefix."_crmentity as consulenza_crmentity on consulenza_crmentity.crmid = ".$table_prefix."_consulenza.consulenzaid AND consulenza_crmentity.deleted = 0 
@@ -482,7 +470,7 @@ class AccRatingClassCARP {
 				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND  ".$table_prefix."_crmentity.modifiedtime BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() 
@@ -511,7 +499,7 @@ class AccRatingClassCARP {
 				2 as prog_rating_value
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_seactivityrel ON ".$table_prefix."_seactivityrel.crmid = ".$table_prefix."_account.accountid
 				JOIN ".$table_prefix."_activity ON ".$table_prefix."_activity.activityid = ".$table_prefix."_seactivityrel.activityid AND ".$table_prefix."_activity.activitytype ='Contatto - Fiera'
@@ -558,7 +546,7 @@ class AccRatingClassCARP {
 				potential_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_potential on ".$table_prefix."_potential.related_to = ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
@@ -592,7 +580,7 @@ class AccRatingClassCARP {
 				potential_crmentity.createdtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_potential on ".$table_prefix."_potential.related_to = ".$table_prefix."_account.accountid 
 				JOIN ".$table_prefix."_crmentity as potential_crmentity on potential_crmentity.crmid = ".$table_prefix."_potential.potentialid AND potential_crmentity.deleted = 0
@@ -622,7 +610,7 @@ class AccRatingClassCARP {
 				".$table_prefix."_crmentity.modifiedtime as prog_rating_date 
 				FROM ".$table_prefix."_account 
 				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0
-				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_accountscf.".$this->_codiceCategoriaField." = 'RC / CARP' 
+				JOIN ".$table_prefix."_accountscf on ".$table_prefix."_accountscf.accountid =  ".$table_prefix."_account.accountid AND ".$table_prefix."_account.account_client_type = 'UTILIZZATORE' 
 				JOIN ".$table_prefix."_accountbillads on ".$table_prefix."_accountbillads.accountaddressid =  ".$table_prefix."_account.accountid 
 				WHERE (".$table_prefix."_account.rating = '' OR ".$table_prefix."_account.rating = 'Active' OR ".$table_prefix."_account.rating ='--None--' OR ".$table_prefix."_account.rating ='Acquired') 
 				AND (".$table_prefix."_accountscf.".$this->_ratingField." IS NULL 
