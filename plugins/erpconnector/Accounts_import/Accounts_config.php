@@ -42,7 +42,8 @@ $mapping = Array(
 'FINANCE_UNPAIDVALUE' => 'cf_1171',
 'FINANCE_EXPIREDUNPAIDVALUE'=>'cf_1172',
 'BASE_CRMNUMBER'=>'cf_1180',
-);
+'NEW_CATEGORY_DESC'=>'account_line', //danzi.tn@20141126 nuova classificazione
+); 
 //campo nella tabella di appoggio per identificare il codice esterno (sul quale l'import effettuerà la creazione/aggiornamento dei dati)
 $external_code = 'BASE_NUMBER';
 //tabella di appoggio

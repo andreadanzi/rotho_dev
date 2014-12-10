@@ -26,9 +26,8 @@ if(!$_REQUEST['type_or_value'])
 
 <link rel="stylesheet" href="modules/Map/js/closure-library/closure/goog/css/common.css">
 <link rel="stylesheet" href="modules/Map/js/closure-library/closure/goog/css/dialog.css">
-
-<script type="text/javascript"
-        src="http://maps.googleapis.com/maps/api/js?sensor=false&language=<?php echo $lang?>"></script>
+<!-- danzi.tn@20140902 modifica api -->
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 
 <script src="modules/Map/js/markerclusterer_packed.js" type="text/javascript"></script>   
 <script src="modules/Map/js/gm.js" type="text/javascript"></script> 
@@ -504,7 +503,7 @@ echo $select_assigneduser ."</span>
 	
 
 <div style='float: left;  padding-bottom:70px;'>
-	<div id="map_canvas" style="margin-left: 10px; margin-right: 10px; width: 900px; height: 500px;  border: 1px solid black;  padding-bottom:40px; float: left"></div>
+	<div id="map-canvas" style="margin-left: 10px; margin-right: 10px; width: 900px; height: 500px;  border: 1px solid black;  padding-bottom:40px; float: left"></div>
 	<div>
 	<input type="button" class="crmbutton small delete" style='margin-left: 10px' value="<?php echo $mod_strings['Clear directions'] ?>" onClick="restore();"/><br/>
 	
@@ -529,7 +528,7 @@ echo "</div>";
 goog.require('goog.ui.Dialog');
 goog.require('goog.ui.Slider');
 goog.require('goog.ui.Component');
-var map, sliderTimer, fusiontables_layer, slider;
+var sliderTimer, fusiontables_layer, slider;
 var fusion_value = 0;
 var entityCircle;
 <?php echo "var clusterRequest='".$_REQUEST['cluster']."';\n"; ?>
@@ -577,7 +576,6 @@ google.maps.event.addDomListener(window, 'load', initialize);
 <!-- danzi.tn@20140417 telefono (Account_phone) per infowindows aziende -->
 <script type="text/javascript" class="source below"> 
 $(function () {
-
 	if(valueSelRequest && valueSelRequest=='cat_prodotti') $('#cat_prodotti').dialog('open')
 	else $('#cat_prodotti').dialog('close');
 
@@ -614,6 +612,7 @@ $(function () {
 				lat_geocode.val(ll.lat());
 				lon_geocode.val(ll.lng());
 				$( "#dialog-map" ).dialog( "open" );
+                initializeGmap();
 				showmap();
 			} else {
 				alert('Geocode was not successful for the following reason: ' + status);
@@ -758,7 +757,6 @@ $(function () {
                     if ( bValid ) {
 			if(  do_geocode.attr('checked') == true )
 			{
-				initializeGmap();
 				codeAddress();
 			}
                         $( this ).dialog( "close" );
@@ -832,7 +830,6 @@ $(function () {
 		//    so if the anchor has a HREF attirbute - the page will be changed
 		//    you can actually prevent the default, etc (normal jquery usage)
 		.delegate("a", "click", function (event, data) { event.preventDefault(); });
-		
  });
 
 

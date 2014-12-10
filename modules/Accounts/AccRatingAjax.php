@@ -4,6 +4,7 @@
  ************************************************************************************/
 //danzi.tn@201308091803
 //danzi.tn@20140423 CASE -9 per i RP / PROG ELSE  -6
+// danzi.tn@20141130 nuova classificazione
 global $mod_strings,$app_strings,$theme,$currentModule,$current_user,$adb, $table_prefix;
 
 require_once('Smarty_setup.php');
@@ -46,7 +47,7 @@ $sql_visit = "SELECT DISTINCT 'Visitreport' as categoria,
 		JOIN ".$table_prefix."_visitreport ON ".$table_prefix."_visitreport.accountid = temp_acc_ratings.accountid
 		JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_visitreport.visitreportid and ".$table_prefix."_crmentity.deleted = 0
 		WHERE temp_acc_ratings.accountid = ? 
-		AND ( ".$table_prefix."_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_category = 'RP / PROG' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
+		AND ( ".$table_prefix."_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
 		ORDER BY 
 		".$table_prefix."_visitreport.visitdate DESC";
 // danzi.tn@20130909 e

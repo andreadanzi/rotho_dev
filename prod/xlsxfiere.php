@@ -97,11 +97,7 @@ $(function() {
 					<tbody>
 						<tr VALIGN=TOP>
 							<td>
-								<label>New Account?</label>
-                                <input name="newaccount" id="newaccount" class="file ui-widget-content ui-corner-all" type="text" value="yes" />
-								<label>File*</label>
-                                <input name="filename" id="filename" class="file ui-widget-content ui-corner-all" type="file" />
-                                <input id="submit-button" type="submit" value="Invia" ></input>
+								<label>File*</label><input name="filename" id="filename" class="file ui-widget-content ui-corner-all" type="file" /><input id="submit-button" type="submit" value="Invia" ></input>
 							</td>
 							<td colspan=2 rowspan=2>
 									<label>Note / Descrizione</label><textarea  type="text" value="" id="description" name="description" rows="12" cols="30" ></textarea >

@@ -22,5 +22,5 @@ LEFT JOIN ".$table_prefix."_groups ON ".$table_prefix."_groups.groupid = ".$tabl
 LEFT JOIN ".$table_prefix."_users ON ".$table_prefix."_users.id = ".$table_prefix."_crmentity.smownerid 
 LEFT JOIN ".$table_prefix."_account ".$table_prefix."_account2 ON ".$table_prefix."_account.parentid = ".$table_prefix."_account2.accountid 
 WHERE ".$table_prefix."_account.accountid > 0 AND ".$table_prefix."_crmentity.deleted = 0";
-$query .= " and ".$table_prefix."_account.account_type = 'Concorrente' ";
+// danzi.tn@20140909 eliminare filtro aziende concorrenti $query .= " and ".$table_prefix."_account.account_type = 'Concorrente' ";
 ?>

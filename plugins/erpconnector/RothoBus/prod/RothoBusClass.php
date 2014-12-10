@@ -511,7 +511,7 @@ class RothoBus {
 		$idtarget = $tt_address['tmp_idtarget'];
 		$formula = "--Nessuno--";
 		// danzi.tn@20140625 GESTIRE FROM RUSSA
-		if(count($arr)>0 && ( $tt_address['pid'] == '505'  ) ) {
+		if(count($arr)>0 && $tt_address['pid'] == '505' ) {
 			$language = "nd";
 			foreach( $arr as $item) {
 				if($this->log_active) echo "\nForm Russia item =".$item."\n";

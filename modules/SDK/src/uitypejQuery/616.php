@@ -2,6 +2,7 @@
 /*
  * $sdk_value = $value è il valore del dato
  */
+// danzi.tn@20141130 nuova classificazione
 global $sdk_mode, $focus, $adb,$app_strings,$mod_strings,$smarty;
 $imgdir = 'modules/SDK/src/uitypejQuery/img/';
 $iconfile = 'star_16.png';
@@ -9,7 +10,7 @@ $sql = "SELECT
 		temp_acc_ratings.categoria,
 		temp_acc_ratings.gruppo,
 		temp_acc_ratings.eventdatetime,
-		CASE WHEN temp_acc_ratings.account_category = 'RP / PROG' THEN 'star_16.png' ELSE 'carp_16.png' END AS iconfile,
+		CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN 'star_16.png' ELSE 'carp_16.png' END AS iconfile,
 		sum(temp_acc_ratings.valore) as sumvalore,
 		vtiger_account.accountname,
 		vtiger_account.account_no
@@ -23,7 +24,7 @@ $sql = "SELECT
 		temp_acc_ratings.categoria,
 		temp_acc_ratings.gruppo,
 		temp_acc_ratings.eventdatetime,
-		CASE WHEN temp_acc_ratings.account_category = 'RP / PROG' THEN 'star_16.png' ELSE 'carp_16.png' END,
+		CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN 'star_16.png' ELSE 'carp_16.png' END,
 		vtiger_account.accountname,
 		vtiger_account.account_no
 		ORDER BY 
@@ -31,7 +32,7 @@ $sql = "SELECT
 // danzi.tn@20130909	
 // danzi.tn@20140423 CASE -9 per i RP / PROG ELSE  -6
 $sql_visit = "SELECT DISTINCT 
-      CASE WHEN temp_acc_ratings.account_category = 'RP / PROG' THEN 'star_16.png' ELSE 'carp_16.png' END AS iconfile,
+      CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN 'star_16.png' ELSE 'carp_16.png' END AS iconfile,
 	  'Visitreport' as categoria, 
       vtiger_visitreport.visitreportid,
       vtiger_visitreport.visitreport_no,
@@ -39,7 +40,7 @@ $sql_visit = "SELECT DISTINCT
 		from 
 		 temp_acc_ratings 
 		Join vtiger_account ON vtiger_account.accountid = temp_acc_ratings.accountid
-		LEFT JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_category = 'RP / PROG' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
+		LEFT JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
 		LEFT JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_visitreport.visitreportid and vtiger_crmentity.deleted = 0
 		WHERE temp_acc_ratings.accountid = ?
 		ORDER BY 

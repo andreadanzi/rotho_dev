@@ -7,7 +7,25 @@ function do_import_accounts($time_start) {
 	$array_key=array_keys($mapping);
 	$key = array_search('CUSTOMER_ZONE__DESC', $array_key);
 	$array_key[$key]="customer_zone+' / '+customer_zonedesc as CUSTOMER_ZONE__DESC";
-	$key = array_search('CUSTOMER_CATEGORY__DESC', $array_key);
+    //danzi.tn@20141126 nuova classificazione
+    $key = array_search('NEW_CATEGORY_DESC', $array_key);
+    $array_key[$key]="(case 
+	when customer_categorydesc ='CARP' then 'CARP' 
+	when customer_categorydesc ='GDO' then 'DIST' 
+	when customer_categorydesc ='Classification not defined.' then '---' 
+	when customer_categorydesc ='ORGANIZZAZIONE' then '---'  
+	when customer_categorydesc IS NULL then '---'  
+	when customer_categorydesc ='***ALTRO' then '---'  
+	when customer_categorydesc ='DIPENDENTE INTERNO' then '---'    
+	when customer_categorydesc ='PROG' then 'CARP'    
+	when customer_categorydesc ='SAFE' then 'SAFE'    
+	when customer_categorydesc ='FORNITORE' then '---'    
+	when customer_categorydesc ='DIST' then 'DIST'    
+	when customer_categorydesc ='da definire' then '---'    
+	when customer_categorydesc ='AGENTE' then '---'      
+    end) AS NEW_CATEGORY_DESC";
+    //danzi.tn@20141126e
+	$key = array_search('CUSTOMER_CATEGORY__DESC', $array_key);    
 	$array_key[$key]="customer_category+' / '+customer_categorydesc as CUSTOMER_CATEGORY__DESC";
 	$key = array_search('CUSTOMER_PRICE__DESC', $array_key);
 	$array_key[$key]="customer_price+' / '+customer_pricedesc as CUSTOMER_PRICE__DESC";

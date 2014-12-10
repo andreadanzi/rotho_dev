@@ -105,7 +105,7 @@ class Xlsx_File_Form_Import {
 	}
 
 
-	function importNow($filepath,$docId,$sheetName='CONTACTS',$newaccount='yes') {
+	function importNow($filepath,$docId,$sheetName='CONTACTS') {
 		global $log, $adb, $table_prefix;
 		$this->sheetname = $sheetName;
 		// danzi.tn@20131009
@@ -141,7 +141,7 @@ class Xlsx_File_Form_Import {
 				$cell = $objWorksheet->getCell('A'.$row);
 				$con_parameters['leadsource'] = trim($cell->getValue());
 				$parameters['leadsource'] = trim($cell->getValue());
-				$acc_parameters['cf_770'] = $con_parameters['leadsource'];
+				// $acc_parameters['cf_770'] = $con_parameters['leadsource'];
 				if( empty($con_parameters['leadsource']) ) {
 					// se leadsource è vuoto salto
 					$this->log_entries['skipped'][$row]='A'.$row;
@@ -214,7 +214,6 @@ class Xlsx_File_Form_Import {
 				$cell = $objWorksheet->getCell('R'.$row);
 				$acc_parameters['description'] = trim($cell->getValue());
 				$con_parameters['description'] = trim($cell->getValue()); // danzi.tn@20140129 aggiunti tre  nuovi parametri
-                $parameters['description'] = trim($cell->getValue());
 				// Retrieve user information
 				$user = CRMEntity::getInstance('Users');
 				$user->id = $user->retrieve_user_id($username);
@@ -233,9 +232,9 @@ class Xlsx_File_Form_Import {
 				$parameters['cf_728'] = 'ND';
 				$parameters['cf_733'] = 'ND';
 				$parameters['cf_756'] = 'ND';
-				$retVal = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere','Contatto - Fiera',$account_no);
+				$retVal = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Form Fiere',$account_no);
 				$bFound = $retVal[0];
-				if(!$bFound && $newaccount == 'yes')
+				if(!$bFound)
 				{	
 					$acc_record = vtws_create('Accounts', $acc_parameters, $this->adminuser);
 					$accIdComponents = vtws_getIdComponents($acc_record['id']);
@@ -287,14 +286,7 @@ class Webform_Capture {
 			} else {
 				$returnURL = $webform->getReturnUrl();
 			}
-            // danzi.tn@20141104 - gestione creazione nuovi account
-            if(isset($request['newaccount'])) {
-				$newaccount = vtlib_purify($request['newaccount']);
-			} else {
-				$newaccount = 'yes';
-			}
-            // danzi.tn@20141104e
-            
+
 			// Retrieve user information
 			$user = CRMEntity::getInstance('Users');
 			$user->id=$user->getActiveAdminId();
@@ -358,7 +350,7 @@ class Webform_Capture {
 					$fileFormObj = new Xlsx_File_Form_Import();
 					$fileFormObj->setDescription($parameters['description']);
 					$fileFormObj->adminuser = $user;
-					$fileFormObj->importNow($filepath,$docId,'Tabelle1',$newaccount);
+					$fileFormObj->importNow($filepath,$docId,'Tabelle1');
 				}
 				$this->sendResponse($returnURL, 'ok');
 			} else {

@@ -12,36 +12,34 @@ coords.lng = 11.052490000000034;
 var geocoder = null;
 geocoder = new google.maps.Geocoder();
 
+// danzi.tn@20140902 modifica api
+
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
-	var VT_TYPE = "VTStyle";
+	
 	// Create and Center a Map
     	var myOptions = {
       		zoom: 6,
       		center: home_center,
-		mapTypeControlOptions: {
-			mapTypeIds: [VT_TYPE,google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.TERRAIN]
-		},
-      		mapTypeId:VT_TYPE,
-		streetViewControl: true
+            panControl: true,
+            zoomControl: true,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                position: google.maps.ControlPosition.TOP_RIGHT
+                },
+            streetViewControl: false
     	};
 
-	var stylez = [ { featureType: "poi", elementType: "all", stylers: [ { visibility: "off" } ] },{ featureType: "landscape.natural", elementType: "all", stylers: [ { visibility: "simplified" }, { hue: "#0C4F00" } ] },{ featureType: "road", elementType: "all", stylers: [ { visibility: "off" }] }, { featureType: "landscape.man_made", elementType: "all", stylers: [ { visibility: "simplified" }, { hue: "#EF2C2C" } ] },{ featureType: "administrative", elementType: "geometry",stylers: [ { hue: "#0088ff" }, { saturation: 80 }, { lightness: -17 } ] }];
 
+	map = new google.maps.Map(document.getElementById("map-canvas"), myOptions);
 
-	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-
-	var styledMapOptions = {map:map,name:"VT Style"};
-
-	var rothoMap =  new google.maps.StyledMapType(stylez,styledMapOptions);
 		
 	
 	directionsDisplay.setMap(map);
 	directionsDisplay.setPanel(document.getElementById("route"));
-	
-	map.mapTypes.set(VT_TYPE, rothoMap);
-	map.setMapTypeId(VT_TYPE);
+    
 	checkMap('ND');
 	initializeSlider();	
 	
@@ -62,6 +60,7 @@ function initialize() {
 	google.maps.event.addDomListener(domElement, 'click',  function() { updateValueFilterContainer(this);} );
 	google.maps.event.addDomListener(domElementND, 'click',  function() { updateValueFilterContainer(this);} );
 	google.maps.event.addDomListener(domElementPROD, 'click',  function() { updateValueFilterContainer(this);} );
+   
 }
 
 function initializeGmap() 
@@ -69,14 +68,14 @@ function initializeGmap()
 	var latlng = new google.maps.LatLng(coords.lat, coords.lng);
 	var myOptions = {
 	  zoom: 10,
-	  center: latlng,
-	  mapTypeId: google.maps.MapTypeId.ROADMAP
+	  center: latlng
 	};
 	gmap = new google.maps.Map(document.getElementById("gmap_canvas"),  myOptions);                         
 }  
 function showmap() {
 	var latlng = new google.maps.LatLng(coords.lat, coords.lng);
 	gmap.setCenter(latlng, 10);
+    
 	var marker = new google.maps.Marker({
 		map: gmap,
 		position: latlng
