@@ -1,4 +1,5 @@
 <?php
+// danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_line
 function do_import_accounts($time_start) {
 	global $adb,$seq_log,$current_user,$mapping,$root_directory,$external_code,$module,$table,$fields_auto_create,$fields_auto_update,$where;	
 	$import = new importer($module,$mapping,$external_code,$time_start,$fields_auto_create,$fields_auto_update);
@@ -9,21 +10,19 @@ function do_import_accounts($time_start) {
 	$array_key[$key]="customer_zone+' / '+customer_zonedesc as CUSTOMER_ZONE__DESC";
     //danzi.tn@20141126 nuova classificazione
     $key = array_search('NEW_CATEGORY_DESC', $array_key);
-    $array_key[$key]="(case 
-	when customer_categorydesc ='CARP' then 'CARP' 
-	when customer_categorydesc ='GDO' then 'DIST' 
-	when customer_categorydesc ='Classification not defined.' then '---' 
-	when customer_categorydesc ='ORGANIZZAZIONE' then '---'  
-	when customer_categorydesc IS NULL then '---'  
-	when customer_categorydesc ='***ALTRO' then '---'  
-	when customer_categorydesc ='DIPENDENTE INTERNO' then '---'    
-	when customer_categorydesc ='PROG' then 'CARP'    
-	when customer_categorydesc ='SAFE' then 'SAFE'    
-	when customer_categorydesc ='FORNITORE' then '---'    
-	when customer_categorydesc ='DIST' then 'DIST'    
-	when customer_categorydesc ='da definire' then '---'    
-	when customer_categorydesc ='AGENTE' then '---'      
-    end) AS NEW_CATEGORY_DESC";
+    $array_key[$key]="(CASE 
+	WHEN CUSTOMER_CATEGORYDESC ='CARP' THEN 'RC / CARP' 
+	WHEN CUSTOMER_CATEGORYDESC ='GDO' THEN 'GD / GDO'
+	WHEN CUSTOMER_CATEGORYDESC ='PROG' THEN '---'    
+	WHEN CUSTOMER_CATEGORYDESC ='SAFE' THEN 'RS / SAFE'     
+	WHEN CUSTOMER_CATEGORYDESC ='DIST' THEN 'RD / DIST'
+    WHEN CUSTOMER_CATEGORYDESC ='DIPENDENTE INTERNO' OR 
+         CUSTOMER_CATEGORYDESC ='FORNITORE' OR 
+         CUSTOMER_CATEGORYDESC ='AGENTE' OR 
+         CUSTOMER_CATEGORYDESC ='***ALTRO'
+         THEN 'RR / DIREZ'
+    ELSE  '---'
+    END) AS NEW_CATEGORY_DESC";
     //danzi.tn@20141126e
 	$key = array_search('CUSTOMER_CATEGORY__DESC', $array_key);    
 	$array_key[$key]="customer_category+' / '+customer_categorydesc as CUSTOMER_CATEGORY__DESC";
@@ -52,7 +51,43 @@ function do_import_accounts($time_start) {
 			import_accounts_info($ext_cod);
 		}
 	}
-	
+    // danzi.tn@20141212 nova classificazione per i PROG....si va a prendetre l'agente
+	$updt_query="UPDATE vtiger_account
+                    SET vtiger_account.account_line = 
+                    CASE
+                     WHEN erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC IS NULL OR  
+                          erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'non definito' OR
+                          erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = ''   
+                          THEN 
+                            CASE 
+                                WHEN vtiger_accountscf.cf_762 = '' THEN  '---'
+                                WHEN vtiger_accountscf.cf_762 IS NULL THEN  '---'
+                                WHEN CHARINDEX( 'CARP', vtiger_accountscf.cf_762) > 0 THEN  'RC / CARP' 
+                                WHEN CHARINDEX( 'SAFE', vtiger_accountscf.cf_762) > 0 THEN  'RS / SAFE'
+                                WHEN CHARINDEX( 'DIST', vtiger_accountscf.cf_762) > 0 THEN  'RD / DIST'
+                                WHEN CHARINDEX( 'GDO', vtiger_accountscf.cf_762) > 0 THEN  'GD / GDO'
+                                WHEN CHARINDEX( 'PROG', vtiger_accountscf.cf_762) > 0 THEN  '---'
+                                WHEN CHARINDEX( 'DIPENDENTE INTERNO', vtiger_accountscf.cf_762) > 0 OR
+                                    CHARINDEX( 'FORNITORE', vtiger_accountscf.cf_762) > 0 OR
+                                    CHARINDEX( 'AGENTE', vtiger_accountscf.cf_762) > 0 OR
+                                    CHARINDEX( 'ASS', vtiger_accountscf.cf_762) > 0 OR
+                                    CHARINDEX( 'ORGANIZZAZIONE', vtiger_accountscf.cf_762) > 0 OR
+                                    CHARINDEX( 'ALTRO', vtiger_accountscf.cf_762) > 0 
+                                    THEN  'RR / DIREZ'
+                                ELSE  '---'
+                            END 
+                     WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'CARP' THEN  'RC / CARP' 
+                     WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'SAFE' THEN  'RS / SAFE'
+                     WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'DIST' THEN  'RD / DIST'
+                     WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'INDUST' THEN 'RR / DIREZ'
+                     ELSE  '---'
+                    END
+                    FROM vtiger_account
+                    JOIN vtiger_crmentity accent on vtiger_account.accountid = accent.crmid AND accent.deleted = 0
+                    JOIN vtiger_accountscf on vtiger_account.accountid = vtiger_accountscf.accountid 
+                    JOIN vtiger_users ON vtiger_users.id = accent.smownerid
+                    JOIN erp_temp_crm_agenti ON vtiger_users.user_name = erp_temp_crm_agenti.AGENT_USERNAME";
+    $adb->query($updt_query);
 	return $import_info;
 }
 
@@ -89,6 +124,8 @@ function import_accounts_info($ext_cod){
 						on vtiger_account.accountid=vtiger_crmentity.crmid and deleted=0
 						 where external_code=?";
 			$adb->pquery($updt_query,array($row['contact_commdata'],$ext_cod));
+            
+            
 		}
 	}
 }

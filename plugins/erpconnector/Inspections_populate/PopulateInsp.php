@@ -10,7 +10,6 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 // chdir(dirname(__FILE__) . '/../..');
-
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';
@@ -18,7 +17,7 @@ include_once 'include/Webservices/Create.php';
 include_once 'modules/Inspections/Inspections.php';
 include_once 'modules/Inspections/Inspections_conf.php';
 include_once 'include/QueryGenerator/QueryGenerator.php';
-
+// danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_client_type
 class Inspections_Populate {
 	
 	function populateNow() {
@@ -35,7 +34,7 @@ class Inspections_Populate {
 			$user->id=$user->getActiveAdminId();
 			$user->retrieve_entity_info($user->id, 'Users');
 			global $adb, $current_user;
-			global $table_prefix, $cf_account_category,$cf_account_base_language, $insp_activitytype,$insp_eventstatus;
+			global $table_prefix,$cf_account_base_language, $insp_activitytype,$insp_eventstatus;
 			$interval = "12 MONTH";
 			$query = "
 				select 
@@ -56,8 +55,8 @@ class Inspections_Populate {
 					".sql_date_add($table_prefix).", -- Verificare qual'è la data dell'Ordine di vendita e come calcolare la due_date
 					'Aperta' AS inspection_state, -- Eventualmente calcolare se in scadenza
 					NULL AS inspection_date, -- a NULL perchè non è stata fatta
-					".$table_prefix."_salesorder.data_ordine_ven AS salesorder_date, -- Verificare qual'è la data dell'Ordine di vendita e come calcolare la due_date
-					".$table_prefix."_accountscf.".$cf_account_category." AS account_cat, -- cf_762 per rotho
+					".$table_prefix."_salesorder.data_ordine_ven AS salesorder_date, -- Verificare qual'è la data dell'Ordine di vendita e come calcolare la due_date 
+					".$table_prefix."_account.account_client_type AS account_cat, -- cf_762 sostituito con vtiger_account.account_client_type
 					".$table_prefix."_accountscf.".$cf_account_base_language." AS account_baselang, -- cf_1113 per rotho
 					case when ".$table_prefix."_products.productid is not null then ".$table_prefix."_products.inspection_frequency else 'ND' end as inspection_frequency, 
 					".$table_prefix."_inventoryproductrel.sequence_no as sequence_no,
@@ -78,7 +77,7 @@ class Inspections_Populate {
 				where 
 				".$table_prefix."_crmentity.deleted =0 
 				AND ".$table_prefix."_products.inspection_frequency IS NOT NULL AND ".$table_prefix."_products.inspection_frequency <>'lbl_nd'
-				AND ".$table_prefix."_accountscf.".$cf_account_category." <> 'RD / DIST'
+				AND ".$table_prefix."_account.account_client_type <> 'RIVENDITORE'
 				AND ".$table_prefix."_inspections.inspectionsid IS  NULL AND ".$table_prefix."_inventoryproductrel.quantity > 0
 				AND ".$table_prefix."_salesorder.salesorderid IS NOT NULL  AND DATEADD( month, 12, ".$table_prefix."_salesorder.data_ordine_ven) BETWEEN DATEADD( month, -1,GETDATE())  AND  DATEADD( month, 1,GETDATE()) 
 				ORDER BY ".$table_prefix."_salesorder.salesorderid, sequence_no

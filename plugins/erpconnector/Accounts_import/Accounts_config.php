@@ -1,4 +1,5 @@
 <?php
+// danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_line
 include_once("Accounts_functions.php");
 include_once("../config.php");
 $log_active = true;

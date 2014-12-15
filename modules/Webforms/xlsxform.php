@@ -10,7 +10,7 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 chdir(dirname(__FILE__) . '/../..');
-
+// danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_line
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';
@@ -203,7 +203,7 @@ class Xlsx_File_Form_Import {
 				$cell = $objWorksheet->getCell('P'.$row);
 				$acc_parameters['website'] = trim($cell->getValue());
 				$cell = $objWorksheet->getCell('M'.$row);
-				$acc_parameters['cf_762'] = trim($cell->getValue()); // CATEGORIA dev=>cf_799 rotho_prod=>cf_762
+				$acc_parameters['account_line'] = trim($cell->getValue()); // danzi.tn@20141212 cf_762 sostituito con account_line
 				$cell = $objWorksheet->getCell('N'.$row);
 				$account_no = trim($cell->getValue());
 				$cell = $objWorksheet->getCell('O'.$row);
