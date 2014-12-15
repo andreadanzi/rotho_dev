@@ -44,7 +44,8 @@ CHARINDEX(tmp_type_from_subcat.subcat ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) = 1
@@ -55,7 +56,8 @@ CHARINDEX('---' ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) = 0;
@@ -74,7 +76,8 @@ CHARINDEX(tmp_type_from_subcat.subcat ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) = 10
@@ -85,7 +88,8 @@ CHARINDEX('---' ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) = 1;
@@ -103,7 +107,8 @@ CHARINDEX(tmp_type_from_subcat.subcat ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) > 1
@@ -112,7 +117,8 @@ CHARINDEX('---' ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) = 0
@@ -131,7 +137,8 @@ CHARINDEX(tmp_type_from_subcat.subcat ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) > 10
@@ -140,7 +147,8 @@ CHARINDEX('---' ,
     CASE 
         WHEN vtiger_accountscf.cf_762 = 'RC / CARP' THEN  vtiger_accountscf.cf_894 
         WHEN vtiger_accountscf.cf_762 = 'RD / DIST' THEN  vtiger_accountscf.cf_902
-        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_903 
+        WHEN vtiger_accountscf.cf_762 = 'RP / PROG' THEN  vtiger_accountscf.cf_895 
+        WHEN vtiger_accountscf.cf_762 = 'RS / SAFE' THEN  vtiger_accountscf.cf_903 
         WHEN vtiger_accountscf.cf_762 = 'Università' THEN vtiger_accountscf.cf_895 
         WHEN vtiger_accountscf.cf_762 = 'RE / ALTRO' THEN vtiger_accountscf.cf_904 
     END ) = 1

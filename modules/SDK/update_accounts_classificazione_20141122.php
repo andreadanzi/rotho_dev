@@ -6,7 +6,7 @@ include_once('vtlib/Vtiger/Module.php');
 $Vtiger_Utils_Log = true;
 global $adb, $table_prefix;
 session_start();
-// danzi.tn@20141126 nuova classificazione
+// danzi.tn@20141126 nuova classificazione aggiornato
 // Turn on debugging level
 $Vtiger_Utils_Log = true;
 include_once('vtlib/Vtiger/Menu.php');
