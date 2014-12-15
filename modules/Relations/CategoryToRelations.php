@@ -1,4 +1,5 @@
 <?php
+// danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 global $default_charset,$adb,$table_prefix,$autocomplete_return_function,$log;
 $log->debug("Entering CategoryToRelations.php ...");
 $forfield = htmlspecialchars($_REQUEST['forfield'], ENT_QUOTES, $default_charset);
@@ -9,8 +10,8 @@ if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 	$value = htmlspecialchars(addslashes(html_entity_decode(strip_tags($value), ENT_QUOTES,$default_charset)), ENT_QUOTES,$default_charset); // Remove any previous html conversion
 	$link_to_category = '';
 	$link_to_other = '';
-	// cf_779 local, cf_762 ROTHO
-	$query = "SELECT ".$table_prefix."_accountscf.cf_762 AS category FROM ".$table_prefix."_accountscf LEFT JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_accountscf.accountid = ".$table_prefix."_crmentity.crmid  WHERE ".$table_prefix."_crmentity.deleted = 0 AND ".$table_prefix."_accountscf.accountid = ".$entity_id;
+	// danzi.tn@20141212
+	$query = "SELECT ".$table_prefix."_account.account_client_type AS category FROM ".$table_prefix."_account JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_account.accountid = ".$table_prefix."_crmentity.crmid  WHERE ".$table_prefix."_crmentity.deleted = 0 AND ".$table_prefix."_account.accountid = ".$entity_id;
 	$log->debug("CategoryToRelations.php customquery ".$query);
 	$result = $adb->query($query);
 	if ($result && $adb->num_rows($result)>0) {

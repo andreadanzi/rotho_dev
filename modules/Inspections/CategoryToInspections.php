@@ -14,8 +14,8 @@ if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 	$link_to_extcode = '';
 	$link_to_account_ownerid = '';
 	$link_to_account_ownerid_display = '';
-	// cf_799 local, ROTHO --> cf_762
-	$query = "SELECT ".$table_prefix."_accountscf.".$cf_account_category." AS category, ".$table_prefix."_accountscf.".$cf_account_base_language." AS baselang, ".$table_prefix."_account.email1 AS email , ".$table_prefix."_account.external_code AS external_code  , ".$table_prefix."_crmentity.smownerid AS account_ownerid  , (".$table_prefix."_users.user_name +' ('+".$table_prefix."_users.first_name + ' ' + ".$table_prefix."_users.last_name + ')' ) as display_name 
+    // danti.tn@20141212 nuova classificazione
+	$query = "SELECT ".$table_prefix."_account.account_client_type AS category, ".$table_prefix."_accountscf.".$cf_account_base_language." AS baselang, ".$table_prefix."_account.email1 AS email , ".$table_prefix."_account.external_code AS external_code  , ".$table_prefix."_crmentity.smownerid AS account_ownerid  , (".$table_prefix."_users.user_name +' ('+".$table_prefix."_users.first_name + ' ' + ".$table_prefix."_users.last_name + ')' ) as display_name 
 		FROM ".$table_prefix."_accountscf
 		LEFT JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_accountscf.accountid = ".$table_prefix."_crmentity.crmid 
 		LEFT JOIN ".$table_prefix."_account ON ".$table_prefix."_accountscf.accountid = ".$table_prefix."_account.accountid

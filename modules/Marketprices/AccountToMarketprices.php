@@ -3,6 +3,7 @@ global $default_charset,$adb,$table_prefix,$autocomplete_return_function,$log,$c
 
 //danzi.tn@20140717 creazione nuovo modulo Marketprices
 //danzi.tn@20140724 fix query (agent_cod_capoarea <> '')
+//danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 $log->debug("Entering AccountToMarketprices.php ...");
 $forfield = htmlspecialchars($_REQUEST['forfield'], ENT_QUOTES, $default_charset);
 $list_result_count = $i-1;
@@ -15,7 +16,7 @@ if(isset($forfield) && $forfield != '' && $focus->popup_type != 'detailview') {
 	$area_mng_name = '';
 	$area_mng_no = '';
 		
-	$query = "SELECT  {$table_prefix}_account.area_mng_no, {$table_prefix}_account.area_mng_name, bill_country, cf_762 as category,  {$table_prefix}_users.agent_cod_capoarea,
+	$query = "SELECT  {$table_prefix}_account.area_mng_no, {$table_prefix}_account.area_mng_name, bill_country, {$table_prefix}_account.account_client_type as category,  {$table_prefix}_users.agent_cod_capoarea,
 							amuser.first_name + ' '+ amuser.last_name as agent_name_capoarea
 							from {$table_prefix}_crmentity
 							join {$table_prefix}_account on  {$table_prefix}_account.accountid = {$table_prefix}_crmentity.crmid

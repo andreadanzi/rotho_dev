@@ -1,7 +1,7 @@
 <?php
 
 // danzi.tn@20140411 update product category
-$cf_account_category='cf_762'; // cf_799 ROTHO -- cf_762
+// danti.tn@20141212 nuova classificazione
 $cf_account_base_language = 'cf_1113'; // cf_851  ROTHO = cf_1113 ROTHO_test = cf_1120
 $insp_activitytype = 'Revisione (Auto-gen)';
 $insp_eventstatus = 'Planned';

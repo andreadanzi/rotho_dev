@@ -10,7 +10,7 @@
  * ********************************************************************************** */
 // Switch the working directory to base
 chdir(dirname(__FILE__) . '/../..');
-
+// danti.tn@20141212 nuova classificazione
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';
@@ -35,8 +35,9 @@ class Inspections_Populate {
 			$user->id=$user->getActiveAdminId();
 			$user->retrieve_entity_info($user->id, 'Users');
 			global $adb, $current_user,$log;
-			global $table_prefix, $cf_account_category,$insp_activitytype,$insp_eventstatus;
+			global $table_prefix, $insp_activitytype,$insp_eventstatus;
 			$interval = "12 MONTH";
+            // danti.tn@20141212 nuova classificazione
 			$query = "
 				select 
 					".$table_prefix."_inspections.inspectionsid,
@@ -57,7 +58,7 @@ class Inspections_Populate {
 					'Aperta' AS inspection_state, -- Eventualmente calcolare se in scadenza
 					NULL AS inspection_date, -- a NULL perchè non è stata fatta
 					".$table_prefix."_salesorder.data_ordine_ven AS salesorder_date, -- Verificare qual'è la data dell'Ordine di vendita e come calcolare la due_date
-					".$table_prefix."_accountscf.".$cf_account_category." AS account_cat, -- cf_762 per rotho
+					".$table_prefix."_account.account_client_type AS account_cat, -- cf_762 per rotho
 					case when ".$table_prefix."_products.productid is not null then ".$table_prefix."_products.inspection_frequency else 'ND' end as inspection_frequency, 
 					".$table_prefix."_inventoryproductrel.quantity as inspection_qty,
 					case when ".$table_prefix."_products.productid is not null then 'Products' else 'Services' end as entitytype, 

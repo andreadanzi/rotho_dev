@@ -64,7 +64,8 @@ function crmv_capoarea2($accountid,$roleid){
 //crmv@myrotho_blaas
 function crmv_categoria($accountid){
 	global $adb;
-	$sql="select cf_762 from vtiger_accountscf where accountid=?";
+    // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
+	$sql="select account_client_type from vtiger_account where accountid=?";
 	$res=$adb->pquery($sql,array($accountid));
 	if($res && $adb->num_rows($res) > 0){
 		$categoria=$adb->query_result($res,0,'cf_762');

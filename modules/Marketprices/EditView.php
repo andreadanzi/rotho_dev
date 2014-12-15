@@ -9,6 +9,7 @@
  ***************************************************************************************/
 
  // danzi.tn@20140724 gestione parent_id  vtiger_visitreport
+ // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 if(isset($_REQUEST['return_module']) && $_REQUEST['return_module'] =='Visitreport' && isset($_REQUEST['parent_id']) && $_REQUEST['parent_id'] > 0) {
 	global $adb, $table_prefix, $current_user;
 	$parent_id = vtlib_purify($_REQUEST['parent_id']);
@@ -16,7 +17,7 @@ if(isset($_REQUEST['return_module']) && $_REQUEST['return_module'] =='Visitrepor
 	".$table_prefix."_account.accountid, 
 	".$table_prefix."_account.accountname,
 	".$table_prefix."_account.area_mng_no, 
-	".$table_prefix."_account.area_mng_name, bill_country, cf_762 as category,  
+	".$table_prefix."_account.area_mng_name, bill_country, vtiger_account.account_client_type as category,  
 	".$table_prefix."_users.agent_cod_capoarea, amuser.first_name + ' '+ amuser.last_name as agent_name_capoarea
 	FROM ".$table_prefix."_crmentity
 	join ".$table_prefix."_visitreport on ".$table_prefix."_visitreport.visitreportid = ".$table_prefix."_crmentity.crmid

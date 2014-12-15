@@ -13,7 +13,7 @@ var geocoder = null;
 geocoder = new google.maps.Geocoder();
 
 // danzi.tn@20140902 modifica api
-
+// danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
@@ -230,33 +230,21 @@ function getMarkerFromResults(sType,sPot) { // Andrea Danzi aggiunto custom mark
 				  sIcon = "modules/Map/img/letter_o.png";
 				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/letter_o-p.png";
 				  break;
-				case "RC / CARP":
+				case "UTILIZZATORE":
 				  sIcon = "modules/Map/img/rc-carp.png";
 				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/rc-carp-p.png";
 				  break;
-				case "RD / DIST":
+				case "RIVENDITORE":
 				  sIcon = "modules/Map/img/rd-dist.png";
 				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/rd-dist-p.png";
 				  break;
-				case "RS / SAFE":
-				  sIcon = "modules/Map/img/rs-safe.png";
-				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/rs-safe-p.png";
-				  break;
-				case "RP / PROG":
+				case "PROGETTISTA":
 				  sIcon = "modules/Map/img/rp-prog.png";
 				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/rp-prog-p.png";
 				  break;
-				case "RE / ALTRO":
-				  sIcon = "modules/Map/img/letter_a.png";
-				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/letter_a-p.png";
-				  break;
-				case "RC / DIST":
-				  sIcon = "modules/Map/img/rc-dist.png";
-				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/rc-dist-p.png";
-				  break;
-				case "RC / PROG":
-				  sIcon = "modules/Map/img/rc-prog.png";
-				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/rc-prog-p.png";
+				case "INFLUENZATORE":
+				  sIcon = "modules/Map/img/letter_i.png";
+				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/letter_i-p.png";
 				  break;
 				case "---":
 				  sIcon = "modules/Map/img/symbol_minus.png";

@@ -46,8 +46,8 @@ $mod_strings = Array(
 	'Account Id'=>'Account',
 
 	'Vendor Id'=>'Vendor',
-
-	'Account Category'=>'Account Category',
+    // danzi.tn@20141212 nova classificazione
+	'Account Category'=>'Account Type',
 
 	'Inspection Frequency'=>'Inspection Frequency',
 	'lbl_nd'=>'No Inspection',
