@@ -37,7 +37,7 @@ where
 vtiger_cvadvfilter.columnname = 'vtiger_accountscf:cf_762:cf_762:Accounts_Categoria:V' AND
 vtiger_cvadvfilter.value in ( 'RC / CARP', 'CARP', 'RD / DIST', 'RP / PROG', 'prog', 'RP / PROG', 'RE / ALTRO,RP / PROG', 'RC / CARP,RD / DIST,RS / SAFE,RP / PROG', 'RD,GDO,SAFE', 'RC / CARP,RD / DIST,RS / SAFE,RP / PROG,RE / ALTRO', 'RD,GDO', 'RC / CARP,RS / SAFE,RP / PROG', 'RC / CARP,RS / SAFE,RP / PROG,RE / ALTRO', 'GDO,DIST' );
 
--- SELECT vtiger_customview.cvid,
+SELECT vtiger_customview.cvid,
 vtiger_customview.viewname,
 vtiger_cvadvfilter.columnname,
 vtiger_cvadvfilter.comparator,

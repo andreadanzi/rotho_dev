@@ -1,0 +1,29 @@
+danzi.tn@20141126 nuova classificazione passo 1
+1) Script SDK
+2) Script SQL per Linea
+3) Script SQL per Attività Principale
+
+danzi.tn@20141126 nuova classificazione passo 2
+1) modules\Accounts/AccRatingAjax.php
+2) modules\SDK\src\uitypejQuery\616.php
+3) plugins\erpconnector\AccRating_populate\AccRatingClass.php
+4) plugins\erpconnector\AccRating_populate\AccRatingClassCARP.php
+
+danzi.tn@20141126 nuova classificazione passo 3
+1) modules\Inspections
+2) modules\Map
+3) modules\Marketprices
+4) modules\Relations
+5) modules\SDK\src\modules\Consulenza\ConsulenzaUtils.php
+6) modules\SDK\update_account_line_translate.php
+7) modules\Workflow\custom_wf_account.inc.php
+
+danzi.tn@20141126 nuova classificazione passo 4
+1) modules\Webforms\xlsxform.php
+2) sql\filtri_vecchia_categoria.sql
+3) plugins\erpconnector\Inspections_populate\PopulateInsp.php
+4) plugins\erpconnector\Accounts_import\Accounts_functions.php e Accounts_config.php
+
+danzi.tn@20141126 nuova classificazione passo 5
+1) Export Talend
+2) test Accounts_import ok
