@@ -4,7 +4,7 @@
  ************************************************************************************/
 //danzi.tn@201308091803
 //danzi.tn@20140423 CASE -9 per i RP / PROG ELSE  -6
-// danzi.tn@20141130 nuova classificazione
+// danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_client_type = PROGETTISTA
 global $mod_strings,$app_strings,$theme,$currentModule,$current_user,$adb, $table_prefix;
 
 require_once('Smarty_setup.php');

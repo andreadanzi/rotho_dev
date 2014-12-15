@@ -2,7 +2,7 @@
 /*
  * $sdk_value = $value è il valore del dato
  */
-// danzi.tn@20141130 nuova classificazione
+// danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_client_type = PROGETTISTA
 global $sdk_mode, $focus, $adb,$app_strings,$mod_strings,$smarty;
 $imgdir = 'modules/SDK/src/uitypejQuery/img/';
 $iconfile = 'star_16.png';

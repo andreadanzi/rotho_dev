@@ -16,7 +16,7 @@
 // danzi.tn@20140324 - TOLTO IL FILTRO AGLI STATI
 // danzi.tn@20140603 - filtro su ultimi 21 mesi BETWEEN DATEADD( month, -24 ,GETDATE())  AND  GETDATE() )
 // danzi.tn@20140630 - separazione tra corsi e downloads. Downloads adesso va a vedere la data sull'Evento di calendario _get_target_campaign_downloads_sql
-
+// danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_client_type = PROGETTISTA
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';
