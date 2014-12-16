@@ -1,5 +1,5 @@
 <?php
-
+// danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_line
 function do_job($time_start) {
 	global $adb;
 	$query="select
@@ -20,7 +20,7 @@ function do_job($time_start) {
 		$acc_sql = "SELECT 
 					vtiger_account.accountid,
 					vtiger_account.account_no,
-					vtiger_accountscf.cf_762 as categoria,
+					vtiger_account.account_line as categoria,
 					vtiger_crmentity.smownerid
 					FROM 
 					vtiger_account
