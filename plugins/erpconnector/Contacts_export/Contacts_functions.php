@@ -2,6 +2,7 @@
 
 // danzi.tn@20140213  - bisogna aggiungere il criterio vtiger_contactscf.cf_1229 <> 'XXX' in produzione è cf_1229 in _test è cf_1239
 // danzi.tn@20140729 utilizzo di html_entity_decode per nome cognome nome azienda etc
+// danzi.tn@20141217  iconv esegue in locale e poi i file convertiti vengono spostati su share Windows (mv)
 function do_export_contacts($time_start) {
 	global $adb,$seq_log,$current_user,$root_directory;	
 	$invalid_characters = array("$", "%", "#", "<", ">", "|","\n","\r");
@@ -240,9 +241,12 @@ function do_export_contacts($time_start) {
 		fputcsv( $fp, array($row['number'],$row['source_number'],$row['target_number'],$row['type_name']), chr(9));	
 	}
 	fclose($fp);
-	exec("iconv -f UTF-8 -t UCS-2LE ".$exportdir."01x_import_contatto.csv > ".$exportdir."File_01/01x_import_contatto_ucs-2le.csv");
-	exec("iconv -f UTF-8 -t UCS-2LE ".$exportdir."02x_import_contatto_recapiti.csv > ".$exportdir."File_02/02x_import_contatto_recapiti_ucs-2le.csv");
-	exec("iconv -f UTF-8 -t UCS-2LE ".$exportdir."03x_import_contatto_collegamenti.csv > ".$exportdir."File_03/03x_import_contatto_collegamenti_ucs-2le.csv");
+	exec("iconv -f UTF-8 -t UCS-2LE ".$exportdir."01x_import_contatto.csv > 01x_import_contatto_ucs-2le.csv");
+	exec("iconv -f UTF-8 -t UCS-2LE ".$exportdir."02x_import_contatto_recapiti.csv > 02x_import_contatto_recapiti_ucs-2le.csv");
+	exec("iconv -f UTF-8 -t UCS-2LE ".$exportdir."03x_import_contatto_collegamenti.csv > 03x_import_contatto_collegamenti_ucs-2le.csv");
+	exec("mv 01x_import_contatto_ucs-2le.csv ".$exportdir."File_01/01x_import_contatto_ucs-2le.csv");
+	exec("mv 02x_import_contatto_recapiti_ucs-2le.csv ".$exportdir."File_02/02x_import_contatto_recapiti_ucs-2le.csv");
+	exec("mv 03x_import_contatto_collegamenti_ucs-2le.csv ".$exportdir."File_03/03x_import_contatto_collegamenti_ucs-2le.csv");
 	return array('records_selected'=>$recordSelected);
 }
 ?>

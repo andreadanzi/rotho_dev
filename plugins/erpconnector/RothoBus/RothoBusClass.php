@@ -374,7 +374,7 @@ class RothoBus {
 			$usergroup_array = explode(",",$fe_user['usergroup']);
 			if( in_array($key,$usergroup_array) ) {
 				if($this->log_active) echo "The string '$key' was found in the string '".$fe_user['usergroup']."'\n";
-				$fe_user['cf_761'] = $value;
+				$fe_user['leads_line'] = $value;
 			}
 		}
 		$activitysubject = "Registrazione: ".$fe_user['first_name']." " .$fe_user['last_name']." - ".$fe_user['email'];
@@ -1425,7 +1425,7 @@ class RothoBus {
 		$this->mapping['Leads']['cf_808'] = 'tstamp';
 		$this->mapping['Leads']['cf_807'] = 'cf_807';
 		$this->mapping['Leads']['cf_806'] = 'companymail';
-		$this->mapping['Leads']['cf_761'] = 'cf_761';
+		$this->mapping['Leads']['leads_line'] = 'leads_line';
 		/* USERGROUP */
 		$this->group_mapping["3"]='RC / CARP';
 		$this->group_mapping["4"]='RS / SAFE';
