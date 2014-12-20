@@ -1,5 +1,6 @@
 <?php
 // danzi.tn@20140820 aggiornamento annualrevenue sulla base degli ordini dell'ultimo anno
+// danzi.tn@20141218 aggiornamento rating attuale degli ultimi 2 anni
 function do_import_accounts($time_start) {
 	global $adb;
 	global $seq_log,$current_user,$mapping,$root_directory,$external_code,$module,$table,$fields_auto_create,$fields_auto_update,$where;	
@@ -62,6 +63,10 @@ function do_import_accounts($time_start) {
     // danzi.tn@20140820
     update_account_annual_revenue();
     // danzi.tn@20140820e
+	
+	// danzi.tn@20141218
+	update_rating_attuale();
+	// danzi.tn@20141218e
 	return $import_result;
 }
 
@@ -111,5 +116,55 @@ function update_account_annual_revenue() {
     $res = $adb->query($q);
 }
 // danzi.tn@20140820e
+
+
+
+// danzi.tn@20141218 aggiornamento rating attuale
+function update_rating_attuale() {
+    global $adb;
+    $q = "UPDATE vtiger_accountscf
+			SET vtiger_accountscf.cf_927 = 
+			CASE 
+				WHEN vtiger_salesorder.salesorderid IS NOT NULL THEN
+					CASE 
+						WHEN vtiger_accountscf.cf_927 IS NULL THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '1' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '10' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '20' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '30' THEN '30'
+						WHEN vtiger_accountscf.cf_927 = '31' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '32' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '33' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = '40' THEN '1'
+						WHEN vtiger_accountscf.cf_927 = 'Riattivato' THEN '1' 
+					END
+				ELSE
+					CASE 
+						WHEN vtiger_accountscf.cf_927 IS NULL THEN '33'
+						WHEN vtiger_accountscf.cf_927 = '' THEN '33'
+						WHEN vtiger_accountscf.cf_927 = '1' THEN '33'
+						WHEN vtiger_accountscf.cf_927 = '10' THEN '10'
+						WHEN vtiger_accountscf.cf_927 = '20' THEN '20'
+						WHEN vtiger_accountscf.cf_927 = '30' THEN '30'
+						WHEN vtiger_accountscf.cf_927 = '31' THEN '31'
+						WHEN vtiger_accountscf.cf_927 = '32' THEN '32'
+						WHEN vtiger_accountscf.cf_927 = '33' THEN '33'
+						WHEN vtiger_accountscf.cf_927 = '40' THEN '33'
+						WHEN vtiger_accountscf.cf_927 = 'Riattivato' THEN '33' 
+					END
+			END
+			FROM vtiger_accountscf
+			JOIN vtiger_crmentity accent on vtiger_accountscf.accountid = accent.crmid AND accent.deleted = 0
+			JOIN vtiger_account on vtiger_account.accountid = vtiger_accountscf.accountid 
+			LEFT JOIN vtiger_salesorder on vtiger_account.accountid = vtiger_salesorder.accountid
+			AND vtiger_salesorder.data_ordine_ven BETWEEN DATEADD(YEAR,-1,convert(datetime, '2014-01-01') ) AND GETDATE()
+			LEFT JOIN vtiger_crmentity salent on vtiger_salesorder.salesorderid = salent.crmid AND salent.deleted = 0
+			WHERE 
+			vtiger_account.external_code <> '' -- Codice Cleinte Valorizzato
+			AND vtiger_account.external_code IS NOT NULL -- Codice Cleinte Valorizzato";
+    $res = $adb->query($q);
+}
+// danzi.tn@20141218
 
 ?>

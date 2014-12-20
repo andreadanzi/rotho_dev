@@ -23,6 +23,18 @@ $query="SELECT
 	  ,AGENT_TIPORAPPORTO
 	  ,AGENT_INTERNALUSER_NUMBER
 	  ,AGENT_INTERNALUSER_FULLNAME
+	  
+ ,CASE
+ WHEN erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC IS NULL OR  
+      erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'non definito' OR
+	  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = ''   
+	  THEN '---' 		
+ WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'CARP' THEN  'RC / CARP' 
+ WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'SAFE' THEN  'RS / SAFE'
+ WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'DIST' THEN  'RD / DIST'
+ WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'INDUST' THEN 'RR / DIREZ'
+ ELSE  '---'
+ END AS AGENT_LINEAVENDITA_DESC
   FROM erp_temp_crm_agenti";
 //mycrmv@3147e
 $res=$adb->query($query);
@@ -51,6 +63,12 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 	if ($row['agent_tiporapporto'] != null && $row['agent_tiporapporto'] != ''){
 		$tipo_rapp = $row['agent_tiporapporto'];
 	}//mycrmv@rotho e
+	
+	// danzi.tn@20141217 nuova classificazione
+	$linea = '';
+	if ($row['agent_lineavendita_desc'] != null && $row['agent_lineavendita_desc'] != ''){
+		$linea = $row['agent_lineavendita_desc'];
+	}// danzi.tn@20141217 e
 	
 	// VERIFICA DELLA PRESENZA DELL'utente
 	$qry = "select count(id) as presence, id  from vtiger_users where erp_code = ? or user_name =? group by id ";
@@ -104,6 +122,11 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 		$user->column_fields["agent_tiporapporto"] = $tipo_rapp;
 	}
 	//mycrmv@rotho e
+		
+	//mycrmv@rotho
+	if ($linea != ''){
+		$user->column_fields["user_line"] = $linea;
+	}
 	
 	//mycrmv@26940
 	if($row['agent_active'] == 1){

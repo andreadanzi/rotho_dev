@@ -5,4 +5,5 @@
 '284'|'Accounts'|'account_client_type'|'account_main_activity'|'INFLUENZATORE'|'["CLIFINALE","PRIVATI","UNIVERSITA","SCUOLEPROF","ENTEPUBB","ORDINI DI CATEGORIA","ASSOCIAZIONE"]'
 
 
-account_main_activity
+vtiger_linkedlist 	per Accounts
+vr_account_main_activity per Visitreport

@@ -1,0 +1,6 @@
+"id";"module";"picksrc";"pickdest";"picksrc_id";"pickdest_ids"
+"300";"Visitreport";"vr_account_client_type";"vr_account_sec_activity";"---";"[""---""]"
+"301";"Visitreport";"vr_account_client_type";"vr_account_sec_activity";"UTILIZZATORE";"[""---"",""AMIANTO"",""CARPENTERIA"",""CARPMET"",""CONCIATETTO"",""FACCIATE E RIVESTIMENTI"",""FALEGNAME\/SERRAMENTISTA"",""FERRAMENTA E ATTREZZATURE"",""GENERAL CONTRACTOR \/ IMMOBILIARE"",""IMPEDILE"",""IMPERM"",""IMPIANTISTI"",""INDEXTRALEGNO"",""LATTONERIA"",""LATTONIERE"",""MONTANTICAD"",""PICCOLE STRUTTURE"",""RIVENDITA LEGNAME \/ SEGHERIA CHE FA LAVORI""]"
+"302";"Visitreport";"vr_account_client_type";"vr_account_sec_activity";"RIVENDITORE";"[""---"",""GDO"",""GROSSISTA"",""RIVEMATED"",""RIVENDITA LEGNAME \/ SEGHERIA (NON FA LAVORI)"",""RIVENDITA SPECIALIZZATA SETTORE CARPENTERIA"",""RIVENDITE SISTEMI ANTICADUTA""]"
+"303";"Visitreport";"vr_account_client_type";"vr_account_sec_activity";"PROGETTISTA";"[""---"",""ARCH."",""PROGANTICAD"",""GEOM."",""ING.""]"
+"304";"Visitreport";"vr_account_client_type";"vr_account_sec_activity";"INFLUENZATORE";"[""---"",""AMMINISTRCOND"",""ENTEPUBB"",""ORDINI CATEGORIA\/ASSOCIAZIONI"",""SCUOLEPROF"",""UNIVERSITA""]"

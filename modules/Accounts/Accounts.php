@@ -633,6 +633,10 @@ class Accounts extends CRMEntity {
 			FROM ".$table_prefix."_salesorder
 			INNER JOIN ".$table_prefix."_salesordercf
 				ON ".$table_prefix."_salesordercf.salesorderid = ".$table_prefix."_salesorder.salesorderid
+			INNER JOIN ".$table_prefix."_sobillads
+				ON ".$table_prefix."_sobillads.sobilladdressid = ".$table_prefix."_salesorder.salesorderid 
+			INNER JOIN ".$table_prefix."_soshipads
+				ON ".$table_prefix."_soshipads.soshipaddressid = ".$table_prefix."_salesorder.salesorderid 
 			INNER JOIN ".$table_prefix."_crmentity
 				ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_salesorder.salesorderid
 			LEFT OUTER JOIN ".$table_prefix."_quotes
@@ -651,7 +655,7 @@ class Accounts extends CRMEntity {
 		if($return_value == null) $return_value = Array();
 		$return_value['CUSTOM_BUTTON'] = $button;
 		
-		$log->debug("Exiting get_salesorder method ...");		
+		$log->debug("Exiting get_salesorder method ...count(return_value) = " .count($return_value));		
 		return $return_value;
 	}
 	
@@ -1450,6 +1454,82 @@ class Accounts extends CRMEntity {
 			left join ".$table_prefix."_account ".$table_prefix."_accountAccounts on ".$table_prefix."_accountAccounts.accountid = ".$table_prefix."_account.parentid
 			left join ".$table_prefix."_groups ".$table_prefix."_groupsAccounts on ".$table_prefix."_groupsAccounts.groupid = ".$table_prefix."_crmentityAccounts.smownerid
 			left join ".$table_prefix."_users ".$table_prefix."_usersAccounts on ".$table_prefix."_usersAccounts.id = ".$table_prefix."_crmentityAccounts.smownerid ";
+		return $query;
+	}
+
+	function getRelationQuery($module,$secmodule,$table_name,$column_name){
+		global $table_prefix;
+		$tab = getRelationTables($module,$secmodule);
+		foreach($tab as $key=>$value){
+			$tables[]=$key;
+			$fields[] = $value;
+		}
+		//crmv@38798
+		$tabname = $tables[0];
+		$prifieldname = $fields[0][0];
+		$secfieldname = $fields[0][1];
+		$primodname = $fields[0][2];
+		$secmodname = $fields[0][3];
+
+		$tmpname = substr($tabname."tmp".$secmodule, 0, 29); //crmv@oracle fix object name > 30 characters
+		$crmentitySec = substr("{$table_prefix}_crmentity{$secmodule}", 0, 29);
+
+		$condition = "";
+		if(!empty($tables[1]) && !empty($fields[1])){
+			$condvalue = $tables[1].".".$fields[1];
+		} else {
+			$condvalue = $tabname.".".$prifieldname;
+		}
+
+		if (empty($secmodname)) {
+			$condrelmodname = '';
+			$condrelmodname_rev = '';
+		} else {
+			$condrelmodname = " AND {$tmpname}.{$secmodname} = '$secmodule'";
+			$condrelmodname_rev = " AND {$tmpname}.{$secmodname} = '$module'";
+			if (!empty($primodname)) {
+				$condrelmodname .= " AND {$tmpname}.{$primodname} = '$module'";
+				$condrelmodname_rev .= " AND {$tmpname}.{$primodname} = '$secmodule'";
+			}
+		}
+
+		$condition = "{$tmpname}.{$prifieldname} = {$condvalue} {$condrelmodname}";
+		if ($condrelmodname_rev) {
+			$condition_rev = "{$tmpname}.{$secfieldname} = {$condvalue} {$condrelmodname_rev}";
+		} else {
+			$condition_rev = '';
+		}
+
+		// 1. join with relation table
+		// 2. join with crmentity (to filter out deleted records)
+		// 3. join with main table
+
+		if ($tabname == $table_prefix.'_crmentityrel' ) { //crmv@18829
+			// TODO: this OR make everythong slower, fix it!
+			if ($condition_rev) {
+				$condition = "(($condition) OR ({$condition_rev}))";
+			} else {
+				$condition = "($condition)";
+			}
+
+			$condition_secmod_table_pri = "{$crmentitySec}.crmid = {$tmpname}.{$secfieldname} {$condrelmodname}";
+
+			if ($condrelmodname_rev) {
+				$condition_secmod_table_rev = "{$crmentitySec}.crmid = {$tmpname}.{$prifieldname} {$condrelmodname_rev}";
+				$condition_crmentity = "(({$condition_secmod_table_pri}) OR ({$condition_secmod_table_rev}))";
+			} else {
+				$condition_crmentity = "({$condition_secmod_table_pri})";
+			}
+
+		} else {
+			$condition_crmentity = "{$crmentitySec}.crmid = {$tmpname}.{$secfieldname}";
+		}
+
+		$query = " LEFT JOIN {$tabname} {$tmpname} ON {$condition}";
+		$query .= " LEFT JOIN {$table_prefix}_crmentity {$crmentitySec} ON {$condition_crmentity} AND {$crmentitySec}.deleted = 0";
+		$query .= " LEFT JOIN {$table_name} ON {$crmentitySec}.crmid = {$table_name}.{$column_name}";
+
+		//crmv@38798e
 		return $query;
 	}
 	
