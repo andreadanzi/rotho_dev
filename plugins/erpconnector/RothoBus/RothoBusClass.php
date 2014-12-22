@@ -374,7 +374,7 @@ class RothoBus {
 			$usergroup_array = explode(",",$fe_user['usergroup']);
 			if( in_array($key,$usergroup_array) ) {
 				if($this->log_active) echo "The string '$key' was found in the string '".$fe_user['usergroup']."'\n";
-				$fe_user['leads_line'] = $value;
+				$fe_user['leads_client_type'] = $value;
 			}
 		}
 		$activitysubject = "Registrazione: ".$fe_user['first_name']." " .$fe_user['last_name']." - ".$fe_user['email'];
@@ -1425,28 +1425,28 @@ class RothoBus {
 		$this->mapping['Leads']['cf_808'] = 'tstamp';
 		$this->mapping['Leads']['cf_807'] = 'cf_807';
 		$this->mapping['Leads']['cf_806'] = 'companymail';
-		$this->mapping['Leads']['leads_line'] = 'leads_line';
-		/* USERGROUP */
-		$this->group_mapping["3"]='RC / CARP';
-		$this->group_mapping["4"]='RS / SAFE';
-		$this->group_mapping["5"]='RC / CARP';
-		$this->group_mapping["6"]='RC / CARP';
-		$this->group_mapping["7"]='RS / SAFE';
-		$this->group_mapping["8"]='RS / SAFE';
-		$this->group_mapping["9"]='RS / SAFE';
-		$this->group_mapping["10"]='RS / SAFE';
-		$this->group_mapping["11"]='RS / SAFE';
-		$this->group_mapping["12"]='RS / SAFE';
-		$this->group_mapping["13"]='RS / SAFE';
-		$this->group_mapping["14"]='RS / SAFE';
-		$this->group_mapping["15"]='RS / SAFE';
-		$this->group_mapping["16"]='RS / SAFE';
-		$this->group_mapping["17"]='RS / SAFE';
-		$this->group_mapping["18"]='RS / SAFE';
-		$this->group_mapping["19"]='RS / SAFE';
-		$this->group_mapping["20"]='RS / SAFE';
-		$this->group_mapping["21"]='RS / SAFE';
-		$this->group_mapping["22"]='RS / SAFE';
+		$this->mapping['Leads']['leads_client_type'] = 'leads_client_type';
+		/* USERGROUP danzi.tn@20141222 mappatura per iononcado '---', 'UTILIZZATORE', 'RIVENDITORE', 'PROGETTISTA', 'INFLUENZATORE' */
+		$this->group_mapping["3"]='UTILIZZATORE'; // Carpentiere legno 
+		$this->group_mapping["4"]='UTILIZZATORE'; // Impresa edile
+		$this->group_mapping["5"]='RIVENDITORE'; // Rivenditore di legname
+		$this->group_mapping["6"]='UTILIZZATORE'; // Segheria
+		$this->group_mapping["7"]='RIVENDITORE'; // Rivenditore di sistemi anticaduta
+		$this->group_mapping["8"]='UTILIZZATORE'; // Strutture metalliche
+		$this->group_mapping["9"]='UTILIZZATORE'; // Carpentiere metallico
+		$this->group_mapping["10"]='UTILIZZATORE'; // Lattoniere
+		$this->group_mapping["11"]='UTILIZZATORE'; // Smaltimento amianto
+		$this->group_mapping["12"]='UTILIZZATORE'; // Impiantista
+		$this->group_mapping["13"]='UTILIZZATORE'; // Montatore di sistemi anticaduta
+		$this->group_mapping["14"]='INFLUENZATORE'; // Amministratore di condominio
+		$this->group_mapping["15"]='PROGETTISTA'; // Progettista specializzato in sistemi anticaduta
+		$this->group_mapping["16"]='PROGETTISTA'; // Responsabile della sicurezza
+		$this->group_mapping["17"]='INFLUENZATORE'; // Ente pubblico
+		$this->group_mapping["18"]='PROGETTISTA'; // Progettista
+		$this->group_mapping["19"]='UTILIZZATORE'; // Strutture in cemento
+		$this->group_mapping["20"]='UTILIZZATORE'; // Strutture in vetro
+		$this->group_mapping["21"]='UTILIZZATORE'; // Fotovoltaico / solare
+		$this->group_mapping["22"]='INFLUENZATORE'; // Downloader
 		$this->mapping['Accounts']['key'] = 'value';
 		$this->mapping['Vendors']['key'] = 'value';
 		$this->mapping['Contacts']['key'] = 'value';

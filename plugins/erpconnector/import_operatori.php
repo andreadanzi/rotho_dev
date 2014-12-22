@@ -9,7 +9,7 @@ include_once("modules/Users/Users.php");
 $current_user= new Users();
 $current_user->id = 1;
 global $adb;
-
+// danzi.tn@20141217 nuova classificazione
 $query="SELECT 
       AGENT_NUMBER
       ,AGENT_FULLNAME
@@ -24,11 +24,7 @@ $query="SELECT
 	  ,AGENT_INTERNALUSER_NUMBER
 	  ,AGENT_INTERNALUSER_FULLNAME
 	  
- ,CASE
- WHEN erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC IS NULL OR  
-      erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'non definito' OR
-	  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = ''   
-	  THEN '---' 		
+ ,CASE	
  WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'CARP' THEN  'RC / CARP' 
  WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'SAFE' THEN  'RS / SAFE'
  WHEN  erp_temp_crm_agenti.AGENT_LINEAVENDITA_DESC = 'DIST' THEN  'RD / DIST'

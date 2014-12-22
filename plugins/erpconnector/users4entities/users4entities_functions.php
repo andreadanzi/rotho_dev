@@ -4,7 +4,7 @@ include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';
 include_once 'include/Webservices/Create.php';
 include_once 'include/QueryGenerator/QueryGenerator.php';
-
+// danzi.tn@20141222 nuova classificazione
 function do_users4entities($time_start) {
 	global $log_active, $adb;
 	echo "\n==========================================================\n";
@@ -17,8 +17,11 @@ function do_users4entities($time_start) {
 	$result = $adb->query($sql);
 	while($row=$adb->fetchByAssoc($result)) {
 		echo "Processing lead ".$row['lead_no']." with id ".$row['crmid']."\n";
-		$user_id = get_agent4location(trim($row['state']),trim($row['code']),trim($row['city']), $row['smownerid'] );
+		$user_id_array = get_agent4location(trim($row['state']),trim($row['code']),trim($row['city']), $row['smownerid'] );
+		$user_id =$user_id_array['agent_id'];
+		$agent_line =$user_id_array['agent_line'];
 		update_user4entity($row['crmid'],$row['smownerid'] , $user_id, $modifiedby_id);
+		update_user4leads($row['crmid'],$agent_line);
 		$import_result['records_updated']++;
 	}
 	// ACCOUNTS
@@ -26,8 +29,11 @@ function do_users4entities($time_start) {
 	$result = $adb->query($sql);
 	while($row=$adb->fetchByAssoc($result)) {
 		echo "Processing account ".$row['account_no']." with id ".$row['crmid']."\n";
-		$user_id = get_agent4location(trim($row['bill_state']),trim($row['bill_code']),trim($row['bill_city']), $row['smownerid'] );
+		$user_id_array = get_agent4location(trim($row['bill_state']),trim($row['bill_code']),trim($row['bill_city']), $row['smownerid'] );
+		$user_id =$user_id_array['agent_id'];
+		$agent_line =$user_id_array['agent_line'];
 		update_user4entity($row['crmid'],$row['smownerid'] , $user_id, $modifiedby_id);
+		update_user4accounts($row['crmid'],$agent_line);
 		$import_result['records_updated']++;
 	}
 	// CONTACTS 
@@ -35,7 +41,9 @@ function do_users4entities($time_start) {
 	$result = $adb->query($sql);
 	while($row=$adb->fetchByAssoc($result)) {
 		echo "Processing contact ".$row['contact_no']." with id ".$row['crmid']."\n";
-		$user_id = get_agent4location(trim($row['bill_state']),trim($row['bill_code']),trim($row['bill_city']), $row['smownerid'] );
+		$user_id_array = get_agent4location(trim($row['bill_state']),trim($row['bill_code']),trim($row['bill_city']), $row['smownerid'] );
+		$user_id =$user_id_array['agent_id'];
+		$agent_line =$user_id_array['agent_line'];
 		update_user4entity($row['crmid'],$row['smownerid'] , $user_id, $modifiedby_id);
 		$import_result['records_updated']++;
 	}
@@ -57,6 +65,30 @@ function update_user4entity($entity_id,$previous_owner_id, $user_id,$modifiedby_
 			";
 	$result = $adb->query($sql);
 }
+
+
+function update_user4accounts($entity_id,$account_line) {
+	global $adb,$table_prefix;
+	$sql = "UPDATE
+			".$table_prefix."_account
+			SET 
+			".$table_prefix."_account.account_line = '".$account_line."'
+			WHERE 
+			".$table_prefix."_account.accountid = ".$entity_id;
+	$result = $adb->query($sql);
+}
+
+function update_user4leads($entity_id,$lead_line) {
+	global $adb,$table_prefix;
+	$sql = "UPDATE
+			".$table_prefix."_leaddetails
+			SET 
+			".$table_prefix."_leaddetails.leads_line = '".$account_line."'
+			WHERE 
+			".$table_prefix."_leaddetails.leadid = ".$entity_id;
+	$result = $adb->query($sql);
+}
+
 
 function get_sql4leads() {
 	global $adb,$table_prefix;
@@ -144,51 +176,55 @@ function get_sql4contacts() {
 function get_agent4location($state,$code,$city, $previous_owner_id ) {
 	global $adb,$table_prefix, $log_active;
 	$agent_id = $previous_owner_id;
+	$agent_line = "---";
 	$b_Found = false;
 	if(!empty($city) && !$b_Found) {
-		$sql = "SELECT Agente,  ".$table_prefix."_users.id ,  COUNT(Agente) 
+		$sql = "SELECT Agente,  ".$table_prefix."_users.id , ".$table_prefix."_users.user_line ,  COUNT(Agente) 
 				FROM tmp_assegnazione_agenti 
 				JOIN ".$table_prefix."_users ON ".$table_prefix."_users.user_name = Agente
 				WHERE Comune like '".$city."%' 
-				GROUP BY Agente, ".$table_prefix."_users.id";		
+				GROUP BY Agente, ".$table_prefix."_users.id, ".$table_prefix."_users.user_line";		
 		$result = $adb->query($sql);
 		while($row=$adb->fetchByAssoc($result)) {
 			$b_Found = true;
 			$agent_id = $row['id'];
+			$agent_line = $row['user_line'];
 			echo "\tFound ".$agent_id." for city=".$city."\n";
 			break;
 		}
 	}
 	if(!empty($code) && !$b_Found) {
-		$sql = "SELECT Agente,  ".$table_prefix."_users.id ,  COUNT(Agente) 
+		$sql = "SELECT Agente,  ".$table_prefix."_users.id , ".$table_prefix."_users.user_line ,  COUNT(Agente) 
 				FROM tmp_assegnazione_agenti 
 				JOIN ".$table_prefix."_users ON ".$table_prefix."_users.user_name = Agente
 				WHERE Cap = '".$code."' 
-				GROUP BY Agente, ".$table_prefix."_users.id";
+				GROUP BY Agente, ".$table_prefix."_users.id, ".$table_prefix."_users.user_line";
 		$result = $adb->query($sql);
 		while($row=$adb->fetchByAssoc($result)) {
 			$b_Found = true;
 			$agent_id = $row['id'];
+			$agent_line = $row['user_line'];
 			echo "\tFound ".$agent_id." for code=".$code."\n";
 			break;
 		}
 	}
 	if(!empty($state) && !$b_Found) {
-		$sql = "SELECT Agente,  ".$table_prefix."_users.id ,  COUNT(Agente) 
+		$sql = "SELECT Agente,  ".$table_prefix."_users.id , ".$table_prefix."_users.user_line , COUNT(Agente) 
 				FROM tmp_assegnazione_agenti 
 				JOIN ".$table_prefix."_users ON ".$table_prefix."_users.user_name = Agente
 				WHERE Provincia = '".$state."' 
-				GROUP BY Agente, ".$table_prefix."_users.id";
+				GROUP BY Agente, ".$table_prefix."_users.id, ".$table_prefix."_users.user_line";
 		$result = $adb->query($sql);
 		while($row=$adb->fetchByAssoc($result)) {
 			$b_Found = true;
 			$agent_id = $row['id'];
+			$agent_line = $row['user_line'];
 			echo "\tFound ".$agent_id." for state=".$state."\n";
 			break;
 		}
 	}
 	if(!$b_Found) echo "\tNothing found  for ".$city." - ".$code." (".$state.") , I'll keep owner with id = ".$agent_id."\n";
-	return $agent_id;
+	return array('agent_id'=>$agent_id,'agent_line'=>$agent_line) ;
 	
 }
 
