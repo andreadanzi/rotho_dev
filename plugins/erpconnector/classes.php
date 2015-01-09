@@ -341,11 +341,21 @@ class importer{
 						$id = $adb->query_result($res_ext_code,0,'accountid');
                         //danzi.tn@20140821 esiste in VTE ed ha un codice semiramis, quindi US (Update key is Semiramis) se non esiste
 						$sem_importflag = $adb->query_result($res_ext_code,0,'sem_importflag');	
-                        if(empty($sem_importflag)) {
+                        // danzi.tn@20141223 if(empty($sem_importflag)) {
                             $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'US';  	
                             $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;                            
-                        }
+                        // }
 						$this->update($row,$id);
+						if( $row['base_number'] =='21442' || $row['base_number'] == '29574' || $row['base_number'] =='LV100')
+						{
+							echo "====== danzi.tn@20141223 begin\n";
+							echo "base_number=".$row['base_number']."\n";
+							echo "base_name=".$row['base_name']."\n";
+							echo "agent_name=".$row['agent_name']."\n";
+							echo "agent_number=".$row['agent_number']."\n";
+							echo "new_category_desc=".$row['new_category_desc']."\n";
+							echo "====== danzi.tn@20141223 end\n";
+						}
 						$rows_updated[] = $row[$this->external_code];
 					}else {
 						// danzi.tn@20130730 - check base_crmnumber
@@ -362,12 +372,12 @@ class importer{
 						if ($rows_base_crmnumber > 0 && $row['base_crmnumber'] != '') {
 							$id = $adb->query_result($res_base_crmnumber,0,'accountid');
                             $sem_importflag = $adb->query_result($res_base_crmnumber,0,'sem_importflag');	
-                            if(empty($sem_importflag)) {
+                            // danzi.tn@20141223 if(empty($sem_importflag)) {
                                 //danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UB (Update key is BASE CRM NUMBER)
                                 $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UB';
                                 $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
                                 //danzi.tn@20140821e     
-                            }
+                            // danzi.tn@20141223 }
 							$this->update($row,$id);
 							$rows_updated[] = $row[$this->external_code];
 						} else { // danzi.tn@20130730e
@@ -385,12 +395,12 @@ class importer{
 							if ($rows_piva > 0 && $row['finance_localtaxid'] != '' ) {
 								$id = $adb->query_result($res_piva,0,'accountid');
                                 $sem_importflag = $adb->query_result($res_piva,0,'sem_importflag');	
-                                if(empty($sem_importflag)) {
+                                // danzi.tn@20141223 if(empty($sem_importflag)) {
                                     //danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UV (Update key is Vat)
                                     $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UV';
                                     $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
                                     //danzi.tn@20140821e
-                                }
+                                // danzi.tn@20141223 }
 								$this->update($row,$id);
 								$rows_updated[] = $row[$this->external_code];
 							} else {
@@ -408,12 +418,12 @@ class importer{
 								if ($rows_cf > 0 && $row['finance_suppltaxid'] != '') {
 									$id = $adb->query_result($res_cf,0,'accountid');
                                     $sem_importflag = $adb->query_result($res_cf,0,'sem_importflag');	
-                                    if(empty($sem_importflag)) {
+                                    // danzi.tn@20141223 if(empty($sem_importflag)) {
                                         //danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UF (Update key is Fiscal Code)
                                         $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UF';
                                         $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
                                         //danzi.tn@20140821e
-                                    }
+                                    // danzi.tn@20141223 }
 									$this->update($row,$id);
 									$rows_updated[] = $row[$this->external_code];
 								} else {

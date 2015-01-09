@@ -112,7 +112,7 @@ FROM vtiger_accountscf
 JOIN vtiger_crmentity accent on vtiger_accountscf.accountid = accent.crmid AND accent.deleted = 0
 JOIN vtiger_account on vtiger_account.accountid = vtiger_accountscf.accountid 
 LEFT JOIN vtiger_salesorder on vtiger_account.accountid = vtiger_salesorder.accountid
-AND vtiger_salesorder.data_ordine_ven BETWEEN DATEADD(YEAR,-1,DATEADD(yy, DATEDIFF(yy,0,getdate()), 0) ) AND GETDATE()
+AND vtiger_salesorder.data_ordine_ven BETWEEN  DATEADD(MONTH,-24,GETDATE() ) AND GETDATE()
 LEFT JOIN vtiger_crmentity salent on vtiger_salesorder.salesorderid = salent.crmid AND salent.deleted = 0
 WHERE 
 vtiger_account.external_code <> '' -- Codice Cleinte Valorizzato
