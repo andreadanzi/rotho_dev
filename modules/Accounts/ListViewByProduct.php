@@ -11,7 +11,7 @@
 
 global $app_strings, $mod_strings, $current_language, $currentModule, $theme, $table_prefix, $list_max_entries_per_page;
 // danzi.tn@20140411 update product category 
-
+// danzi.tn@20150203 gestione per aziende senza ordini di vendita 
 require_once('Smarty_setup.php');
 require_once('include/ListView/ListView.php');
 require_once 'include/ListView/ListViewByProductController.php';
@@ -183,7 +183,7 @@ $list_query = $queryGenerator->getQuery();
 //danzi.tn@20130207
 $smarty->assign("JS_DATEFORMAT",parse_calendardate($app_strings['NTC_DATE_FORMAT']));
 $calendar_format = parse_calendardate($app_strings['NTC_DATE_FORMAT']);
-$extra_where_clause =" AND {$table_prefix}_crmentity_sales.deleted=0";
+$extra_where_clause ="";
 
 if(isset($filter_type) && $filter_type!="" )
 {
@@ -212,33 +212,38 @@ if(isset($filter_value) && $filter_value!="" && $filter_value!="ND" )
 $smarty->assign("STDVALUEFILTERS",$stdvaluefiltershtml);
 $smarty->assign("valueIdValue",$valueIdValue);
 
+
+if(isset($amountrange) && $amountrange!="" )
+{
+	$smarty->assign("amountrangevalue",$amountrange);
+	$amountrange_splitted = explode("-",$amountrange);
+	//danzi.tn@20150203 gestione per aziende senza ordini di vendita CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 
+	if( count($amountrange_splitted) > 1 ){
+		$amount_where_clause = " sum( CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1]. " ";
+	} else {
+		$amount_where_clause = " sum( CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) BETWEEN  0 AND 1000*". $amountrange_splitted[1]. " ";
+	}
+}
+
+$extra_clause_columns = ", sum(CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) as cf_1078";
+$select_clause_columns = $queryGenerator->getSelectClauseColumnSQL();
+$extra_clause_columns = $select_clause_columns  . $extra_clause_columns ;
+
+// danzi.tn@20150203 gestione per aziende senza ordini di vendita 
+$extra_from_clause = " 
+LEFT JOIN {$table_prefix}_salesorder ON {$table_prefix}_account.accountid = {$table_prefix}_salesorder.accountid ";
 if(isset($startdate) && $startdate!="" && isset($enddate) && $enddate!="" )
 {
 	$db = PearDatabase::getInstance();
 	$smarty->assign("STARTDATE",$startdate);
 	$smarty->assign("ENDDATE",$enddate);
-	$extra_where_clause .= " AND data_ordine_ven BETWEEN ".$db->quote(getDBInsertDateValue($startdate))." AND ".$db->quote(getDBInsertDateValue($enddate));
+	$extra_from_clause .= " AND data_ordine_ven BETWEEN CONVERT(datetime,".$db->quote(getDBInsertDateValue($startdate)).",120) AND CONVERT(datetime,".$db->quote(getDBInsertDateValue($enddate)).",120) ";
 }
-if(isset($amountrange) && $amountrange!="" )
-{
-	$smarty->assign("amountrangevalue",$amountrange);
-	$amountrange_splitted = explode("-",$amountrange);
-	if( count($amountrange_splitted) > 1 ){
-		$amount_where_clause = " sum({$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1];
-	} else {
-		$amount_where_clause = " sum({$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity) BETWEEN  0 AND 1000*". $amountrange_splitted[1];
-	}
-}
-
-$extra_clause_columns = ", sum({$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity) as cf_1078";
-$select_clause_columns = $queryGenerator->getSelectClauseColumnSQL();
-$extra_clause_columns = $select_clause_columns  . $extra_clause_columns ;
-
-$extra_from_clause = "
-INNER JOIN {$table_prefix}_salesorder ON {$table_prefix}_account.accountid = {$table_prefix}_salesorder.accountid
-INNER JOIN {$table_prefix}_crmentity AS {$table_prefix}_crmentity_sales ON {$table_prefix}_salesorder.salesorderid = {$table_prefix}_crmentity_sales.crmid  
+$extra_from_clause .= " LEFT JOIN {$table_prefix}_crmentity AS {$table_prefix}_crmentity_sales ON {$table_prefix}_salesorder.salesorderid = {$table_prefix}_crmentity_sales.crmid  AND {$table_prefix}_crmentity_sales.deleted=0 
 LEFT JOIN {$table_prefix}_inventoryproductrel on {$table_prefix}_salesorder.salesorderid = {$table_prefix}_inventoryproductrel.id  
 LEFT JOIN {$table_prefix}_products on {$table_prefix}_products.productid = {$table_prefix}_inventoryproductrel.productid ";
+// danzi.tn@20150203e
+
 if(isset($filter_value) && $filter_value!="" && $filter_value!="ND"  && isset($filter_type) && $filter_type=='cat'){
 	$extra_from_clause .= " LEFT JOIN {$table_prefix}_productcf on {$table_prefix}_productcf.productid = {$table_prefix}_inventoryproductrel.productid";
 }

@@ -111,10 +111,15 @@ function getResult($gc,$query)
 	return $retVal;
 }
 
-
-function getResults($type,$ids,$extra_ids=null,$prod_id=null,$mindate=null,$maxdate=null)
+// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
+function getResults($type,$ids,$extra_ids=null,$prod_id=null,$mindate=null,$maxdate=null,$amountrange, $user_uid)
 {
-	
+	$extra_from_clause = "";
+	if(isset($mindate) && $mindate!="" && isset($maxdate) && $maxdate!="" )
+	{
+		$db = PearDatabase::getInstance();
+		$extra_from_clause .= " AND data_ordine_ven BETWEEN CONVERT(datetime,".$db->quote(getDBInsertDateValue($mindate)).",120) AND CONVERT(datetime,".$db->quote(getDBInsertDateValue($maxdate)).",120) ";
+	}
 	$gc = new GeoCoder();
 	switch($type)
 	{
@@ -140,87 +145,70 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
                         	$query .= " AND ticketid in ($ids) ";
 		break;
 		case "Accounts":
+			$groupby = false;
 			$query = "select accountname as name, accountaddressid as id, bill_city as city, bill_code as code, bill_country as country, bill_state as state, bill_street as street,  vtiger_account.account_client_type as type, annualrevenue as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone from vtiger_accountbillads INNER JOIN vtiger_crmentity ON accountaddressid=vtiger_crmentity.crmid  join vtiger_account on accountaddressid= vtiger_account.accountid join vtiger_accountscf on accountaddressid=vtiger_accountscf.accountid"; // Andrea Danzi aggiunto vtiger_account.account_client_type (dovrà essere modificato per RB in  vtiger_account.account_client_type) as type - 24.03.2012
 			if($extra_ids)
 			{
+				$groupby = true;
 				$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_account.account_client_type as type ,
-sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea , vtiger_account.phone as account_phone
-from vtiger_salesorder 
-INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid  
-join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid 
-join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid 
-join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid 
+				sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value, CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea , vtiger_account.phone as account_phone
+from vtiger_account
+join vtiger_accountbillads on vtiger_account.accountid=vtiger_accountbillads.accountaddressid 
+join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_account.accountid 
+left join vtiger_salesorder on vtiger_salesorder.accountid  = vtiger_account.accountid ".$extra_from_clause." 
+left join vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.crmid  = vtiger_salesorder.salesorderid and vtiger_crmentity_sales.deleted = 0
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
 left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid";
 			}
 			if($prod_id)
 			{
+				$groupby = true;
 				$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_account.account_client_type as type ,
-sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
-from vtiger_salesorder 
-INNER JOIN vtiger_crmentity ON vtiger_salesorder.salesorderid = vtiger_crmentity.crmid 
-join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid 
-join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid 
-join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid 
+sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
+from vtiger_account
+join vtiger_accountbillads on vtiger_account.accountid=vtiger_accountbillads.accountaddressid 
+join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_account.accountid 
+left join vtiger_salesorder on vtiger_salesorder.accountid  = vtiger_account.accountid ".$extra_from_clause." 
+left join vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.crmid  = vtiger_salesorder.salesorderid and vtiger_crmentity_sales.deleted = 0
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
 left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid";
 			}
 			if($ids)
 			{
-			 	$query .= " WHERE vtiger_crmentity.deleted=0 AND vtiger_accountbillads.accountaddressid in ($ids)";
+			 	$query .= " JOIN dnz_temp_account ON dnz_temp_account.accountid = vtiger_account.accountid AND useruid='".$user_uid."' WHERE vtiger_account.accountid > 0 ";
 				if($extra_ids)
 				{
-					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_salesorder.accountid in ($ids) AND vtiger_products.product_cat LIKE '$extra_ids%' ";
-					if($mindate) {
-						$query .= " AND data_ordine_ven >='$mindate' ";
-					}
-					if($maxdate) {
-						$query .= " AND data_ordine_ven <='$maxdate' ";
-					}
-
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //
-					
+					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.product_cat LIKE '$extra_ids%' ";
 				}
 				if($prod_id)
 				{
-					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_salesorder.accountid in ($ids) AND vtiger_products.base_no LIKE '$prod_id%' ";
-					
-					if($mindate) {
-						$query .= " AND data_ordine_ven >='$mindate' ";
-					}
-					if($maxdate) {
-						$query .= " AND data_ordine_ven <='$maxdate' ";
-					}
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //
-					
+					$query .= " AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.base_no LIKE '$prod_id%' ";
 				}
 			} else {
 				
 				if($extra_ids)
 				{
-					$query .= " WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.product_cat LIKE '$extra_ids%' ";
-					if($mindate) {
-						$query .= " AND data_ordine_ven >='$mindate' ";
-					}
-					if($maxdate) {
-						$query .= " AND data_ordine_ven <='$maxdate' ";
-					}
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //
-					
+					$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.product_cat LIKE '$extra_ids%' ";
 				}
 				if($prod_id)
 				{
-					$query .= " WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.base_no LIKE '$prod_id%' ";
-					
-					if($mindate) {
-						$query .= " AND data_ordine_ven >='$mindate' ";
+					$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL AND vtiger_products.base_no LIKE '$prod_id%' ";
+				}
+			}
+			// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
+			if($groupby) 
+			{
+				$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //					
+				if(isset($amountrange) && $amountrange!="" )
+				{
+					$amount_where_clause = "";
+					$amountrange_splitted = explode("-",$amountrange);				
+					if( count($amountrange_splitted) > 1 ){
+						$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1]. " ";
+					} else {
+						$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND 1000*". $amountrange_splitted[1]. " ";
 					}
-					if($maxdate) {
-						$query .= " AND data_ordine_ven <='$maxdate' ";
-					}
-
-					$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //
-					
+					$query .= " HAVING " . $amount_where_clause;
 				}
 			}
 			$query .= " ORDER BY map_value ASC";
@@ -235,18 +223,31 @@ left join vtiger_products on vtiger_products.productid = vtiger_inventoryproduct
 		break;
 		case "ProductCategory":
 			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_products.product_cat as type ,
-sum(vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
-from vtiger_salesorder
-inner join vtiger_crmentity on vtiger_salesorder.salesorderid = vtiger_crmentity.crmid  
-join vtiger_accountbillads on vtiger_salesorder.accountid=vtiger_accountbillads.accountaddressid 
-join vtiger_account on vtiger_account.accountid=vtiger_salesorder.accountid 
-join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_salesorder.accountid 
+sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
+from vtiger_account
+JOIN vtiger_crmentity accentity ON accentity.crmid  = vtiger_account.accountid AND accentity.deleted = 0
+join vtiger_accountbillads on vtiger_account.accountid=vtiger_accountbillads.accountaddressid 
+join vtiger_accountscf on vtiger_accountscf.accountid=vtiger_account.accountid 
+left join vtiger_salesorder on vtiger_salesorder.accountid  = vtiger_account.accountid ".$extra_from_clause." 
+left join vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.crmid  = vtiger_salesorder.salesorderid and vtiger_crmentity_sales.deleted = 0
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
-left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid 
-WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto - 11.04.2012 
+left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid
+WHERE AND bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto - 11.04.2012 
 			if($ids)
 				$query .= "AND vtiger_products.product_cat LIKE '$ids%'"; 
 			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.external_code, vtiger_account.phone"; //
+			// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
+			if(isset($amountrange) && $amountrange!="" )
+			{
+				$amount_where_clause = "";
+				$amountrange_splitted = explode("-",$amountrange);				
+				if( count($amountrange_splitted) > 1 ){
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1]. " ";
+				} else {
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND 1000*". $amountrange_splitted[1]. " ";
+				}
+				$query .= " HAVING " . $amount_where_clause;
+			}
 			$query .= " ORDER BY map_value ASC";
 		break;
 		case "Leads":
@@ -259,7 +260,6 @@ WHERE vtiger_crmentity.deleted=0 AND bill_code IS NOT NULL AND bill_city IS NOT 
 		default:
 			return array();
 	}
-// echo $query;
 	return getResult($gc,$query);
 }
 

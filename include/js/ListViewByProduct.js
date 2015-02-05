@@ -1429,3 +1429,74 @@ function cancelSearchText(deftext) {
  	}
 }
 //crmv@31245e
+
+// danzi.tn@20150204 Export dei risultati di ListViewByProduct e visualizza in mappa
+function exportCurrentListViewData(elem) {	
+	selectView = getObj("viewname");
+	var viewName = selectView.options[selectView.options.selectedIndex].value;
+	var stdValueFilterField = jQuery( "#stdValueFilterField" ),
+		valueId = jQuery( "#valueId" ),
+		proddate_start = jQuery( "#jscal_field_proddate_start" ),
+		proddate_end = jQuery( "#jscal_field_proddate_end" ),
+		amount_value = jQuery("#amount_value");
+	var postBodyString = "file=ExportListViewByProductAjax&module=Accounts&action=AccountsAjax&ajaxaction=EXPORT&viewname="+viewName+"&filter_type=" +stdValueFilterField.val()+ "&filter_value="+ valueId.val()+ "&startdate="+ proddate_start.val()+ "&enddate="+ proddate_end.val()+ "&amountrange="+ amount_value.val();
+	
+	//window.location='index.php?'+postBodyString;
+	//window.location='modules/Accounts/01simple-download-xls.php';
+	var ajxReq = new Ajax.Request(
+                /*'index.php?'+postBodyString,*/
+				'index.php',
+				// 'modules/Accounts/01simple-download-xls.php',
+                {queue: {position: 'end', scope: 'command'},
+                        method: 'post',
+						postBody: postBodyString,
+                        onComplete: function(response) {
+								if(response.responseText == ':#:EXP_FAILURE LISTQUERY') {
+									alert("ERRORE: " + response.responseText);
+								} else if (response.responseText == ':#:EXP_FAILURE ACCOUNTSAJAX') {
+									alert("ERRORE: " + response.responseText);
+								} else {
+									document.location.href = (response.responseText);
+								}
+                        }
+                }
+        );
+	
+}
+
+function showInMapListViewData(elem) {
+	selectView = getObj("viewname");
+	var viewName = selectView.options[selectView.options.selectedIndex].value;
+	var viewId = getviewId();
+	var userid_url = ""
+	var userid_obj = getObj("lv_user_id");
+	if(userid_obj != null) {
+		//crmv@29682
+		if (navigator.appName == 'Microsoft Internet Explorer') {
+			if (typeof(userid_obj.options) != 'undefined') {
+				userid_url = "&lv_user_id="+userid_obj.options[userid_obj.options.selectedIndex].value;
+			}else {
+				userid_url = "&lv_user_id="+userid_obj.item(0).options[userid_obj.item(0).options.selectedIndex].value;
+			}
+		} else {
+			userid_url = "&lv_user_id="+userid_obj.options[userid_obj.options.selectedIndex].value;
+		}
+		//crmv@29682e
+	}
+	/*
+	<span id="valueSelContainer">
+	<input type="radio" value="ND" name="valueSel" id="valueSelND" class="small">Nessuno
+	<input type="radio" value="cat_prodotti" name="valueSel" id="valueSel" class="small"> Categorie
+	<input type="radio" value="prodotto" name="valueSel" id="valueSelPROD" class="small"> Prodotto
+	</span>http://crm.rothoblaas.com/__test/index.php?show=Accounts&viewid=3199&lv_user_id=all&valueSel=cat_prodotti&valueId=02&map_mindate=&map_maxdate=&type_or_value=type&cluster=Enable&module=Map&action=index&parenttab=Tools
+	*/
+	var stdValueFilterField = jQuery( "#stdValueFilterField" ),// valueSel
+		valueId = jQuery( "#valueId" ),  // valueId
+		proddate_start = jQuery( "#jscal_field_proddate_start" ), // map_mindate - jscal_field_map_mindate
+		proddate_end = jQuery( "#jscal_field_proddate_end" ), // map_maxdate - jscal_field_map_maxdate
+		amount_value = jQuery("#amount_value");
+	var valueSel = "ND";
+	if(stdValueFilterField.val() == "cat") valueSel = "cat_prodotti";
+	if(stdValueFilterField.val() == "prod") valueSel = "prodotto";
+	document.location.href = 'index.php?from=ListViewByProduct&show=Accounts&viewid=' + viewId + userid_url +'&valueSel=' + valueSel + '&valueId='+valueId.val()+'&map_mindate='+proddate_start.val()+'&map_maxdate='+proddate_end.val()+'&type_or_value=type&cluster=Enable&module=Map&action=index&parenttab=Tools&amountrange=' + amount_value.val();;
+}

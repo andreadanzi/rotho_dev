@@ -5,7 +5,7 @@ $lang = substr($_SESSION['authenticated_user_language'],0,2);
 require_once('include/ListView/ListView.php');
 require_once('modules/CustomView/CustomView.php');
 require_once('include/DatabaseUtil.php');
-
+$account_listquery = $_SESSION['Accounts_listquery'];
 $theme_path="themes/".$theme."/";
 $image_path=$theme_path."images/";
 include_once('modules/Map/lib/utils.inc.php');
@@ -265,19 +265,33 @@ else //calculate ids using filters
 
         // echo "<!-- QUERY IDS  ". $query ." -->";
 	// $list_result = $adb->pquery($query, array());
-
-	while($row = $adb->fetch_array($res_2))
+	$user_uids = uniqid();
+	while($row = $adb->fetch_array($res_2)) {
 		$ids[] = $row["accountid"];
-
-	
-	
+		$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid) VALUES (?,?)";
+		$adb->pquery($insert_sql, array($user_uids,$row["accountid"]));
+	}
+	/* MASSIVE INSERT
+	$insert_values = implode("),('".$user_uids."',",$ids);
+	$insert_values = "('".$user_uids."'," . $insert_values .")";
+	$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid) VALUES " . $insert_values;
+	echo "<!-- INSERT QUERY IDS  ". $insert_sql ." -->\n";
+	$adb->query($insert_sql);
+	*/
+	// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
+	$amountrange = "";
+	if($_REQUEST['amountrange'] && $_REQUEST['amountrange']!="") $amountrange = $_REQUEST['amountrange'];
 	if(count($ids)) 
 	{
-		$retValues = getResults($_REQUEST['show'],implode(",",$ids),($extra_ids==null?null:$extra_ids),($prod_id==null?null:$prod_id),($map_mindate==null?null:$map_mindate),($map_maxdate==null?null:$map_maxdate)); //retrive map results
+		$retValues = getResults($_REQUEST['show'],implode(",",$ids),($extra_ids==null?null:$extra_ids),($prod_id==null?null:$prod_id),($map_mindate==null?null:$map_mindate),($map_maxdate==null?null:$map_maxdate),$amountrange, $user_uids); //retrive map results
 		$skippedAccs = getSkippedAccounts(implode(",",$ids));
 	}
 	else
+	{
 		$retValues = array();
+	}
+	
+	$adb->pquery("DELETE FROM dnz_temp_account WHERE useruid=?",array($user_uids));
 }
 
 ?>
