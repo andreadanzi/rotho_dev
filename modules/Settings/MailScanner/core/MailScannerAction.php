@@ -12,7 +12,7 @@
  // danzi.tn@20140207 Creazione ticket interno
  // danzi.tn@20140407 Creazione nuovo record in modulo Rumors
  // danzi.tn@20140721 Creazione nuovo record in modulo Market Price
-
+ // danzi.tn@20150113 associazione attachment a Rumors e Market Price
 
 require_once('modules/Users/Users.php');
 
@@ -489,7 +489,12 @@ class Vtiger_MailScannerAction {
 				$document->column_fields['filename']         = $filename;
 				$document->column_fields['filestatus']       = 1;
 				$document->column_fields['filelocationtype'] = 'I';
-				$document->column_fields['folderid']         = 3; // Default Folder //mycrmv@43045 Folder changed to Reclami
+				if($basemodule == 'HelpDesk')
+					$document->column_fields['folderid'] = 3; // Default Folder //mycrmv@43045 Folder changed to Reclami
+				if($basemodule == 'Rumors')
+					$document->column_fields['folderid'] = 31; // Default Folder //mycrmv@43045 Folder changed to Reclami
+				if($basemodule == 'Marketprices')
+					$document->column_fields['folderid'] = 42; // Default Folder //mycrmv@43045 Folder changed to Reclami
 				$document->column_fields['assigned_user_id'] = $userid;
 				$document->column_fields['filesize'] = 0;	//crmv@18341
 				$document->save('Documents');
@@ -768,9 +773,9 @@ class Vtiger_MailScannerAction {
 		$rumor->column_fields['product_cat_descr'] = 'ALTRO';
 		$rumor->column_fields['assigned_user_id'] = 133013; // ASSEGNATO a Gruppo Product Manager
 		$rumor->save('Rumors');
-		// Associate any attachement of the email to rumor
-		// $this->__SaveAttachements($mailrecord, 'Rumors', $rumor, $rumor);	//crmv@27657
-		
+		// danzi.tn@20150113 associazione attachment a rumor
+		$this->__SaveAttachements($mailrecord, 'Rumors', $rumor, $rumor);
+		// danzi.tn@20150113e
 		//crmv@2043m
 		$mailrecord->_subject .= ' - Rumor Id: '.$rumor->id;
 		$this->__CreateNewEmail($mailrecord, $this->module, $rumor);
@@ -821,6 +826,10 @@ class Vtiger_MailScannerAction {
 		$marketprice->column_fields['area_mng_name'] = $retVals['area_mng_name'];
 		$marketprice->column_fields['area_mng_no'] = $retVals['area_mng_no'];
 		$marketprice->save('Marketprices');
+		// Associate any attachement of the email to rumor
+		// danzi.tn@20150113 associazione attachment a marketprice
+		$this->__SaveAttachements($mailrecord, 'Marketprices', $marketprice, $marketprice);
+		// danzi.tn@20150113e
 		//crmv@2043m
 		$mailrecord->_subject .= ' - Market Price Id: '.$marketprice->id;
 		$this->__CreateNewEmail($mailrecord, $this->module, $marketprice);

@@ -388,6 +388,7 @@ class RothoBus {
 		$activitydatetime = $fe_user['insertdate'];
 		$fe_user['formula'] = "ND";
 		$fe_user['codfatt'] = "ND";
+		$fe_user['overnight_option'] = "---";
 		$fe_user['costo'] = "ND";
 		$fe_user['date'] = "ND";
 		$retval=$this->_find_entities_by_email($fe_user['email']);
@@ -510,6 +511,7 @@ class RothoBus {
 		$tmp_page_title = $tt_address['tmp_page_title'];
 		$idtarget = $tt_address['tmp_idtarget'];
 		$formula = "--Nessuno--";
+		$overnight_option = "---";
 		// danzi.tn@20140625 GESTIRE FROM RUSSA
 		if(count($arr)>0 && ( $tt_address['pid'] == '505'  ) ) {
 			$language = "nd";
@@ -547,6 +549,7 @@ class RothoBus {
 			}
 			$tt_address['formula'] = "ND";
 			$tt_address['codfatt'] = "ND";
+			$tt_address['overnight_option'] = "---";
 			$tt_address['costo'] = "ND";
 			$tt_address['date'] = "ND";
 			$tt_address['descr'] = $tt_address['idtarget'] . " date: ". $tt_address['insertdate'] . " uid=" .$tt_address['uid']." pid=".$tt_address['pid']. " \ninterest = ".$interest. " \nrequest = ".$request;
@@ -591,6 +594,7 @@ class RothoBus {
 			}
 			$tt_address['formula'] = $formula;
 			$tt_address['codfatt'] = "ND";
+			$tt_address['overnight_option'] = "---";
 			$tt_address['costo'] = "ND";
 			$tt_address['date'] = "ND";
 			$tt_address['descr'] = $tt_address['idtarget'] . " date: ". $tt_address['insertdate'] . " uid=" .$tt_address['uid']." pid=".$tt_address['pid'];
@@ -659,11 +663,24 @@ class RothoBus {
 				}
 				if( substr($item,0,4) == "code" )
 					$code_corso = trim(substr($item,5));
+				if( substr($item,0,9) == "overnight" ) {
+					$overnight_option = trim(substr($item,10));
+					if(empty($overnight_option) || $overnight_option == "" ) {
+						$overnight_option = "---";
+					} else if( preg_match("/\b(sera precedente)\b/i",$overnight_option) )	{
+						$overnight_option = "Notte Precedente al corso";
+					} else if( preg_match("/\b(primo giorno)\b/i",$overnight_option) )	{
+						$overnight_option = "Notte del primo giorno di corso";
+					} else {
+						$overnight_option = "Altro";
+					}
+				}
 			}
 			$idtarget = $tt_address['tmp_idtarget'];	
 			$tmp_page_title = $tt_address['tmp_page_title'];
 			$tt_address['page_title'] = $tmp_page_title . " del " . $date_corso;
 			$tt_address['codfatt'] = $code_corso;
+			$tt_address['overnight_option'] = $overnight_option;
 			$tt_address['costo'] = $costo_corso;
 			$tt_address['date'] = $date_corso;
 			$tt_address['companymail'] = $companymail_corso;
@@ -778,6 +795,7 @@ class RothoBus {
 		}	
 		$tt_address['formula'] = "ND";
 		$tt_address['codfatt'] = "ND";
+		$tt_address['overnight_option'] = '---';
 		$tt_address['costo'] = "ND";
 		$tt_address['date'] = "ND";
 		$activitydatetime = $tt_address['insertdate'];
@@ -908,6 +926,7 @@ class RothoBus {
 					, pagetitle as tmp_page_title
 					, 'ND' as location 
 					, room  as codfatt
+					, '---' as overnight_option
 					, '1' AS cf_807 
 					, 'Web' as cf_757 
 					, 'ND' as cf_737 
@@ -931,6 +950,7 @@ class RothoBus {
 					, pagetitle as tmp_page_title
 					, 'ND' as location 
 					, room  as codfatt
+					, '---' as overnight_option
 					, '1' AS cf_807 
 					, 'Web' as cf_757 
 					, 'ND' as cf_737 
@@ -993,6 +1013,7 @@ class RothoBus {
 					, 'Formulario richiesta consulenza: Soluzioni per strutture in legno - rothoblaas' as page_title 
 					, 'ND' as location 
 					, 'ND' as codfatt 
+					, '---' as overnight_option
 					, '1' AS cf_807 
 					, 'Web' as cf_757 
 					, 'ND' as cf_737
@@ -1037,6 +1058,7 @@ class RothoBus {
 					, 'Formulario contatti Fiere:' + ".$table_prefix."_leaddetails.leadsource as page_title 
 					, 'ND' as location 
 					, 'ND' as codfatt 
+					, '---' as overnight_option
 					, '1' AS cf_807 
 					, 'Web' as cf_757  -- Origine Iscrizione
 					, 'ND' as cf_737
@@ -1065,6 +1087,7 @@ class RothoBus {
 					, pagetitle as tmp_page_title 
 					, 'ND' as location 
 					, 'ND' as codfatt 
+					, '---' as overnight_option
 					, '1' AS cf_807 
 					, 'Web' as cf_757 
 					, 'ND' as cf_737 
@@ -1419,6 +1442,7 @@ class RothoBus {
 		$this->mapping['Leads']['cf_744'] = 'uid';
 		$this->mapping['Leads']['cf_747'] = 'idtarget';
 		$this->mapping['Leads']['cf_756'] = 'codfatt';
+		$this->mapping['Leads']['overnight_option'] = 'overnight_option';
 		$this->mapping['Leads']['cf_757'] = 'cf_757';
 		$this->mapping['Leads']['cf_758'] = 'title';
 		$this->mapping['Leads']['cf_768'] = 'costo';
