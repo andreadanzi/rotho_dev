@@ -9,7 +9,7 @@
  ************************************************************************************/
 require_once('data/CRMEntity.php');
 require_once('data/Tracker.php');
-
+// danzi.tn@20150130 inserito numero di matricola nella lista delle related 'Product Serial No'=>'product_serialno',
 class Inspections extends CRMEntity {
 	var $db, $log; // Used in class functions of CRMEntity
 
@@ -44,6 +44,7 @@ class Inspections extends CRMEntity {
 		'Inspection Name'=> 'inspection_name',
 		'Product Id'=>'productid',
 		'Product Description'=>'product_description',
+		'Product Serial No'=>'product_serialno',
 		'Due Date' => 'due_date',
 		'Inspection State'=> 'inspection_state'
 	);
@@ -102,6 +103,7 @@ class Inspections extends CRMEntity {
 			'Inspection Name'=> Array($table_prefix.'_inspections', 'inspection_name'),
 			'Product Id'=>Array($table_prefix.'_inspections', 'productid'),
 			'Product Description'=>Array($table_prefix.'_inspections', 'product_description'),
+			'Product Serial No'=>Array($table_prefix.'_inspections', 'product_serialno'),
 			'Due Date'=>Array($table_prefix.'_inspections', 'due_date'),
 			'Inspection State'=>Array($table_prefix.'_inspections', 'inspection_state')
 		);
