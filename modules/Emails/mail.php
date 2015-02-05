@@ -33,7 +33,7 @@ function send_mail($module,$to_email,$from_name,$from_email,$subject,$contents,$
 
 	$uploaddir = $root_directory ."/test/upload/";
 
-	$adb->println("To id => '".$to_email."'\nSubject ==>'".$subject."'\nContents ==> '".$contents."'");
+	//$adb->println("To id => '".$to_email."'\nSubject ==>'".$subject."'\nContents ==> '".$contents."'");
 
 	//Get the email id of assigned_to user -- pass the value and name, name must be "user_name" or "id"(field names of vtiger_users vtiger_table)
 	//$to_email = getUserEmailId('id',$assigned_user_id);
@@ -47,12 +47,15 @@ function send_mail($module,$to_email,$from_name,$from_email,$subject,$contents,$
 	}
 	*/
 	$mail = new PHPMailer();
-	
-	global $crmv,$to_address;
-	if($crmv){
-		$to_email = $to_address;
+	//mycrmv@3147m
+	if ($_REQUEST['append_subject'] != ''){
+		$subject.= " ".$_REQUEST['append_subject'];
 	}
-
+	//mycrmv@3147me
+	if ($_REQUEST['service'] != 'Newsletter') {
+	$subject = utf8_decode($subject); //mycrmv@47986
+	}
+	
 	setMailerProperties($mail,$subject,$contents,$from_email,$from_name,$to_email,$attachment,$emailid,$module,$logo);
 	setCCAddress($mail,'cc',$cc);
 	setCCAddress($mail,'bcc',$bcc);
@@ -85,13 +88,9 @@ function send_mail($module,$to_email,$from_name,$from_email,$subject,$contents,$
     	$mail->addCustomHeader("Precedence: bulk");
     }
     //crmv@22700e
-    if ($_REQUEST['service'] == 'Newsletter') {
-	$mail->SMTPDebug = 1;
-	}
+   
 	$mail_status = MailSend($mail);
-	if ($_REQUEST['service'] == 'Newsletter') {
-	print_r($mail_status);
-	}
+	
 	if($mail_status != 1)
 	{
 		$mail_error = getMailError($mail,$mail_status,$mailto);
