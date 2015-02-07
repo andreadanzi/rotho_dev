@@ -13,6 +13,19 @@
 // danzi.tn@20140417 default newsletter permission a True
 // danzi.tn@20140625 GESTIRE FORM RUSSA: nuovo leadsource "Web Form", nuovo pids_list_download e nuovo generated_form_ids
 // danzi.tn@20141105 SE EMPTY EMAIL O ACCNO RETRURN
+/* 	danzi.tn@20150206 NUOVO CORSO IN INGLESE
+	danzi.tn@20150207 cambiato il giro in _process_campaigns e _process_targets. Adessp prima si guarda se ci sono target/campagne esistenti, in caso contrario si prende 
+	id 504
+	vat 0123456789
+	tax AAAA1111BBBB2222
+	companyphone 0472 055 685
+	companymail info@silverback.st
+	date 18 May 2015 - 19 May 2015
+	formula EN Corso + 2 pranzi + 3 cene + 3 pernotti + transfer / costo 590,00
+	code RFCAPRING
+	overnight dalla sera precedente
+	language en
+*/
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -604,6 +617,7 @@ class RothoBus {
 		}
 		if((count($arr)>0 && in_array(substr($arr[0],3),$this->pids_list_corso)) || in_array($tt_address['pid'],$this->pids_list_corso) ) {
 			$iban = "No Iban";
+			$language = "nd";
 			foreach( $arr as $item ) {
 				if($this->log_active) echo "\nCourse item =".$item."\n";
 				/* GESTIRE CORSI
@@ -675,10 +689,14 @@ class RothoBus {
 						$overnight_option = "Altro";
 					}
 				}
+				if( substr($item,0,8) == "language" ) {
+					$language = substr($item,9);
+					if($this->log_active) echo "Language = ".$language."\n";
+				}
 			}
 			$idtarget = $tt_address['tmp_idtarget'];	
 			$tmp_page_title = $tt_address['tmp_page_title'];
-			$tt_address['page_title'] = $tmp_page_title . " del " . $date_corso;
+			$tt_address['page_title'] = $tmp_page_title . (empty($language) ? "": " (".$language.") " ) ." del " . $date_corso;
 			$tt_address['codfatt'] = $code_corso;
 			$tt_address['overnight_option'] = $overnight_option;
 			$tt_address['costo'] = $costo_corso;
@@ -703,7 +721,7 @@ class RothoBus {
 		$entity_ids = $retval[0];
 		$entity_objects = $retval[1];			
 		if(count($entity_ids)==0) { // NOT FOUND
-			if($this->log_active) echo "Trying inserting Lead with email = ".$tt_address['email']."\n";
+			if($this->log_active) echo "Trying inserting New Lead with email = ".$tt_address['email']."\n";
 			// INSERT LEAD AND ADD CALENDAR ENTRY
 			$newLead = CRMEntity::getInstance('Leads');
 			vtlib_setup_modulevars('Leads',$newLead);
@@ -1136,59 +1154,62 @@ class RothoBus {
 	private function _process_targets($target_ids,$target_type,$target_state,$assigned_user_id) {
 		global $adb,$table_prefix;		
 		$ret_targets = array();
-		if($this->log_active) echo "\n----------------------_process_targets STARTS with ".$target_type."------------------------\n";
-		// danzi.tn@20140115 gestione codice fatturazione corso e data corso 
-		$wsquery = "SELECT
-					".$table_prefix."_leadscf.cf_747 as target_id,
-					max(".$table_prefix."_leadscf.cf_726) as target_title,
-					max(".$table_prefix."_leadscf.cf_756) as target_cod_fatt,
-					max(".$table_prefix."_leadscf.cf_733) as target_date,
-					max(".$table_prefix."_leadscf.cf_728) as target_localita,
-					count(".$table_prefix."_leadscf.leadid) as totleads 
-					FROM ".$table_prefix."_leadscf
-					JOIN ".$table_prefix."_leaddetails ON ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_leaddetails.converted = 0 
-					JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_crmentity.deleted = 0
-					LEFT JOIN ".$table_prefix."_targetscf ON ".$table_prefix."_targetscf.cf_1006 = ".$table_prefix."_leadscf.cf_747
-					LEFT JOIN ".$table_prefix."_crmentity crmentitycamp ON crmentitycamp.crmid = ".$table_prefix."_targetscf.targetsid AND crmentitycamp.deleted = 0
-					WHERE ".$table_prefix."_targetscf.targetsid is null and ".$table_prefix."_leadscf.cf_747 IS NOT NULL 
-					AND ".$table_prefix."_leadscf.cf_747  in ('".implode("', '",array_keys($target_ids))."') GROUP BY ".$table_prefix."_leadscf.cf_747"; // array_keys($array)
-		if($this->log_active) echo "_process_targets query = ".$wsquery."\n";
-		$wsresult = $adb->query($wsquery);
-		if ($wsresult && $adb->num_rows($wsresult) > 0){
-			while($row = $adb->fetchByAssoc($wsresult)){
-				$target_id = $row['target_id'];
-				if($this->log_active) echo "Now adds target with cf_1006 = ".$target_id."\n";
-				$target_title = $row['target_title'];
-				$target_localita = $row['target_localita'];
-				$target_cod_fatt = $row['target_cod_fatt'];
-				$target_date = $row['target_date'];
-				$target_entity = CRMEntity::getInstance('Targets');
-				vtlib_setup_modulevars('Targets',$target_entity);
-				$target_entity->column_fields['assigned_user_id']= $assigned_user_id;
-				$target_entity->column_fields['targetname'] = $target_title;
-				$target_entity->column_fields['target_type'] = $target_type;
-				$target_entity->column_fields['target_state'] = $target_state;
-				$target_entity->column_fields['cf_1006'] = $target_id;
-				$target_entity->column_fields['cf_1225'] = $target_cod_fatt;
-				$target_entity->column_fields['cf_1226'] = $target_date;
-				$target_entity->save($module_name='Targets',$longdesc=false);
-				$ret_targets[] = $target_entity;
-			}
-		} else {
-			if($this->log_active) echo "_process_targets NONE missing!\n";
+		if($this->log_active) echo "\n----------------------_process_targets STARTS with ".$target_type." and id ('".implode("', '",array_keys($target_ids))."')------------------------\n";
+		foreach($target_ids as $targ_key => $targ_value) {
 			$wsquery = "SELECT ".$table_prefix."_targets.targetsid  
 						from ".$table_prefix."_targets
 						JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_targets.targetsid  and ".$table_prefix."_crmentity.deleted = 0
 						JOIN ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.targetsid = ".$table_prefix."_targets.targetsid  
-						WHERE ".$table_prefix."_targetscf.cf_1006 in ('".implode("', '",array_keys($target_ids))."')";
+						WHERE ".$table_prefix."_targetscf.cf_1006 = ?";
 			if($this->log_active) echo "_process_targets select targets query = ".$wsquery."\n";
-			$wsresult = $adb->query($wsquery);
-			while($row = $adb->fetchByAssoc($wsresult)){
-				$target_entity = CRMEntity::getInstance('Targets');
-				$target_entity->id = $row['targetsid'];
-				$target_entity->retrieve_entity_info($row['targetsid'],'Targets');
-				if($this->log_active) echo "_process_targets found existing one id=>".$target_entity->id."\n";
-				$ret_targets[] = $target_entity;
+			$wsresult = $adb->pquery($wsquery, array($targ_key));
+			if ($wsresult && $adb->num_rows($wsresult) > 0){
+				while($row = $adb->fetchByAssoc($wsresult)){
+					$target_entity = CRMEntity::getInstance('Targets');
+					$target_entity->id = $row['targetsid'];
+					$target_entity->retrieve_entity_info($row['targetsid'],'Targets');
+					if($this->log_active) echo "_process_targets found existing one id=>".$target_entity->id."\n";
+					$ret_targets[] = $target_entity;
+				}
+			} else {
+				if($this->log_active) echo "_process_targets no targets found!\n";
+				// danzi.tn@20140115 gestione codice fatturazione corso e data corso 
+				$wsquery = "SELECT
+							".$table_prefix."_leadscf.cf_747 as target_id,
+							max(".$table_prefix."_leadscf.cf_726) as target_title,
+							max(".$table_prefix."_leadscf.cf_756) as target_cod_fatt,
+							max(".$table_prefix."_leadscf.cf_733) as target_date,
+							max(".$table_prefix."_leadscf.cf_728) as target_localita,
+							count(".$table_prefix."_leadscf.leadid) as totleads 
+							FROM ".$table_prefix."_leadscf
+							JOIN ".$table_prefix."_leaddetails ON ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_leaddetails.converted = 0 
+							JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_crmentity.deleted = 0
+							WHERE ".$table_prefix."_leadscf.cf_747 = ? GROUP BY ".$table_prefix."_leadscf.cf_747"; // array_keys($array)
+				if($this->log_active) echo "_process_targets query = ".$wsquery."\n";
+				$wsresult = $adb->pquery($wsquery, array($targ_key));
+				if ($wsresult && $adb->num_rows($wsresult) > 0){
+					while($row = $adb->fetchByAssoc($wsresult)){
+						$target_id = $row['target_id'];
+						if($this->log_active) echo "Now adds target with cf_1006 = ".$target_id."\n";
+						$target_title = $row['target_title'];
+						$target_localita = $row['target_localita'];
+						$target_cod_fatt = $row['target_cod_fatt'];
+						$target_date = $row['target_date'];
+						$target_entity = CRMEntity::getInstance('Targets');
+						vtlib_setup_modulevars('Targets',$target_entity);
+						$target_entity->column_fields['assigned_user_id']= $assigned_user_id;
+						$target_entity->column_fields['targetname'] = $target_title;
+						$target_entity->column_fields['target_type'] = $target_type;
+						$target_entity->column_fields['target_state'] = $target_state;
+						$target_entity->column_fields['cf_1006'] = $target_id;
+						$target_entity->column_fields['cf_1225'] = $target_cod_fatt;
+						$target_entity->column_fields['cf_1226'] = $target_date;
+						$target_entity->save($module_name='Targets',$longdesc=false);
+						$ret_targets[] = $target_entity;
+					}
+				} else {
+					if($this->log_active) echo "_process_targets mmmh, this is embarrassing\n";				
+				}
 			}
 		}
 		return $ret_targets;
@@ -1197,60 +1218,63 @@ class RothoBus {
 	private function _process_campaigns($campaign_ids,$campaign_type,$campaign_state,$assigned_user_id) {
 		global $adb,$table_prefix;		
 		$ret_campaigns = array();
-		if($this->log_active) echo "\n----------------------_process_campaigns STARTS------------------------\n";
-		$wsquery = "SELECT
-					".$table_prefix."_leadscf.cf_747 as campaign_id,
-					max(".$table_prefix."_leadscf.cf_726) as campaign_title,
-					max(".$table_prefix."_leadscf.cf_756) as campaign_cod_fatt,
-					max(".$table_prefix."_leadscf.cf_733) as campaign_date,
-					max(".$table_prefix."_leadscf.cf_728) as campaign_localita,
-					count(".$table_prefix."_leadscf.leadid) as totleads 
-					FROM ".$table_prefix."_leadscf
-					JOIN ".$table_prefix."_leaddetails ON ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_leaddetails.converted = 0 
-					JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_crmentity.deleted = 0
-					LEFT JOIN ".$table_prefix."_campaignscf ON ".$table_prefix."_campaignscf.cf_742 = ".$table_prefix."_leadscf.cf_747
-					LEFT JOIN ".$table_prefix."_crmentity crmentitycamp ON crmentitycamp.crmid = ".$table_prefix."_campaignscf.campaignid AND crmentitycamp.deleted = 0
-					WHERE ".$table_prefix."_campaignscf.campaignid is null and ".$table_prefix."_leadscf.cf_747 IS NOT NULL
-					AND ".$table_prefix."_leadscf.cf_747 in ('".implode("', '",array_keys($campaign_ids))."') GROUP BY ".$table_prefix."_leadscf.cf_747";
-		$wsresult = $adb->query($wsquery);
-		if($this->log_active) echo "_process_campaigns query = ".$wsquery."\n";
-		if ($wsresult && $adb->num_rows($wsresult) > 0){
-			while($row = $adb->fetchByAssoc($wsresult)){
-				$campaign_id = $row['campaign_id'];
-				if($this->log_active) echo "Now adds campaingn with cf_742 = ".$campaign_id."\n";
-				$campaign_title = $row['campaign_title'];
-				$campaign_date = $row['campaign_date'];
-				$campaign_localita = $row['campaign_localita'];
-				$campaign_cod_fatt = $row['campaign_cod_fatt'];
-				$campaign_entity = CRMEntity::getInstance('Campaigns');
-				vtlib_setup_modulevars('Campaigns',$campaign_entity);
-				$campaign_entity->column_fields['assigned_user_id']= $assigned_user_id;
-				$campaign_entity->column_fields['campaignname'] = $campaign_title;
-				$campaign_entity->column_fields['campaigntype'] = $campaign_type;
-				$campaign_entity->column_fields['campaignstatus'] = $campaign_state;
-				$campaign_entity->column_fields['cf_742'] = $campaign_id;
-				$campaign_entity->column_fields['cf_743'] = $campaign_title;
-				$campaign_entity->column_fields['cf_745'] = $campaign_date;
-				$campaign_entity->column_fields['cf_746'] = $campaign_localita;
-				$campaign_entity->column_fields['cf_759'] = $campaign_cod_fatt;
-				$campaign_entity->save($module_name='Campaigns',$longdesc=false);
-				$ret_campaigns[] = $campaign_entity;
-			}
-		} else {
-			if($this->log_active) echo "_process_campaigns NONE missing!\n";
+		if($this->log_active) echo "\n----------------------_process_campaigns STARTS wirth campaign_ids = ('".implode("', '",array_keys($campaign_ids))."') ------------------------\n";
+		foreach($campaign_ids as $campaign_key => $campaign_value) {
 			$wsquery = "SELECT ".$table_prefix."_campaign.campaignid  
-						from ".$table_prefix."_campaign
-						JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_campaign.campaignid  and ".$table_prefix."_crmentity.deleted = 0
-						JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid  
-						WHERE ".$table_prefix."_campaignscf.cf_742 in ('".implode("', '",array_keys($campaign_ids))."')";
+				from ".$table_prefix."_campaign
+				JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_campaign.campaignid  and ".$table_prefix."_crmentity.deleted = 0
+				JOIN ".$table_prefix."_campaignscf on ".$table_prefix."_campaignscf.campaignid = ".$table_prefix."_campaign.campaignid  
+				WHERE ".$table_prefix."_campaignscf.cf_742 = ?";
 			if($this->log_active) echo "_process_campaigns select campaigns query = ".$wsquery."\n";
-			$wsresult = $adb->query($wsquery);
-			while($row = $adb->fetchByAssoc($wsresult)){
-				$campaign_entity = CRMEntity::getInstance('Campaigns');
-				$campaign_entity->id = $row['campaignid'];
-				$campaign_entity->retrieve_entity_info($row['campaignid'],'Campaigns');
-				if($this->log_active) echo "_process_campaigns found existing one id=>".$campaign_entity->id."\n";
-				$ret_campaigns[] = $campaign_entity;
+			$wsresult = $adb->pquery($wsquery,array($campaign_key));
+			if ($wsresult && $adb->num_rows($wsresult) > 0){
+				while($row = $adb->fetchByAssoc($wsresult)){
+					$campaign_entity = CRMEntity::getInstance('Campaigns');
+					$campaign_entity->id = $row['campaignid'];
+					$campaign_entity->retrieve_entity_info($row['campaignid'],'Campaigns');
+					if($this->log_active) echo "_process_campaigns found existing one id=>".$campaign_entity->id."\n";
+					$ret_campaigns[] = $campaign_entity;
+				}
+			} else {
+				if($this->log_active) echo "_process_campaigns existing campaign not found, try insert new!\n";
+				$wsquery = "SELECT
+							".$table_prefix."_leadscf.cf_747 as campaign_id,
+							max(".$table_prefix."_leadscf.cf_726) as campaign_title,
+							max(".$table_prefix."_leadscf.cf_756) as campaign_cod_fatt,
+							max(".$table_prefix."_leadscf.cf_733) as campaign_date,
+							max(".$table_prefix."_leadscf.cf_728) as campaign_localita,
+							count(".$table_prefix."_leadscf.leadid) as totleads 
+							FROM ".$table_prefix."_leadscf
+							JOIN ".$table_prefix."_leaddetails ON ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_leaddetails.converted = 0 
+							JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_crmentity.deleted = 0
+							WHERE ".$table_prefix."_leadscf.cf_747 = ? GROUP BY ".$table_prefix."_leadscf.cf_747";
+				$wsresult = $adb->pquery($wsquery,array($campaign_key));
+				if($this->log_active) echo "_process_campaigns query = ".$wsquery."\n";
+				if ($wsresult && $adb->num_rows($wsresult) > 0){
+					while($row = $adb->fetchByAssoc($wsresult)){
+						$campaign_id = $row['campaign_id'];
+						if($this->log_active) echo "Now adds campaingn with cf_742 = ".$campaign_id."\n";
+						$campaign_title = $row['campaign_title'];
+						$campaign_date = $row['campaign_date'];
+						$campaign_localita = $row['campaign_localita'];
+						$campaign_cod_fatt = $row['campaign_cod_fatt'];
+						$campaign_entity = CRMEntity::getInstance('Campaigns');
+						vtlib_setup_modulevars('Campaigns',$campaign_entity);
+						$campaign_entity->column_fields['assigned_user_id']= $assigned_user_id;
+						$campaign_entity->column_fields['campaignname'] = $campaign_title;
+						$campaign_entity->column_fields['campaigntype'] = $campaign_type;
+						$campaign_entity->column_fields['campaignstatus'] = $campaign_state;
+						$campaign_entity->column_fields['cf_742'] = $campaign_id;
+						$campaign_entity->column_fields['cf_743'] = $campaign_title;
+						$campaign_entity->column_fields['cf_745'] = $campaign_date;
+						$campaign_entity->column_fields['cf_746'] = $campaign_localita;
+						$campaign_entity->column_fields['cf_759'] = $campaign_cod_fatt;
+						$campaign_entity->save($module_name='Campaigns',$longdesc=false);
+						$ret_campaigns[] = $campaign_entity;
+					}
+				} else {
+					if($this->log_active) echo "_process_campaigns mmmh, this is embarrassing\n";
+				}
 			}
 		}
 		return $ret_campaigns;
@@ -1258,41 +1282,52 @@ class RothoBus {
 	
 	private function _process_relations($generated_ids) {
 		global $adb,$table_prefix;		
-		if($this->log_active) echo "\n----------------------_process_relations STARTS------------------------\n";
-		$adb->query($wsquery);
-		$wsquery = "INSERT INTO 
-					".$table_prefix."_crmentityrel 
-					(crmid,module,relcrmid,relmodule)
-					SELECT 
-					".$table_prefix."_targetscf.targetsid,
-					'Targets' as trg,
-					".$table_prefix."_leadscf.leadid,
-					'Leads' as ld
-					from ".$table_prefix."_leadscf
-					join ".$table_prefix."_leaddetails on ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_leaddetails.converted = 0 
-					join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_crmentity.deleted = 0
-					left join ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.cf_1006 = ".$table_prefix."_leadscf.cf_747
-					left join ".$table_prefix."_crmentity crmentitytarg on crmentitytarg.crmid = ".$table_prefix."_targetscf.targetsid AND crmentitytarg.deleted = 0
-					left join ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = crmentitytarg.crmid AND ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_crmentity.crmid
-					where ".$table_prefix."_targetscf.targetsid IS NOT NULL AND ".$table_prefix."_crmentityrel.crmid IS NULL
-					AND ".$table_prefix."_leadscf.cf_747 in ('".implode("', '",array_keys($generated_ids))."')	";
-		$adb->query($wsquery);
-		$wsquery = "INSERT INTO 
-					".$table_prefix."_crmentityrel 
-					(crmid,module,relcrmid,relmodule)
-					SELECT 
-					".$table_prefix."_targetscf.targetsid,
-					'Targets' as trg,
-					".$table_prefix."_campaignscf.campaignid,
-					'Campaigns' as ld
-					from ".$table_prefix."_campaignscf
-					join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_campaignscf.campaignid AND ".$table_prefix."_crmentity.deleted = 0
-					left join ".$table_prefix."_targetscf on ".$table_prefix."_targetscf.cf_1006 = ".$table_prefix."_campaignscf.cf_742 AND  ".$table_prefix."_campaignscf.cf_742 IS NOT NULL AND  ".$table_prefix."_campaignscf.cf_742 <>''
-					left join ".$table_prefix."_crmentity crmentitytarg on crmentitytarg.crmid = ".$table_prefix."_targetscf.targetsid AND crmentitytarg.deleted = 0
-					left join ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = crmentitytarg.crmid AND ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_crmentity.crmid
-					where ".$table_prefix."_targetscf.targetsid IS NOT NULL AND ".$table_prefix."_crmentityrel.crmid IS NULL
-					AND ".$table_prefix."_targetscf.cf_1006 in ('".implode("', '",array_keys($generated_ids))."')	";
-		$adb->query($wsquery);
+		if($this->log_active) echo "\n----------------------_process_relations STARTS with generated_ids ('".implode("', '",array_keys($generated_ids))."')------------------------\n";
+		foreach($generated_ids as $ids_key => $ids_value) {
+			$wsquery = "SELECT ".$table_prefix."_targetscf.targetsid
+						FROM ".$table_prefix."_targetscf
+						JOIN ".$table_prefix."_crmentity crmentitytarg on crmentitytarg.crmid = ".$table_prefix."_targetscf.targetsid AND crmentitytarg.deleted = 0
+						WHERE  ".$table_prefix."_targetscf.cf_1006 = ?";
+			if($this->log_active) echo "_process_relations SELECT for targets ".$wsquery."\n";
+			$wsresult = $adb->pquery($wsquery,array($ids_key));
+			if ($wsresult && $adb->num_rows($wsresult) > 0){
+				while($row = $adb->fetchByAssoc($wsresult)){
+					$wsquery = "INSERT INTO 
+							".$table_prefix."_crmentityrel 
+							(crmid,module,relcrmid,relmodule)
+							SELECT 
+							".$row['targetsid']." ,
+							'Targets' as trg,
+							".$table_prefix."_leadscf.leadid,
+							'Leads' as ld
+							from ".$table_prefix."_leadscf
+							join ".$table_prefix."_leaddetails on ".$table_prefix."_leaddetails.leadid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_leaddetails.converted = 0 
+							join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_leadscf.leadid AND ".$table_prefix."_crmentity.deleted = 0
+							left join ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ? AND ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_crmentity.crmid
+							where ".$table_prefix."_crmentityrel.crmid IS NULL
+							AND ".$table_prefix."_leadscf.cf_747 = ? ";
+					$adb->pquery($wsquery,array($row['targetsid'],$ids_key));
+					if($this->log_active) echo "_process_relations INSERT INTO _crmentityrel query for targets ".$wsquery."\n";
+					$wsquery = "INSERT INTO 
+						".$table_prefix."_crmentityrel 
+						(crmid,module,relcrmid,relmodule)
+						SELECT 
+						".$row['targetsid']." ,
+						'Targets' as trg,
+						".$table_prefix."_campaignscf.campaignid,
+						'Campaigns' as ld
+						from ".$table_prefix."_campaignscf
+						join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_campaignscf.campaignid AND ".$table_prefix."_crmentity.deleted = 0
+						left join ".$table_prefix."_crmentityrel on ".$table_prefix."_crmentityrel.crmid = ? AND ".$table_prefix."_crmentityrel.relcrmid = ".$table_prefix."_crmentity.crmid
+						where ".$table_prefix."_crmentityrel.crmid IS NULL
+						AND ".$table_prefix."_campaignscf.cf_742 = ?";
+					$adb->pquery($wsquery,array($row['targetsid'],$ids_key));
+					if($this->log_active) echo "_process_relations INSERT INTO _crmentityrel query for campaigns ".$wsquery."\n";
+				}
+			} else {
+				if($this->log_active) echo "_process_relations for targets mmmh, well...this is embarrassing\n";
+			}
+		}
 		if($this->log_active) echo "\n----------------------_process_relations TERMINATED------------------------\n";
 	}
 	
