@@ -8,6 +8,7 @@
  * All Rights Reserved.
  *************************************************************************************/
  // danzi.tn@20150108 nuova classificazione 
+ // danzi.tn@20150205 gestione cambio agente o qualsiasi altro riferimento	
 include_once('config.php');
 require_once('include/logging.php');
 require_once('include/database/PearDatabase.php');
@@ -44,6 +45,10 @@ class AccountsHandler extends VTEventHandler {
 				$focus->column_fields['area_mng_name'] = $rets["capoarea_first_name"] . " ".$rets["capoarea_last_name"]  ;
 				$focus->column_fields['account_line'] = $rets["user_line"];
 				// smownerid o assigned_user_id
+				if(!empty($focus->column_fields['external_code']) && $focus->column_fields['external_code'] != "") {
+					$event_name = 'Attivazione nuovo Cliente';
+					$focus->notify_first_activation($event_name);
+				}
 			} else {
 				$log->debug("handleEvent vtiger.entity.beforesave this is an update");
 				if(empty( $focus->column_fields['account_line']) || $focus->column_fields['account_line'] == '' || $focus->column_fields['account_line'] == '---' ) {
@@ -57,6 +62,18 @@ class AccountsHandler extends VTEventHandler {
 					$focus->column_fields['area_mng_name'] = $rets["capoarea_first_name"] . " ".$rets["capoarea_last_name"]  ;
 					$focus->column_fields['account_line'] = $rets["user_line"];
 				}
+				//danzi.tn@20150205 gestione cambio agente o qualsiasi altro riferimento
+				if(!empty($focus->column_fields['external_code']) && 
+				   $focus->column_fields['external_code'] != "" &&
+				   $focus->column_fields['rating'] != "Attivita Cessata") {
+					$template_map = array(
+						'assigned_user_id'=>'Cambio Agente', 
+						'codice_vendite_int'=>'Cambio Area Manager', 
+						'area_mng_no'=>'Cambio Referente Vendita'
+						);				
+					$focus->check_current_reference_users($template_map);
+				}
+				//danzi.tn@20150205e
 			}
 			$log->debug("handleEvent vtiger.entity.beforesave treminated");
 		}
@@ -126,9 +143,6 @@ class AccountsHandler extends VTEventHandler {
 					 'user_line'=>$user_line
 					 );
 	}
-	//danzi.tn@20150107e
-	
-	
-	
+
 }
 ?>

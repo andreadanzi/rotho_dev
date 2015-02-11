@@ -1,6 +1,7 @@
 <?php
 // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_line
 // danzi.tn@0150129 gestione erp_temp_crm_aziende_cessate
+// danzi.tn@20150210 gestione notifiche clienti
 function do_import_accounts($time_start) {
 	global $adb,$seq_log,$current_user,$mapping,$root_directory,$external_code,$module,$table,$fields_auto_create,$fields_auto_update,$where;	
 	$import = new importer($module,$mapping,$external_code,$time_start,$fields_auto_create,$fields_auto_update);
@@ -50,9 +51,13 @@ function do_import_accounts($time_start) {
 	foreach($import_info['external_code_rows'] as $ext_cod){
 		if (!in_array($ext_cod,$import_info['upd_ext_codes'])) {
 			import_accounts_info($ext_cod);
-			$cnt_import++;
+			// danzi.tn@20150210 qui ci andrebbe la gestione notifica 'Attivazione nuovo Cliente'
+			notify_first_activation($ext_cod, $time_start);
 		}
+		$cnt_import++;
 	}
+	
+	
     // danzi.tn@20141212 nova classificazione per i PROG....si va a prendetre l'agente
 	$updt_query="UPDATE vtiger_account
                     SET vtiger_account.account_line = 
@@ -121,6 +126,35 @@ function do_import_accounts($time_start) {
 	}
 	// danzi.tn@0150129e
 	return $import_info;
+}
+
+// danzi.tn@20150210 per le nuove aziende
+function notify_first_activation($ext_cod, $time_start) {
+	global $adb, $table_prefix;
+	if(!empty($ext_cod)  ) {
+		$event_name = 'Attivazione nuovo Cliente';
+		$q = "SELECT ".$table_prefix."_crmentity.smownerid, ".$table_prefix."_account.codice_vendite_int, ".$table_prefix."_account.ref_vendite_int, ".$table_prefix."_account.area_mng_no,  ".$table_prefix."_account.area_mng_name, ".$table_prefix."_accountscf.cf_1113,  ".$table_prefix."_account.accountid, ".$table_prefix."_account.email1, ".$table_prefix."_account.email2
+		FROM ".$table_prefix."_account 
+		JOIN ".$table_prefix."_accountscf ON ".$table_prefix."_accountscf.accountid = ".$table_prefix."_account.accountid 
+		JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid AND ".$table_prefix."_crmentity.deleted = 0  
+		WHERE ".$table_prefix."_account.external_code = ? AND ".$table_prefix."_account.sem_importdate = ? AND ".$table_prefix."_account.sem_importflag = ?";
+		$res=$adb->pquery($q,array($ext_cod,$time_start,'IN'));
+		if($res && $adb->num_rows($res) > 0){
+			while($row=$adb->fetchByAssoc($res,-1,false)){
+				$base_language = strtoupper($row['cf_1113']); // Lingua Base
+				// Cerco template di tipo 'Notifiche Clienti' sulla base della lingua
+				$templateName = trim($event_name." ".trim($base_language));
+				$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+				$template_id = 0;
+				if(empty($retTemplate)) {
+					$templateName = $event_name;
+				} else {
+					$template_id = $retTemplate[0];				
+				}	
+				schedule_client_notification($template_id, $templateName,$row['accountid'] ,$row['email1'], $row['email2'], $row["smownerid"],$time_start,$time_start,"ND");
+			}
+		}
+	}
 }
 
 function import_accounts_info($ext_cod){

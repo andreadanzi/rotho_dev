@@ -20,7 +20,8 @@
  * All Rights Reserved.
  * Contributor(s): ______________________________________..
  ********************************************************************************/
-
+// danzi.tn@20150206 aggiunto templatename a getTemplateDetails
+// danzi.tn@20150210 aggiunta funzione get_account_reference_users
   require_once('include/utils/utils.php'); //new
   require_once('include/utils/RecurringType.php');
   //crmv@16312
@@ -2700,9 +2701,32 @@ function getTemplateDetails($templateid)
         $returndata[] = $templateid;
         $returndata[] = $adb->query_result($result,0,'body');
         $returndata[] = $adb->query_result($result,0,'subject');
+		// danzi.tn@20150206 aggiunto templatename
+        $returndata[] = $adb->query_result($result,0,'templatename');
+		// danzi.tn@20150206e
         $log->debug("Exiting from getTemplateDetails($templateid) method ...");
         return $returndata;
 }
+
+
+// danzi.tn@20150210 ricerca template sulla base del tipo e del nome
+function searchTemplate($templateType, $templateName)
+{
+        global $adb,$log, $table_prefix;
+        $log->debug("Entering into searchTemplate($templateType,$templateName) method ...");
+        $returndata =  Array();
+        $result = $adb->pquery("select * from ".$table_prefix."_emailtemplates where templatetype=? AND templatename=?", array($templateType, $templateName));
+		if ($result && $adb->num_rows($result)) {
+			$returndata[] = $adb->query_result($result,0,'templateid');
+			$returndata[] = $adb->query_result($result,0,'body');
+			$returndata[] = $adb->query_result($result,0,'subject');
+			$returndata[] = $adb->query_result($result,0,'templatename');
+			$returndata[] = $adb->query_result($result,0,'templatetype');
+		}
+        $log->debug("Exiting from searchTemplate($templateType,$templateName) method ...");
+        return $returndata;
+}
+
 //crmv@15309
 function construct_ws_id($id,$module){
   	global $adb, $table_prefix;
@@ -3847,8 +3871,9 @@ function getEmailTemplateVariables(){
 }
 //crmv@15309 end
 //crmv@22700
+// danzi.tn@20150210 aggiunto Notifiche Clienti
 function getTemplateTypeValues($value) {
-	$templatetypes = array('Email','Newsletter');
+	$templatetypes = array('Email','Newsletter','Notifiche Clienti');
 	$result = array();
 	foreach($templatetypes as $type) {
 		$selected = '';
@@ -4126,4 +4151,175 @@ function getSqlForNameInDisplayFormat($input, $module, $glue = ' ') {
 	return $sqlString;
 }
 //crmv@21198e
+
+// danzi.tn@20150210 restituisce l'agente, l'area manager e il referente interno dell'azienda
+function get_account_reference_users($account_id) {
+	global $adb,$log,$table_prefix;
+	$retval = array();
+	$log->debug("Entering CommonUtils.php function get_current_reference_users for Account with id = ". $account_id);
+	$sql = "SELECT ".$table_prefix."_crmentity.smownerid, ".$table_prefix."_users.user_name, ".$table_prefix."_users.first_name, ".$table_prefix."_users.last_name, ".$table_prefix."_account.codice_vendite_int, ".$table_prefix."_account.ref_vendite_int, ".$table_prefix."_account.area_mng_no,  ".$table_prefix."_account.area_mng_name,  ".$table_prefix."_account.email1,  ".$table_prefix."_account.email2 
+			FROM ".$table_prefix."_account
+			JOIN ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_account.accountid and ".$table_prefix."_crmentity.deleted=0
+			JOIN ".$table_prefix."_users on ".$table_prefix."_users.id = ".$table_prefix."_crmentity.smownerid
+			WHERE ".$table_prefix."_account.accountid=?";
+	$log->debug("in CommonUtils.php function get_current_reference_users, query = ". $sql);
+	$result = $adb->pquery($sql,array($account_id));
+	if ($result && $adb->num_rows($result)) {
+		$retval['assigned_user_id'] = $adb->query_result($result,0,'smownerid'); //
+		$retval['user_name'] = $adb->query_result($result,0,'user_name'); //
+		$retval['first_name'] = $adb->query_result($result,0,'first_name'); //
+		$retval['last_name'] = $adb->query_result($result,0,'last_name'); //
+		$retval['codice_vendite_int'] = $adb->query_result($result,0,'codice_vendite_int'); //
+		$retval['ref_vendite_int'] = $adb->query_result($result,0,'ref_vendite_int'); //
+		$retval['area_mng_no'] = $adb->query_result($result,0,'area_mng_no'); //
+		$retval['area_mng_name'] = $adb->query_result($result,0,'area_mng_name'); //
+		$retval['email1'] = $adb->query_result($result,0,'email1'); //
+		$retval['email2'] = $adb->query_result($result,0,'email2'); //
+	}
+	$log->debug("Exiting CommonUtils.php function get_current_reference_users...");
+	return $retval;
+}
+
+function schedule_client_notification($templateid, $templateName, $account_id, $email1, $email2, $assigned_user_id,$createdtime, $modifiedtime, $previous_value="") {
+	global $adb,$log,$table_prefix,$default_charset;
+	global $HELPDESK_SUPPORT_EMAIL_ID,$HELPDESK_SUPPORT_NAME;	
+	$add_eight_hours = strtotime("+8 hours");
+	$add_eight_hours_sixty_seconds = strtotime("+8 hours 60 seconds");
+	$log->debug("Entering CommonUtils.php function schedule_client_communication ($templateid) for Account with id = ". $account_id);
+	$templatedetails = getTemplateDetails($templateid);
+	if(!empty($templatedetails) && count($templatedetails) > 1 && $templatedetails[0] > 0) {
+		$eventstatus = 'Planned';
+		$templatename = $templatedetails[3];
+		$subject = $templatedetails[2];
+	} else {
+		$eventstatus = 'Blocked';
+		$templatename = 'ND';
+		$subject = $templateName;
+		$log->debug("CommonUtils.php function schedule_client_notification, input template with id ".$templateid. " does not exists");
+	}
+	$log->debug("CommonUtils.php function schedule_client_notification mail subject after getTemplateDetails is ".$subject);
+	$description = "";
+	$account_email = "";
+	$fieldid = 0;
+	if (!empty($email1)) {
+		$account_email = $email1;
+		$fieldid = 9;
+	} elseif (!empty($email2)) {
+		$account_email = $email2;
+		$fieldid = 11;
+	}			
+	if (!empty($account_email)) {
+		$description .= "<email>{$account_email}</email>\n";
+	} else {
+		$eventstatus = 'Blocked';
+		$description .= "<email>ND</email>\n";
+	}
+	$description .= "<status>".$eventstatus."</status>\n";
+	$description .= "<template>{$templatename}</template>\n";
+	$description .= "<templateid>{$templateid}</templateid>\n";
+	$description .= "<pval>{$previous_value}</pval>\n";
+	/* AGGIORNA eventstatus = 'Not Held' PER TUTTI GLI EVENTI PRECEDENTI CHE SONO ANCORA PIANIFICATI
+				UPDATE vtiger_activity 
+					SET vtiger_activity.eventstatus = 'Not Held' 
+					from vtiger_activity 
+					join vtiger_crmentity on vtiger_crmentity.crmid = vtiger_activity.activityid AND vtiger_crmentity.deleted = 0 
+					join vtiger_seactivityrel on vtiger_seactivityrel.activityid = vtiger_activity.activityid  
+					join vtiger_crmentity accentity on accentity.crmid = vtiger_seactivityrel.crmid AND accentity.deleted = 0 
+					where vtiger_activity.activitytype = 'Comunicazione variazioni (Auto-gen)' 
+					AND vtiger_activity.eventstatus = 'Planned' 
+					AND  vtiger_activity.date_start <= CONVERT (date, DATEADD(hour,12, GETDATE()))  
+				    AND accentity.crmid = ?
+	*/
+	if($eventstatus == 'Planned'  ) {
+		$sql = "UPDATE ".$table_prefix."_activity 
+					SET ".$table_prefix."_activity.eventstatus = 'Not Held' 
+					from ".$table_prefix."_activity 
+					join ".$table_prefix."_crmentity on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_activity.activityid AND ".$table_prefix."_crmentity.deleted = 0 
+					join ".$table_prefix."_seactivityrel on ".$table_prefix."_seactivityrel.activityid = ".$table_prefix."_activity.activityid  
+					join ".$table_prefix."_crmentity accentity on accentity.crmid = ".$table_prefix."_seactivityrel.crmid AND accentity.deleted = 0 
+					where ".$table_prefix."_activity.activitytype = 'Comunicazione variazioni (Auto-gen)' 
+					AND ".$table_prefix."_activity.eventstatus = 'Planned' 
+					AND  ".$table_prefix."_activity.date_start <= CONVERT (date, DATEADD(hour,12, GETDATE()))  
+				    AND accentity.crmid = ?";
+		$adb->pquery($sql,array($account_id));
+	}
+	$newEvent = CRMEntity::getInstance('Events');
+	vtlib_setup_modulevars('Events',$newEvent);
+	$newEvent->column_fields['subject'] = $subject;
+	$newEvent->column_fields['smownerid'] = $assigned_user_id;
+	$newEvent->column_fields['assigned_user_id'] = $assigned_user_id;
+	$newEvent->column_fields['createdtime'] = $createdtime;
+	$newEvent->column_fields['modifiedtime'] = $modifiedtime;
+	$newEvent->column_fields['parent_id'] = $account_id;
+	$newEvent->column_fields['date_start'] = date('Y-m-d', $add_eight_hours); // date(getNewDisplayDate(), $add_eight_hours);
+	$newEvent->column_fields['time_start'] = date('H:i', $add_eight_hours);
+	$newEvent->column_fields['due_date'] =  date('Y-m-d', $add_eight_hours_sixty_seconds); // date(getNewDisplayDate(), $add_eight_hours_sixty_seconds);
+	$newEvent->column_fields['time_end'] = date('H:i', $add_eight_hours_sixty_seconds);
+	$newEvent->column_fields['duration_hours'] = 1;// 2
+	$newEvent->column_fields['duration_minutes'] = 0;// 2
+	$newEvent->column_fields['activitytype'] = 'Comunicazione variazioni (Auto-gen)'; //$insp_activitytype;
+	$newEvent->column_fields['is_all_day_event'] = 0;
+	$newEvent->column_fields['eventstatus'] = $eventstatus;// $insp_eventstatus 
+	$newEvent->column_fields['description'] = $description;
+	$newEvent->save($module_name='Events',$longdesc=false);
+	
+	$log->debug("Exiting CommonUtils.php function schedule_client_notification...");
+}
+
+
+function send_client_notification($templateid, $account_id, $email1, $email2, $assigned_user_id) {
+	global $adb,$log,$table_prefix,$default_charset;
+	global $HELPDESK_SUPPORT_EMAIL_ID,$HELPDESK_SUPPORT_NAME;	
+	$log->debug("Entering CommonUtils.php function send_client_notification ($templateid) for Account with id = ". $account_id);
+	$templatedetails = getTemplateDetails($templateid);
+	if(!empty($templatedetails) && count($templatedetails) > 1) {
+		$body = $templatedetails[1];
+		$subject = $templatedetails[2];
+		$log->debug("CommonUtils.php function send_client_notification mail subject after getTemplateDetails is ".$subject);
+		$log->debug("CommonUtils.php function send_client_notification mail body after getTemplateDetails is ".$body);
+		$subject = getMergedDescription($subject,$account_id,"Accounts");
+		$body = getMergedDescription($body,$account_id,"Accounts");
+		// $body = getMergedDescription($body,$account_id,"Users");
+		// $body = htmlentities($body, ENT_NOQUOTES, $default_charset);
+		$body = html_entity_decode($body, ENT_NOQUOTES, $default_charset);
+		$log->debug("CommonUtils.php function send_client_notification body after getMergedDescription is ".$body);
+		$account_email = "";
+		$fieldid = 0;
+		if (!empty($email1)) {
+			$account_email = $email1;
+			$fieldid = 9;
+		} elseif (!empty($email2)) {
+			$account_email = $email2;
+			$fieldid = 11;
+		}			
+		if (!empty($account_email)) {
+			$log->debug("CommonUtils.php function send_client_notification account_email is " . $account_email);
+			$status = send_mail("Accounts",$account_email,"Rotho Blaas Srl","info@rothoblaas.com",$subject,$body,'',"info@rothoblaas.com");
+			$log->debug("CommonUtils.php function send_client_notification mail status is " . $status);
+			if( $status == 1 ) {
+				$focus = CRMEntity::getInstance('Emails');
+				$focus->column_fields['parent_type'] = "Accounts";
+				$focus->column_fields['activitytype'] = "Emails";
+				$focus->column_fields['parent_id'] = "$account_id@$fieldid|";
+				$focus->column_fields['subject'] = $subject;
+				$focus->column_fields['description'] = $body;
+				$focus->column_fields['assigned_user_id'] = $assigned_user_id;
+				$focus->column_fields['smownerid'] = $assigned_user_id;
+				$focus->column_fields["date_start"]= date('Y-m-d');
+				$focus->column_fields["email_flag"] = 'SAVED';
+				$focus->column_fields['from_email'] = "info@rothoblaas.com";
+				$focus->column_fields['saved_toid'] = $account_email;
+				$focus->save('Emails');
+				$log->debug("CommonUtils.php function send_client_notification Emails entity saved, id is " . $focus->id);
+			}
+		} else {
+			$log->debug("CommonUtils.php function send_client_notification account_email is empty");
+		}
+	} else {
+		$log->debug("CommonUtils.php function send_client_notification, input template with id ".$templateid. " does not exists");
+	}
+	$log->debug("Exiting CommonUtils.php function send_client_notification...");
+}
+
+
 ?>

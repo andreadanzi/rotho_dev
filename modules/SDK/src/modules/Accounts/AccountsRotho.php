@@ -1,6 +1,8 @@
 <?php
 require_once('modules/Accounts/Accounts.php');
+require_once('modules/Emails/mail.php');
 // danzi.tn@20140717 creazione nuovo modulo Marketprices => get_marketprices
+// danzi.tn@20150205 per la gestione delle notifiche
 class AccountsRotho extends Accounts {
 	
 	var $list_fields_name = Array(
@@ -251,5 +253,153 @@ class AccountsRotho extends Accounts {
 
 	}
 	//danzi.tn@20140717e
+	
+	//danzi.tn@20150130 per il trasferimento dei related record bisogna considerare anche Visitreport, Consulenze e Revisioni
+	/**
+	 * Move the related records of the specified list of id's to the given record.
+	 * @param String This module name
+	 * @param Array List of Entity Id's from which related records need to be transfered 
+	 * @param Integer Id of the the Record to which the related records are to be moved
+	 */
+	function transferRelatedRecords($module, $transferEntityIds, $entityId) {
+		global $adb,$log,$table_prefix;
+		$log->debug("Entering function AccountsRotho::transferRelatedRecords ($module, $transferEntityIds, $entityId)");
+		$rel_table_arr = Array( "Visitreport"=>$table_prefix."_visitreport", "Consulenza"=>$table_prefix."_consulenza", "Inspections"=>$table_prefix."_inspections");
+		$tbl_field_arr = Array($table_prefix."_visitreport"=>"visitreportid", $table_prefix."_consulenza"=>"consulenzaid", $table_prefix."_inspections"=>"inspectionsid");	
+		$entity_tbl_field_arr = Array($table_prefix."_visitreport"=>"accountid", $table_prefix."_consulenza"=>"parent", $table_prefix."_inspections"=>"accountid");	
+		
+		foreach($transferEntityIds as $transferId) {
+			foreach($rel_table_arr as $rel_module=>$rel_table) {
+				$id_field = $tbl_field_arr[$rel_table];
+				$entity_id_field = $entity_tbl_field_arr[$rel_table];
+				// IN clause to avoid duplicate entries
+				$sel_result =  $adb->pquery("select $id_field from $rel_table where $entity_id_field=? " .
+						" and $id_field not in (select $id_field from $rel_table where $entity_id_field=?)",
+						array($transferId,$entityId));
+				$res_cnt = $adb->num_rows($sel_result);
+				if($res_cnt > 0) {
+					for($i=0;$i<$res_cnt;$i++) {
+						$id_field_value = $adb->query_result($sel_result,$i,$id_field);
+						$adb->pquery("update $rel_table set $entity_id_field=? where $entity_id_field=? and $id_field=?", 
+							array($entityId,$transferId,$id_field_value));	
+					}
+				}				
+			}
+		}
+		//crmv@15526
+		parent::transferRelatedRecords($module, $transferEntityIds, $entityId);
+		//crmv@15526 end	
+		$log->debug("Exiting AccountsRotho::transferRelatedRecords...");
+	}
+	//danzi.tn@20150130e
+	
+	
+	
+	//danzi.tn@20150205 per la gestione delle notifiche
+	function notify_first_activation($event_name) {
+		$base_language = strtoupper($this->column_fields['cf_1113']); // Lingua Base
+		// Cerco template di tipo 'Notifiche Clienti' sulla base della lingua
+		$templateName = trim($event_name." ".trim($base_language));
+		$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+		$template_id = 0;
+		if(empty($retTemplate)) {
+			$templateName = $event_name;
+			$log->debug("function AccountsRotho::check_first_activation for ".$this->id." template ". $templateName. " not found!");
+		} else {
+			$template_id = $retTemplate[0];
+			$log->debug("function AccountsRotho::check_first_activation for ".$this->id." assigned template ". $templateName. " with id = ".$template_id);
+		}	
+		schedule_client_notification($template_id, $templateName, $this->id, $this->column_fields['email1'], $this->column_fields['email2'], $this->column_fields["assigned_user_id"],$this->column_fields["createdtime"], $this->column_fields["modifiedtime"],"ND");
+	}
+	
+	
+	// check_current_reference_users verifica 
+	function check_current_reference_users($template_map) {
+		global $log;
+		$log->debug("Entering function AccountsRotho::check_current_reference_users");
+		$retFields = array();
+		// funzione get_account_reference_users restituisce l'agente, l'area manager e il referente interno dell'azienda, è implementata in CommonUtils.php
+		$retvals = get_account_reference_users($this->id);
+		foreach($template_map as $key=>$val) {
+			if($this->column_fields[$key] != '' && $this->column_fields[$key] != $retvals[$key] )
+			{
+				$templateId = 0;
+				$base_language = strtoupper($this->column_fields['cf_1113']); // Lingua Base
+				// Cerco template di tipo 'Notifiche Clienti' sulla base della lingua
+				$templateName = trim($val." ".trim($base_language));
+				$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+				if(empty($retTemplate)) {
+					$log->debug("function AccountsRotho::check_current_reference_users for ".$key." template ". $templateName. " not found!");
+				} else {
+					$templateId = $retTemplate[0];
+					$log->debug("function AccountsRotho::check_current_reference_users ".$key." differs from actual value, assigned template ". $templateName. " with id = ".$templateId);
+				}
+				$retFields[$templateName] = $templateId;
+				schedule_client_notification($templateId, $templateName, $this->id, $this->column_fields['email1'], $this->column_fields['email2'], $this->column_fields["assigned_user_id"],$this->column_fields["createdtime"], $this->column_fields["modifiedtime"],$retvals[$key]);
+			}
+		}
+		$log->debug("Exiting function AccountsRotho::check_current_reference_users");
+		return $retFields;
+	}
+			
+	function send_client_communication($templateid) {
+		global $adb,$log,$table_prefix,$default_charset;
+		global $HELPDESK_SUPPORT_EMAIL_ID,$HELPDESK_SUPPORT_NAME;	
+		$log->debug("Entering function AccountsRotho::send_client_communication ($templateid) for Account with id = ". $this->id);
+		$templatedetails = getTemplateDetails($templateid);
+		if(!empty($templatedetails) && count($templatedetails) > 1) {
+			$body = $templatedetails[1];
+			$subject = $templatedetails[2];
+			$log->debug("AccountsRotho::send_client_communication mail subject after getTemplateDetails is ".$subject);
+			$log->debug("AccountsRotho::send_client_communication mail body after getTemplateDetails is ".$body);
+			$subject = getMergedDescription($subject,$this->id,"Accounts");
+			$body = getMergedDescription($body,$this->id,"Accounts");
+			// $body = getMergedDescription($body,$this->id,"Users");
+			// $body = htmlentities($body, ENT_NOQUOTES, $default_charset);
+			$body = html_entity_decode($body, ENT_NOQUOTES, $default_charset);
+			$log->debug("AccountsRotho::send_client_communication body after getMergedDescription is ".$body);
+			$account_email = "";
+			$fieldid = 0;
+			if (!empty($this->column_fields['email1'])) {
+				$account_email = $this->column_fields['email1'];
+				$fieldid = 9;
+			} elseif (!empty($this->column_fields['email2'])) {
+				$account_email = $this->column_fields['email2'];
+				$fieldid = 11;
+			}			
+			if (!empty($account_email)) {
+				$log->debug("AccountsRotho::send_client_communication account_email is " . $account_email);
+				$status = send_mail("Accounts",$account_email,$HELPDESK_SUPPORT_NAME,$HELPDESK_SUPPORT_EMAIL_ID,$subject,$body,'',$HELPDESK_SUPPORT_EMAIL_ID);
+				$log->debug("AccountsRotho::send_client_communication mail status is " . $status);
+				if( $status == 1 ) {
+					$focus = CRMEntity::getInstance('Emails');
+					$focus->column_fields['parent_type'] = "Accounts";
+					$focus->column_fields['activitytype'] = "Emails";
+					$focus->column_fields['parent_id'] = "$this->id@$fieldid|";
+					$focus->column_fields['subject'] = $subject;
+					$focus->column_fields['description'] = $body;
+					$focus->column_fields['assigned_user_id'] = $this->column_fields['assigned_user_id'];
+					$focus->column_fields["date_start"]= date('Y-m-d');
+					$focus->column_fields["email_flag"] = 'SAVED';
+					$focus->column_fields['from_email'] = $HELPDESK_SUPPORT_EMAIL_ID;
+					$focus->column_fields['saved_toid'] = $account_email;
+					$focus->save('Emails');
+					$log->debug("AccountsRotho::send_client_communication Emails entity saved, id is " . $focus->id);
+				}
+			} else {
+				$log->debug("AccountsRotho::send_client_communication account_email is empty");
+			}
+		} else {
+			$log->debug("AccountsRotho::send_client_communication, input template with id ".$templateid. " does not exists");
+		}
+		$log->debug("Exiting AccountsRotho::send_client_communication...");
+	}
+	//danzi.tn@20150205e
+	
+	/*
+	
+	
+	
+	*/
 }
 ?>

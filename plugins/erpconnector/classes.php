@@ -1,5 +1,6 @@
 <?php
 // danzi.tn@20140820 divisione per zero
+// danzi.tn@20150210 gestione notifiche clienti
 class log{
 	var $start;
 	var $stop;
@@ -326,6 +327,7 @@ class importer{
 				
 				//mycrmv@30336
 				if ($this->module == 'Accounts') {
+					$id = 0;
 					//check ext_code
 					if ($row['base_number'] != '') {
 						$qry_ext_code = "SELECT * FROM vtiger_account
@@ -340,22 +342,9 @@ class importer{
 					if ($rows_ext_code > 0 && $row['base_number'] != '') {
 						$id = $adb->query_result($res_ext_code,0,'accountid');
                         //danzi.tn@20140821 esiste in VTE ed ha un codice semiramis, quindi US (Update key is Semiramis) se non esiste
-						$sem_importflag = $adb->query_result($res_ext_code,0,'sem_importflag');	
-                        // danzi.tn@20141223 if(empty($sem_importflag)) {
-                            $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'US';  	
-                            $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;                            
-                        // }
+						$this->fields_auto_update['vtiger_account']['sem_importflag'] = 'US';  	
+						$this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;                            
 						$this->update($row,$id);
-						if( $row['base_number'] =='21442' || $row['base_number'] == '29574' || $row['base_number'] =='LV100')
-						{
-							echo "====== danzi.tn@20141223 begin\n";
-							echo "base_number=".$row['base_number']."\n";
-							echo "base_name=".$row['base_name']."\n";
-							echo "agent_name=".$row['agent_name']."\n";
-							echo "agent_number=".$row['agent_number']."\n";
-							echo "new_category_desc=".$row['new_category_desc']."\n";
-							echo "====== danzi.tn@20141223 end\n";
-						}
 						$rows_updated[] = $row[$this->external_code];
 					}else {
 						// danzi.tn@20130730 - check base_crmnumber
@@ -371,13 +360,10 @@ class importer{
 						}
 						if ($rows_base_crmnumber > 0 && $row['base_crmnumber'] != '') {
 							$id = $adb->query_result($res_base_crmnumber,0,'accountid');
-                            $sem_importflag = $adb->query_result($res_base_crmnumber,0,'sem_importflag');	
-                            // danzi.tn@20141223 if(empty($sem_importflag)) {
-                                //danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UB (Update key is BASE CRM NUMBER)
-                                $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UB';
-                                $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
-                                //danzi.tn@20140821e     
-                            // danzi.tn@20141223 }
+							//danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UB (Update key is BASE CRM NUMBER)
+							$this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UB';
+							$this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
+							//danzi.tn@20140821e     
 							$this->update($row,$id);
 							$rows_updated[] = $row[$this->external_code];
 						} else { // danzi.tn@20130730e
@@ -394,13 +380,10 @@ class importer{
 							}
 							if ($rows_piva > 0 && $row['finance_localtaxid'] != '' ) {
 								$id = $adb->query_result($res_piva,0,'accountid');
-                                $sem_importflag = $adb->query_result($res_piva,0,'sem_importflag');	
-                                // danzi.tn@20141223 if(empty($sem_importflag)) {
-                                    //danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UV (Update key is Vat)
-                                    $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UV';
-                                    $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
-                                    //danzi.tn@20140821e
-                                // danzi.tn@20141223 }
+								//danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UV (Update key is Vat)
+								$this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UV';
+								$this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
+								//danzi.tn@20140821e
 								$this->update($row,$id);
 								$rows_updated[] = $row[$this->external_code];
 							} else {
@@ -417,13 +400,10 @@ class importer{
 								}
 								if ($rows_cf > 0 && $row['finance_suppltaxid'] != '') {
 									$id = $adb->query_result($res_cf,0,'accountid');
-                                    $sem_importflag = $adb->query_result($res_cf,0,'sem_importflag');	
-                                    // danzi.tn@20141223 if(empty($sem_importflag)) {
-                                        //danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UF (Update key is Fiscal Code)
-                                        $this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UF';
-                                        $this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
-                                        //danzi.tn@20140821e
-                                    // danzi.tn@20141223 }
+									//danzi.tn@20140821 esiste in VTE ma non ha un codice semiramis, quindi UF (Update key is Fiscal Code)
+									$this->fields_auto_update['vtiger_account']['sem_importflag'] = 'UF';
+									$this->fields_auto_update['vtiger_account']['sem_importdate'] = $this->time_start;
+									//danzi.tn@20140821e
 									$this->update($row,$id);
 									$rows_updated[] = $row[$this->external_code];
 								} else {
@@ -433,11 +413,46 @@ class importer{
                                     $this->fields_auto_create['vtiger_account']['sem_importdate'] = $this->time_start;
                                     $this->fields_auto_create['vtiger_accountscf']['cf_770'] = 'Import Semiramis';
                                     //danzi.tn@20140821e
-									$this->create($row);
+									$this->create($row);									
 								}
 							}
 						}
 					}
+					// danzi.tn@20150210 Nel caso ci sia stato un UPDATE $id dovrebbe essere maggiore di zero
+					if($id > 0) {
+						// get_account_reference_users restituisce gli attuali agente, area manager e referente interno dell'azienda
+						$ref_users = get_account_reference_users($id);
+						$codice_vendite_int = $row['BASE_RESPONSIBLE_NUMBER'];
+						$area_mng_no = $row['AREAMANAGER_NUMBER'];
+						$assigned_user_id = get_smowner($row['AGENT_NUMBER']);
+						
+						$mapping_column_field = $this->mapping_column['smownerid'];
+						$assigned_user_id = get_smowner($row[$mapping_column_field]);					
+						
+						// a questo punto l'assegnazione è fissa su admin...poi viene cambiata su agente...è un casino
+						$template_map = array(
+							'assigned_user_id'=>array('Cambio Agente',$assigned_user_id), 
+							'codice_vendite_int'=>array('Cambio Area Manager',$codice_vendite_int), 
+							'area_mng_no'=>array('Cambio Referente Vendita',$area_mng_no)
+							);
+						foreach( $template_map as $vte_field=>$val_array) {
+							if($val_array[1] != '' && $val_array[1] != $ref_users[$vte_field] )
+							{
+								$templateId = 0;
+								$base_language = strtoupper($row['base_language']); // Lingua Base
+								// Cerco template di tipo 'Notifiche Clienti' sulla base della lingua
+								$templateName = trim($val_array[0]." ".trim($base_language));
+								$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+								if(empty($retTemplate)) {
+									echo "function importer check current reference users for ".$id." related to ".$vte_field." = ".$ref_users[$vte_field].", template ". $templateName. " not found!\n";
+								} else {
+									$templateId = $retTemplate[0];
+								}
+								schedule_client_notification($templateId, $templateName, $id,$ref_users['email1'], $ref_users['email2'], $assigned_user_id,$this->time_start, $this->time_start, $ref_users[$vte_field]);
+							}
+						}
+					} 
+					// danzi.tn@20150210e 
 				} elseif ($this->module == 'Vendors') {
 					$this->check_vendors($row,$rows_updated);
 				} else {
