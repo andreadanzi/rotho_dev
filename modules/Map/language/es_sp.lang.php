@@ -35,5 +35,7 @@ $mod_strings = array(
 'SkippedAccounts'=>'Accounts without geo-localization',
 'AcceptAddress'=>'Accept the address',
 'Cancel'=>'Cancel',
+'LBL_MAGG_DI' => 'Between',
+'LBL_MYFILTER_VALUE'  =>  'Filter values'
 );
 ?>

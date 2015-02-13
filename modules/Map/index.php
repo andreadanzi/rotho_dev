@@ -10,7 +10,7 @@ $theme_path="themes/".$theme."/";
 $image_path=$theme_path."images/";
 include_once('modules/Map/lib/utils.inc.php');
 require('modules/Map/lib/GeoCoder.inc.php');
-
+// danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 
 if(!$_REQUEST['show'])
 	$_REQUEST['show'] = "Accounts";
@@ -45,6 +45,7 @@ if(!$_REQUEST['type_or_value'])
 <script src="include/js/jquery_plugins/ui/minified/jquery.ui.position.min.js"></script>
 <script src="include/js/jquery_plugins/ui/minified/jquery.ui.widget.min.js"></script>
 <script src="include/js/jquery_plugins/ui/minified/jquery.ui.mouse.min.js"></script>
+<script src="include/js/jquery_plugins/ui/minified/jquery.ui.slider.min.js"></script>
 <script src="include/js/jquery_plugins/ui/minified/jquery.ui.selectable.min.js"></script>
 <script src="include/js/jquery_plugins/ui/minified/jquery.ui.button.min.js"></script>
 <script src="include/js/jquery_plugins/ui/minified/jquery.ui.draggable.min.js"></script>
@@ -475,24 +476,22 @@ echo $select_assigneduser ."</span>
 
 <tr style='height:25px'>
 
-<td class='dvtCellLabel' align='right'>
-<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['LimitByValue']}:</span>
-</td>
-<td class='dvtCellInfo'>
+	<td class='dvtCellLabel' align='right'>
+		<span style='font-weight: bold ; font-size: 110%'><label for='slider-range'>{$mod_strings['LBL_MYFILTER_VALUE']}:</label></span>
+	</td>
+	<td class='dvtCellInfo'>
 
-<div tabindex='0' aria-valuenow='0' aria-valuemax='100' aria-valuemin='0' role='slider' id='slider' class='goog-slider goog-slider-horizontal' style='width: 255px; height: 11px; float: left'>
-<div style='left: 190px;' class='goog-slider-thumb'></div>
-</div>
-
-</td>
-<td class='dvtCellLabel' align='right'>
-<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['ValueGT']}:</span> 
-</td>
-<td class='dvtCellInfo'>
-
-<div id='slider-value' style='float: left; margin-left: 5px;'><span style='font-weight: bold; color:#D6FF2F;'>0 k</span></div>
-
-</td>
+	
+		<div id='slider-range' lang='it_it'></div>
+	</td>
+	<td class='dvtCellLabel' align='right'>
+		<span style='font-weight: bold ; font-size: 110%'><label for='amount'>{$mod_strings['LBL_MAGG_DI']}:</label></span>
+	</td>
+	<td class='dvtCellInfo'>							
+		<p>							
+			<input type='text' id='amount' style=\"border: 0; color: #f6931f; font-weight: bold;\" />
+		</p>
+	</td>
 <td class='dvtCellInfo'>
 ".(count($retValues["not_found"])>0 ? "<input id='viewskipped' class='crmbutton small create' type='button' value='{$mod_strings['Skipped']} (".count($retValues["not_found"]).")'/>":"")."
 </td>
@@ -502,6 +501,7 @@ echo $select_assigneduser ."</span>
 <input type='hidden' name='module' value='Map'/>
 <input type='hidden' name='action' value='index'/>
 <input type='hidden' name='parenttab' value='Tools'/>
+<input type='hidden' id='amountrange' name='amountrange' value='".$_REQUEST['amountrange']."'/>
 </form>
 </td>
 </tr>
@@ -540,9 +540,8 @@ echo "</div>";
 <?php echo "var module='".$_REQUEST['show']."';\n"; ?>
 
 goog.require('goog.ui.Dialog');
-goog.require('goog.ui.Slider');
 goog.require('goog.ui.Component');
-var sliderTimer, fusiontables_layer, slider;
+var sliderTimer, fusiontables_layer;
 var fusion_value = 0;
 var entityCircle;
 <?php echo "var clusterRequest='".$_REQUEST['cluster']."';\n"; ?>
@@ -645,6 +644,39 @@ $(function () {
             }
         }
 		
+		function updateSliderValues() {
+			var slider_range = $( "#slider-range" ),  amountrange = $("#amountrange");
+			
+			var currentval = $("#amountrange").val();
+			var currentval_splitted = currentval.split('-');
+			minval = 0;
+			maxval = 10;
+			if( currentval_splitted.length > 1 ) {
+				minval = sva[currentval_splitted[0]];
+				maxval = sva[currentval_splitted[1]];
+			}
+			
+			$( "#slider-range" ).slider({
+				range: true,
+				min: 0,
+				max: 10,
+				step: 1,
+				values: [ minval, maxval ],
+				slide: function( event, ui ) {
+								$( "#amount" ).val( "€" + asv[ui.values[ 0 ]] + "k - €" + asv[ui.values[ 1 ]]+ "k" );
+								$("#amountrange").val(asv[ui.values[ 0 ]]+"-"+asv[ui.values[ 1 ]]);
+								if (sliderTimer) window.clearTimeout(sliderTimer);
+								sliderTimer = window.setTimeout(updateMap, 500);
+							 }
+			});
+			
+			
+			$( "#amount" ).val( "€" + asv[$( "#slider-range" ).slider( "values", 0 )] +"k - €" + asv[$( "#slider-range" ).slider( "values", 1 )]+ "k" );
+			if (sliderTimer) window.clearTimeout(sliderTimer);
+			sliderTimer = window.setTimeout(updateMap, 500);
+		}
+		
+		updateSliderValues();
         $( "#dialog-map" ).dialog({
             autoOpen: false,
 			hide: "clip",

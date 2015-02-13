@@ -5,6 +5,9 @@ var clust_markers = [];
 var map = null;
 var gmap = null;
 var fusion_value = 0;
+var amountrange_value = 0;
+var minval = 0;
+var maxval = 1;
 var directionsDisplay = null;
 var coords = new Object();
 coords.lat = 46.329938;
@@ -14,6 +17,7 @@ geocoder = new google.maps.Geocoder();
 
 // danzi.tn@20140902 modifica api
 // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
+// danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
@@ -41,7 +45,6 @@ function initialize() {
 	directionsDisplay.setPanel(document.getElementById("route"));
     
 	checkMap('ND');
-	initializeSlider();	
 	
 	var domElement = document.getElementById('type1');
 	google.maps.event.addDomListener(domElement, 'click',  function() { checkMap(this.id);} );
@@ -368,7 +371,8 @@ function showCircleArray() {
     for ( i in local_circleArray) {
 	  if(local_circleArray[i] && typeof local_circleArray[i] == "object" && typeof local_circleArray[i].setMap == "function"){
 		var map_value = local_circleArray[i].get("map_value");
-		if(fusion_value > map_value || type_or_valueRequest == 'type')
+		// if(fusion_value > map_value || type_or_valueRequest == 'type')
+		if(  minval > map_value || maxval < map_value  || type_or_valueRequest == 'type')
 		{
 			local_circleArray[i].setVisible(false);
 		}
@@ -386,7 +390,8 @@ function showMarkersArray() {
     for (i in local_markersArray) {
 	  if(local_markersArray[i] && typeof local_markersArray[i] == "object" && typeof local_markersArray[i].setMap == "function"){
 		var map_value = local_markersArray[i].get("map_value");
-		if(fusion_value > map_value || type_or_valueRequest == 'value')
+		// if(fusion_value > map_value || type_or_valueRequest == 'value')
+		if(  minval > map_value || maxval < map_value  || type_or_valueRequest == 'value')
 		{
 			local_markersArray[i].setVisible(false);
 		}
@@ -444,7 +449,8 @@ function createArrays() {
 	for (var j in resultLayer) 
 	{
 		var result = resultLayer[j];
-		if(fusion_value > result["map_value"]) continue;
+		// if(fusion_value > result["map_value"]) continue;
+		if( minval > result["map_value"] || result["map_value"] > maxval ) continue;
 		var pos = new google.maps.LatLng(result["pos"][0], result["pos"][1]);
 		var contentString = getDescription(j, pos ,result["name"] ,result["type"] ,result["map_value"],result["city"],result["extra"],result["map_aurea"],result);
 		// pos, name, type, desc, icon
@@ -615,57 +621,21 @@ function getCircle2(mapValue, pos, name, desc)
 
 
 function initializeSlider() {
-	var sliderElement = document.getElementById('slider');
-	slider = new goog.ui.Slider;
-	slider.decorate(sliderElement);
-	slider.setMaximum(400);
-	slider.setStep(1);
-	slider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
-	// Avoid updating the map too often by ignoring slider value changes
-	// that occur within 200mS of eachother.
-	if (sliderTimer) window.clearTimeout(sliderTimer);
-	sliderTimer = window.setTimeout(updateMap, 500);
-
-	var mapValue = sliderValueToAmount(slider.getValue());
-	mapValue = mapValue*1000;
-	var fillColorForNumbers = "#D6FF2F";
-	if( mapValue < 1000 ) 
-	{
-		fillColorForNumbers = "#D6FF2F";
-	}
-	else if( mapValue >= 1000 &&  mapValue < 10000 )
-	{
-		fillColorForNumbers = "#00AF07";
-	}
-	else if( mapValue >= 10000 &&  mapValue < 100000 )
-	{
-		fillColorForNumbers = "#00ECFF";
-	}
-	else if( mapValue >= 100000 &&  mapValue < 1000000 )
-	{
-		fillColorForNumbers = "#0069BF";
-	}
-	else if( mapValue >= 1000000 &&  mapValue < 10000000 )
-	{
-		fillColorForNumbers = "#FFA200";
-	}
-	else if( mapValue >= 10000000 )
-	{
-		fillColorForNumbers = "#FF2A00";
-	}
-
-	document.getElementById("slider-value").innerHTML = "<span style='font-weight: bold; color:"+fillColorForNumbers+";'>"+Math.round(slider.getValue()*slider.getValue()/10) + " k </span>";
-	});
-	slider.setValue(0);
+	
 }
 
 function updateMap() {
-	var amount = sliderValueToAmount(slider.getValue());
+	var amountrange = document.getElementById('amountrange');
+	amountrange_value = amountrange.value;
+	var currentval = $("#amountrange").val();
+	var currentval_splitted = currentval.split('-');
+	minval = 0;
+	maxval = 100000000;
+	if( currentval_splitted.length > 1 ) {
+		minval = parseInt(currentval_splitted[0])*1000;
+		maxval = 1000*parseInt(currentval_splitted[1]); // 100000000
+	}
 	fusion_value = amount*1000;
 	checkMap();
-}
-
-function sliderValueToAmount(value) {
-	return Math.round(value*value/10);
 }
 
