@@ -39,7 +39,7 @@ class CommunicationClass {
 				join vtiger_account on vtiger_account.accountid = accentity.crmid 
 				where vtiger_activity.activitytype = 'Comunicazione variazioni (Auto-gen)'
 				AND vtiger_activity.eventstatus = 'Planned'
-				AND  vtiger_activity.date_start = CONVERT (date, GETDATE())
+				AND  vtiger_activity.date_start <= CONVERT (date, GETDATE())
 				AND  vtiger_activity.time_start <= left( CONVERT (time, GETDATE()), 5)
 	*/
 	// populates vtiger entities from temp tables
@@ -58,7 +58,7 @@ class CommunicationClass {
 				join ".$table_prefix."_account on ".$table_prefix."_account.accountid = accentity.crmid 
 				where ".$table_prefix."_activity.activitytype = 'Comunicazione variazioni (Auto-gen)'
 				AND ".$table_prefix."_activity.eventstatus = 'Planned'
-				AND  ".$table_prefix."_activity.date_start = CONVERT (date, GETDATE())
+				AND  ".$table_prefix."_activity.date_start <= CONVERT (date, GETDATE())
 				AND  ".$table_prefix."_activity.time_start <= left( CONVERT (time, GETDATE()), 5)";
 		if($this->log_active) echo "CommunicationClass.populateNow sql = ".$sql."\n";
 		$wsresult = $adb->query($sql);
@@ -82,11 +82,13 @@ class CommunicationClass {
 						$email2 = $test_email;
 						$smownerid = 1;
 					} 
-					send_client_notification( intval($match),$row['crmid'], $email1, $email2, $smownerid);
-					$this->import_result['records_created']++;
-					$usql = "UPDATE  ".$table_prefix."_activity SET ".$table_prefix."_activity.eventstatus = 'Held' WHERE ".$table_prefix."_activity.activityid = ?";
-					$adb->pquery($usql,array($row['activityid']));
-					$ifound++;
+					$bRetVal = send_client_notification( intval($match),$row['crmid'], $email1, $email2, $smownerid);
+					if($bRetVal) {
+						$this->import_result['records_created']++;
+						$usql = "UPDATE  ".$table_prefix."_activity SET ".$table_prefix."_activity.eventstatus = 'Held' WHERE ".$table_prefix."_activity.activityid = ?";
+						$adb->pquery($usql,array($row['activityid']));
+						$ifound++;
+					}
 				}
 			}
 			if($ifound == 0) {

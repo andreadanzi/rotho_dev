@@ -420,35 +420,59 @@ class importer{
 					}
 					// danzi.tn@20150210 Nel caso ci sia stato un UPDATE $id dovrebbe essere maggiore di zero
 					if($id > 0) {
+						//tmp echo "Azienda con BASE_NUMBER=". $row['base_number'] . " numero righe = ".$rows_ext_code." e accountid = ". $id. " \n";
 						// get_account_reference_users restituisce gli attuali agente, area manager e referente interno dell'azienda
+						$ref_users = array();
 						$ref_users = get_account_reference_users($id);
-						$codice_vendite_int = $row['BASE_RESPONSIBLE_NUMBER'];
-						$area_mng_no = $row['AREAMANAGER_NUMBER'];
-						$assigned_user_id = get_smowner($row['AGENT_NUMBER']);
-						
+						//tmp echo "Azienda con BASE_NUMBER=" .$rows_ext_code." e accountid = ". $id. " ha assigned_user_id = ".$ref_users["assigned_user_id"]  ."\n";
+						$codice_vendite_int = trim($row['BASE_RESPONSIBLE_NUMBER']);
+						if(empty($codice_vendite_int) || $codice_vendite_int=='') $codice_vendite_int = 0;
+						$area_mng_no = trim($row['AREAMANAGER_NUMBER']);		
+						if(empty($area_mng_no) || $area_mng_no=='') $area_mng_no = 0;				
 						$mapping_column_field = $this->mapping_column['smownerid'];
-						$assigned_user_id = get_smowner($row[$mapping_column_field]);					
-						
+						$AGENT_NUMBER = $row[$mapping_column_field];
+						$AGENT_NUMBER = trim($AGENT_NUMBER);
+						$assigned_user_id = get_smowner($AGENT_NUMBER);
+						if(empty($AGENT_NUMBER) || $AGENT_NUMBER=='' || $assigned_user_id == 1) {
+							$assigned_user_id = 0;
+							echo "Per azienda con BASE_NUMBER=". $row['base_number'] . " (".$id.") non esiste un utente con erp_code = ".$AGENT_NUMBER."\n";
+						}
 						// a questo punto l'assegnazione è fissa su admin...poi viene cambiata su agente...è un casino
 						$template_map = array(
-							'assigned_user_id'=>array('Cambio Agente',$assigned_user_id), 
-							'codice_vendite_int'=>array('Cambio Area Manager',$codice_vendite_int), 
-							'area_mng_no'=>array('Cambio Referente Vendita',$area_mng_no)
+							'assigned_user_id'=>'Cambio Agente', 
+							'codice_vendite_int'=>'Cambio Area Manager', 
+							'area_mng_no'=>'Cambio Referente Vendita',
 							);
-						foreach( $template_map as $vte_field=>$val_array) {
-							if($val_array[1] != '' && $val_array[1] != $ref_users[$vte_field] )
+						$value_map = array(
+							'assigned_user_id'=>$assigned_user_id, 
+							'codice_vendite_int'=>$codice_vendite_int, 
+							'area_mng_no'=>$area_mng_no,
+							);
+						foreach( $template_map as $vte_field=>$val_template_name) {
+							$current_val = $ref_users[$vte_field];
+							//tmp echo "Verifica campo ".$vte_field ."\n";
+							if(empty($current_val) || $current_val=='') $current_val = "<EMPTY>";	
+							$new_val = $value_map[$vte_field];
+							if(!empty($new_val) && $new_val != '' && $new_val != $current_val )
 							{
+								echo "Per campo ".$vte_field. " il valore passa da " .$current_val. " a ".  $new_val. " mapping_column_field = " .$mapping_column_field." AGENT_NUMBER=".$AGENT_NUMBER."\n";
 								$templateId = 0;
 								$base_language = strtoupper($row['base_language']); // Lingua Base
 								// Cerco template di tipo 'Notifiche Clienti' sulla base della lingua
-								$templateName = trim($val_array[0]." ".trim($base_language));
+								$templateName = trim($val_template_name." ".trim($base_language));
 								$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
 								if(empty($retTemplate)) {
-									echo "function importer check current reference users for ".$id." related to ".$vte_field." = ".$ref_users[$vte_field].", template ". $templateName. " not found!\n";
+									$templateName = trim($val_template_name);
+									$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+									if(empty($retTemplate)) {
+										echo "function importer check current reference users for ".$id." related to ".$vte_field." = ".$current_val.", template ". $templateName. " not found!\n";
+									} else {
+										$templateId = $retTemplate[0];
+									}
 								} else {
 									$templateId = $retTemplate[0];
 								}
-								schedule_client_notification($templateId, $templateName, $id,$ref_users['email1'], $ref_users['email2'], $assigned_user_id,$this->time_start, $this->time_start, $ref_users[$vte_field]);
+								schedule_client_notification($templateId, $templateName, $id,$ref_users['email1'], $ref_users['email2'], $assigned_user_id,$this->time_start, $this->time_start, $current_val);
 							}
 						}
 					} 

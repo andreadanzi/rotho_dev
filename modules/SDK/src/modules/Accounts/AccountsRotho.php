@@ -303,8 +303,15 @@ class AccountsRotho extends Accounts {
 		$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
 		$template_id = 0;
 		if(empty($retTemplate)) {
-			$templateName = $event_name;
-			$log->debug("function AccountsRotho::check_first_activation for ".$this->id." template ". $templateName. " not found!");
+			$templateName = trim($event_name);
+			$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+			if(empty($retTemplate)) {
+				$templateName = $event_name;
+				$log->debug("function AccountsRotho::check_first_activation for ".$this->id." template ". $templateName. " not found!");
+			} else {				
+				$template_id = $retTemplate[0];
+				$log->debug("function AccountsRotho::check_first_activation for ".$this->id." assigned template ". $templateName. " with id = ".$template_id);
+			}
 		} else {
 			$template_id = $retTemplate[0];
 			$log->debug("function AccountsRotho::check_first_activation for ".$this->id." assigned template ". $templateName. " with id = ".$template_id);
@@ -329,7 +336,14 @@ class AccountsRotho extends Accounts {
 				$templateName = trim($val." ".trim($base_language));
 				$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
 				if(empty($retTemplate)) {
-					$log->debug("function AccountsRotho::check_current_reference_users for ".$key." template ". $templateName. " not found!");
+					$templateName = trim($val);
+					$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+					if(empty($retTemplate)) {
+						$log->debug("function AccountsRotho::check_current_reference_users for ".$this->id." template ". $templateName. " not found!");
+					} else {				
+						$templateId = $retTemplate[0];
+						$log->debug("function AccountsRotho::check_current_reference_users for ".$this->id." assigned template ". $templateName. " with id = ".$templateId);
+					}
 				} else {
 					$templateId = $retTemplate[0];
 					$log->debug("function AccountsRotho::check_current_reference_users ".$key." differs from actual value, assigned template ". $templateName. " with id = ".$templateId);
@@ -360,10 +374,10 @@ class AccountsRotho extends Accounts {
 			$log->debug("AccountsRotho::send_client_communication body after getMergedDescription is ".$body);
 			$account_email = "";
 			$fieldid = 0;
-			if (!empty($this->column_fields['email1'])) {
+			if (!empty($this->column_fields['email1']) && filter_var($this->column_fields['email1'], FILTER_VALIDATE_EMAIL) ) {
 				$account_email = $this->column_fields['email1'];
 				$fieldid = 9;
-			} elseif (!empty($this->column_fields['email2'])) {
+			} elseif (!empty($this->column_fields['email2']) && filter_var($this->column_fields['email2'], FILTER_VALIDATE_EMAIL) ) {
 				$account_email = $this->column_fields['email2'];
 				$fieldid = 11;
 			}			

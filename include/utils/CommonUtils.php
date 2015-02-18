@@ -4151,7 +4151,13 @@ function getSqlForNameInDisplayFormat($input, $module, $glue = ' ') {
 	return $sqlString;
 }
 //crmv@21198e
-
+/*
+SELECT vtiger_crmentity.smownerid, vtiger_users.user_name, vtiger_users.first_name, vtiger_users.last_name, vtiger_account.codice_vendite_int, vtiger_account.ref_vendite_int, vtiger_account.area_mng_no,  vtiger_account.area_mng_name,  vtiger_account.email1,  vtiger_account.email2 
+			FROM vtiger_account
+			JOIN vtiger_crmentity on vtiger_crmentity.crmid = vtiger_account.accountid and vtiger_crmentity.deleted=0
+			JOIN vtiger_users on vtiger_users.id = vtiger_crmentity.smownerid
+			WHERE vtiger_account.accountid=?
+*/
 // danzi.tn@20150210 restituisce l'agente, l'area manager e il referente interno dell'azienda
 function get_account_reference_users($account_id) {
 	global $adb,$log,$table_prefix;
@@ -4193,7 +4199,6 @@ function schedule_client_notification($templateid, $templateName, $account_id, $
 		$subject = $templatedetails[2];
 	} else {
 		$eventstatus = 'Blocked';
-		$templatename = 'ND';
 		$subject = $templateName;
 		$log->debug("CommonUtils.php function schedule_client_notification, input template with id ".$templateid. " does not exists");
 	}
@@ -4201,10 +4206,10 @@ function schedule_client_notification($templateid, $templateName, $account_id, $
 	$description = "";
 	$account_email = "";
 	$fieldid = 0;
-	if (!empty($email1)) {
+	if (!empty($email1) && filter_var($email1, FILTER_VALIDATE_EMAIL)) {
 		$account_email = $email1;
 		$fieldid = 9;
-	} elseif (!empty($email2)) {
+	} elseif (!empty($email2)  && filter_var($email2, FILTER_VALIDATE_EMAIL)) {
 		$account_email = $email2;
 		$fieldid = 11;
 	}			
@@ -4268,6 +4273,7 @@ function schedule_client_notification($templateid, $templateName, $account_id, $
 
 
 function send_client_notification($templateid, $account_id, $email1, $email2, $assigned_user_id) {
+	$bRetVal = false;
 	global $adb,$log,$table_prefix,$default_charset;
 	global $HELPDESK_SUPPORT_EMAIL_ID,$HELPDESK_SUPPORT_NAME;	
 	$log->debug("Entering CommonUtils.php function send_client_notification ($templateid) for Account with id = ". $account_id);
@@ -4285,10 +4291,10 @@ function send_client_notification($templateid, $account_id, $email1, $email2, $a
 		$log->debug("CommonUtils.php function send_client_notification body after getMergedDescription is ".$body);
 		$account_email = "";
 		$fieldid = 0;
-		if (!empty($email1)) {
+		if (!empty($email1) && filter_var($email1, FILTER_VALIDATE_EMAIL)) {
 			$account_email = $email1;
 			$fieldid = 9;
-		} elseif (!empty($email2)) {
+		} elseif (!empty($email2) && filter_var($email2, FILTER_VALIDATE_EMAIL)) {
 			$account_email = $email2;
 			$fieldid = 11;
 		}			
@@ -4311,6 +4317,7 @@ function send_client_notification($templateid, $account_id, $email1, $email2, $a
 				$focus->column_fields['saved_toid'] = $account_email;
 				$focus->save('Emails');
 				$log->debug("CommonUtils.php function send_client_notification Emails entity saved, id is " . $focus->id);
+				$bRetVal = true;
 			}
 		} else {
 			$log->debug("CommonUtils.php function send_client_notification account_email is empty");
@@ -4319,6 +4326,7 @@ function send_client_notification($templateid, $account_id, $email1, $email2, $a
 		$log->debug("CommonUtils.php function send_client_notification, input template with id ".$templateid. " does not exists");
 	}
 	$log->debug("Exiting CommonUtils.php function send_client_notification...");
+	return $bRetVal;
 }
 
 

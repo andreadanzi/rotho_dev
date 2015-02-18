@@ -147,7 +147,11 @@ function notify_first_activation($ext_cod, $time_start) {
 				$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
 				$template_id = 0;
 				if(empty($retTemplate)) {
-					$templateName = $event_name;
+					$templateName = trim($event_name);
+					$retTemplate = searchTemplate('Notifiche Clienti',$templateName);
+					if(!empty($retTemplate)) {
+						$template_id = $retTemplate[0];
+					}
 				} else {
 					$template_id = $retTemplate[0];				
 				}	
