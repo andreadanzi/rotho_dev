@@ -1,4 +1,5 @@
-function return_category_to_nonconformity(recordid,value,target_fieldname,product_description,product_category, vendor_id, vendor_descr) {
+// danzi.tn@20150316 added purchase_user_id and purchase_user_id_display
+function return_category_to_nonconformity(recordid,value,target_fieldname,product_description,product_category, vendor_id, vendor_descr, purchase_user_id, purchase_user_id_display) {
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
 	if (form) {
@@ -19,6 +20,12 @@ function return_category_to_nonconformity(recordid,value,target_fieldname,produc
 			}
 			if (form.elements['vendor_id_display']) {
 				form.elements['vendor_id_display'].value = vendor_descr;
+			}
+			if (form.elements['purchase_user_id']) {
+				form.elements['purchase_user_id'].value = purchase_user_id;
+			}
+			if (form.elements['purchase_user_id_display']) {
+				form.elements['purchase_user_id_display'].value = purchase_user_id_display;
 			}
 		}
 		return true;

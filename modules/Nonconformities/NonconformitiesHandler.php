@@ -9,7 +9,8 @@
  *************************************************************************************/
 class NonconformitiesHandler extends VTEventHandler {
 	
-    //danzi.tn@20141023 gestione custom valutazione - update before save per totali parziali su danno commerciale e dati commerciali e totale danno
+    // danzi.tn@20141023 gestione custom valutazione - update before save per totali parziali su danno commerciale e dati commerciali e totale danno
+	// danzi.tn@20150316 sovrascrivere il campo "Valore da recuperare" con il campo "Totale" della valorizzazione	
 	function handleEvent($eventName, $data) {
 		global $adb, $current_user,$log;
         $log->debug("handleEvent entered");
@@ -43,6 +44,11 @@ class NonconformitiesHandler extends VTEventHandler {
             $log->debug("handleEvent vtiger.entity.beforesave dati_comm = ".$focus->column_fields['dati_comm']);		
             // totale_valutazione
             $focus->column_fields['totale_valutazione'] = floatval($focus->column_fields['rilavorazione']) +  floatval($focus->column_fields['logistica']) + floatval($focus->column_fields['magazzino']) +  floatval($focus->column_fields['acquisto']) + floatval($focus->column_fields['gestione']) + floatval($focus->column_fields['danno_comm']) +  floatval($focus->column_fields['dati_comm']);
+			// danzi.tn@20150316 sovrascrivere il campo "Valore da recuperare" con il campo "Totale" della valorizzazione	
+			if(!empty($focus->column_fields['totale_valutazione']) && is_numeric($focus->column_fields['totale_valutazione'])  ) {
+				$focus->column_fields['cf_1271'] = $focus->column_fields['totale_valutazione'] + 0;
+			}
+			// danzi.tn@20150316e
             $log->debug("handleEvent vtiger.entity.beforesave totale_valutazione = ".$focus->column_fields['totale_valutazione']);
 			$log->debug("handleEvent vtiger.entity.beforesave treminated");
 		}

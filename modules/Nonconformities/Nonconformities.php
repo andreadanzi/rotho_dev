@@ -9,7 +9,7 @@
  ************************************************************************************/
 require_once('data/CRMEntity.php');
 require_once('data/Tracker.php');
-
+// danzi.tn@20150223 - aggiunti 'Non Conformity Number'=> 'nonconformity_no' e 'Product Id'=> 'product_id',
 class Nonconformities extends CRMEntity {
 	var $db, $log; // Used in class functions of CRMEntity
 
@@ -41,7 +41,9 @@ class Nonconformities extends CRMEntity {
 	var $list_fields = Array ();
 	var $list_fields_name = Array(
 		/* Format: Field Label => fieldname */
+		'Non Conformity Number'=> 'nonconformity_no',
 		'Non Conformity Name'=> 'nonconformity_name',
+		'Product Id'=> 'product_id',
 		'Created Time'=> 'createdtime',
 		'Assigned To' => 'assigned_user_id',
 		'Non Conformity State'=> 'nonconformity_state'
@@ -97,8 +99,10 @@ class Nonconformities extends CRMEntity {
 		);
 		$this->list_fields = Array(
 			/* Format: Field Label => Array(tablename, columnname) */
-			// tablename should not have prefix 'vte_'
-			'Non Conformity Name'=> Array($table_prefix.'_nonconformities', 'nonconformity_name'),
+			// tablename should not have prefix 'vte_'		
+			'Non Conformity Number'=> Array($table_prefix.'_nonconformities', 'nonconformity_no'),
+			'Non Conformity Name'=> Array($table_prefix.'_nonconformities', 'nonconformity_name'),	
+			'Product Id'=>  Array($table_prefix.'_nonconformities', 'productid'), 
 			'Created Time' => Array($table_prefix.'_crmentity','createdtime'),
 			'Assigned To' => Array($table_prefix.'_crmentity','smownerid'),
 			'Non Conformity State'=> Array($table_prefix.'_nonconformities', 'nonconformity_state')
