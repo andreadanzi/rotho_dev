@@ -1,14 +1,10 @@
 <?php
 
-include_once 'AccRatingClass.php';
-include_once 'AccRatingClassCARP.php';
+include_once 'AccRatingClassALL.php';
 function do_populate_accrating($time_start) {
-	$accRating = new AccRatingClass();
-	$import_result = $accRating->populateNow();
-	// danzi.tn@20140224 - GESTIONE RC / CARP per Sudamerica - RICORDARSI DELETE MANUALE
-	$accRatingCARP = new AccRatingClassCARP();
-	$import_result_carp = $accRatingCARP->populateNow();
-	$result = array_merge($import_result, $import_result_carp);
+    // danzi.tn@20150330 gestione unificata
+	$accRating = new AccRatingClassALL();
+	$result = $accRating->populateNow();
 	return $result;
 }
 
