@@ -3,6 +3,7 @@
  * $sdk_value = $value è il valore del dato
  */
 // danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_client_type = PROGETTISTA
+// danzi.tn@20150401 aggiunti gli eventi di calendario di tipo Call/Chiamata per la generazione del punteggio
 global $sdk_mode, $focus, $adb,$app_strings,$mod_strings,$smarty;
 $imgdir = 'modules/SDK/src/uitypejQuery/img/';
 $iconfile = 'star_16.png';
@@ -42,9 +43,27 @@ $sql_visit = "SELECT DISTINCT
 		Join vtiger_account ON vtiger_account.accountid = temp_acc_ratings.accountid
 		LEFT JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
 		LEFT JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_visitreport.visitreportid and vtiger_crmentity.deleted = 0
-		WHERE temp_acc_ratings.accountid = ?
-		ORDER BY 
-		vtiger_visitreport.visitdate DESC";
+		WHERE temp_acc_ratings.accountid = ?	
+		
+UNION
+
+SELECT DISTINCT 
+			CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN 'star_16.png' ELSE 'carp_16.png' END AS iconfile,
+       'Call' as categoria, 
+      vtiger_activity.activityid as visitreportid,
+      vtiger_activity.subject as visitreport_no,
+      vtiger_activity.date_start as visitdate
+		from 
+		 temp_acc_ratings 
+		Join vtiger_account ON vtiger_account.accountid = temp_acc_ratings.accountid
+		LEFT JOIN vtiger_seactivityrel ON vtiger_seactivityrel.crmid = temp_acc_ratings.accountid
+		LEFT JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_seactivityrel.activityid and vtiger_crmentity.deleted = 0
+		LEFT JOIN vtiger_activity ON vtiger_activity.activityid = vtiger_crmentity.crmid  AND vtiger_activity.activitytype = 'Call'
+		WHERE temp_acc_ratings.accountid = ?  
+		AND ( vtiger_activity.date_start BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
+
+ORDER BY 
+		visitdate";
 // danzi.tn@20130909e
 switch($sdk_mode) {
 	case 'insert':
@@ -70,13 +89,13 @@ switch($sdk_mode) {
 		// danzi.tn@20130909
 		$novisite=true;
 		$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'></td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
-		$result_visit = $adb->pquery($sql_visit,array($focus->id));
+		$result_visit = $adb->pquery($sql_visit,array($focus->id, $focus->id));
 		while($row_visit=$adb->fetchByAssoc($result_visit))
 		{
 			$iconfile = $row_visit['iconfile'];
 			if(!empty($row_visit['visitreportid'])  )
 			{
-				$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'></td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
+				$html_visite = "<tr class='pointRow_Visitreport'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'>".$row_visit['visitreport_no']."</td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
 				$novisite=false;
 				break;
 			}
@@ -111,13 +130,13 @@ switch($sdk_mode) {
 		// danzi.tn@20130909
 		$novisite=true;
 		$html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'></td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
-		$result_visit = $adb->pquery($sql_visit,array($focus->id));
+		$result_visit = $adb->pquery($sql_visit,array($focus->id,$focus->id));
 		while($row_visit=$adb->fetchByAssoc($result_visit))
 		{
 			$iconfile = $row_visit['iconfile'];
 			if(!empty($row_visit['visitreportid'])  )
 			{
-				$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'> </td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
+				$html_visite = "<tr class='pointRow_Visitreport'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'>".$row_visit['visitreport_no']."</td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
 				$novisite=false;
 				break;
 			}
@@ -139,7 +158,7 @@ switch($sdk_mode) {
 		if (!empty($sdk_value)) {
 			// danzi.tn@20130909
 			$novisite=true;		
-			$result_visit = $adb->pquery($sql_visit,array($recordId));
+			$result_visit = $adb->pquery($sql_visit,array($recordId,$recordId));
 			while($row_visit=$adb->fetchByAssoc($result_visit))
 			{
 				$iconfile = $row_visit['iconfile'];

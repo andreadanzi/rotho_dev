@@ -5,6 +5,7 @@
 //danzi.tn@201308091803
 //danzi.tn@20140423 CASE -9 per i RP / PROG ELSE  -6
 // danzi.tn@20141212 nuova classificazione cf_762 sostituito con vtiger_account.account_client_type = PROGETTISTA
+// danzi.tn@20150401 aggiunti gli eventi di calendario di tipo Call/Chiamata per la generazione del punteggio
 global $mod_strings,$app_strings,$theme,$currentModule,$current_user,$adb, $table_prefix;
 
 require_once('Smarty_setup.php');
@@ -38,18 +39,30 @@ $sql = "SELECT
 // danzi.tn@20130909		
 // danzi.tn@20140423 CASE -9 per i RP / PROG ELSE  -6
 $sql_visit = "SELECT DISTINCT 'Visitreport' as categoria, 
-      ".$table_prefix."_visitreport.visitreportid,
-      ".$table_prefix."_visitreport.visitreport_no,
-      ".$table_prefix."_visitreport.visitdate
-		from 
-		 temp_acc_ratings 
-		Join ".$table_prefix."_account ON ".$table_prefix."_account.accountid = temp_acc_ratings.accountid
-		JOIN ".$table_prefix."_visitreport ON ".$table_prefix."_visitreport.accountid = temp_acc_ratings.accountid
-		JOIN ".$table_prefix."_crmentity ON ".$table_prefix."_crmentity.crmid = ".$table_prefix."_visitreport.visitreportid and ".$table_prefix."_crmentity.deleted = 0
-		WHERE temp_acc_ratings.accountid = ? 
-		AND ( ".$table_prefix."_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
-		ORDER BY 
-		".$table_prefix."_visitreport.visitdate DESC";
+              vtiger_visitreport.visitreportid,
+              vtiger_visitreport.visitreport_no,
+              vtiger_visitreport.visitdate
+                from 
+                 temp_acc_ratings 
+                Join vtiger_account ON vtiger_account.accountid = temp_acc_ratings.accountid
+                JOIN vtiger_visitreport ON vtiger_visitreport.accountid = temp_acc_ratings.accountid
+                JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_visitreport.visitreportid and vtiger_crmentity.deleted = 0
+                WHERE temp_acc_ratings.accountid = ".$recordid." 
+                AND ( vtiger_visitreport.visitdate BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
+        UNION
+        SELECT DISTINCT 'Call' as categoria, 
+              vtiger_activity.activityid as visitreportid,
+              vtiger_activity.subject as visitreport_no,
+              vtiger_activity.date_start as visitdate
+                from 
+                 temp_acc_ratings 
+                Join vtiger_account ON vtiger_account.accountid = temp_acc_ratings.accountid
+                JOIN vtiger_seactivityrel ON vtiger_seactivityrel.crmid = temp_acc_ratings.accountid
+                JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_seactivityrel.activityid and vtiger_crmentity.deleted = 0
+                JOIN vtiger_activity ON vtiger_activity.activityid = vtiger_crmentity.crmid  AND vtiger_activity.activitytype = 'Call'
+                WHERE temp_acc_ratings.accountid = ".$recordid."   
+                AND ( vtiger_activity.date_start BETWEEN DATEADD( month, CASE WHEN temp_acc_ratings.account_client_type = 'PROGETTISTA' THEN -9 ELSE -6 END ,GETDATE())  AND  GETDATE() )
+        ORDER BY visitdate";
 // danzi.tn@20130909 e
 $result = $adb->pquery($sql,array($recordid));
 echo "<table id='pointstable'><tbody>";
@@ -69,10 +82,10 @@ while($row=$adb->fetchByAssoc($result))
 // danzi.tn@20130909
 $novisite=true;
 $html_visite = "<tr class='pointRow_NoVisitreport'><td class='pointCat'>".$app_strings['Visitreport']."</td><td class='pointGrp'></td><td class='pointGrp'>ND</td><td class='pointVal'>0</td></tr>";
-$result_visit = $adb->pquery($sql_visit,array($recordid));
+$result_visit = $adb->query($sql_visit);
 while($row_visit=$adb->fetchByAssoc($result_visit))
 {
-	$html_visite = "<tr class='pointRow_".$row_visit['categoria']."'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'></td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
+	$html_visite = "<tr class='pointRow_Visitreport'><td class='pointCat'>".$app_strings[$row_visit['categoria']]."</td><td class='pointGrp'>".$row_visit['visitreport_no']."</td><td class='pointGrp'>".$row_visit['visitdate']." </td><td class='pointVal'>0</td></tr>";
 	$novisite=false;
 	break;
 }
