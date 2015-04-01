@@ -21,7 +21,7 @@ function do_import_accounts($time_start) {
 //	$key = array_search('ORDINE_NUMERO_KEY', $array_key);
 //	$array_key[$key]="ORDINE_NUMERO as ORDINE_NUMERO_KEY";
 		 
-	$sql = "select ".implode(",",$array_key)." from $table $where";
+	$sql = "select ".implode(",",$array_key)." from $table $where ORDER BY PROPOSAL_NUMBER";
 //	echo $sql;die;  
 	$num_rows = $adb->num_rows($adb->query($sql));
 	if ($num_rows == 0) {

@@ -28,7 +28,7 @@ $field1->readonly = 1;
 $field1->label= 'Duplicate - Must be deleted';
 $field1->columntype = 'VARCHAR(255)';
 $field1->typeofdata = 'V~O';// Varchar~Optional
-$field1->setPicklistValues( Array ('---', 'YES', 'NO') );
+$field1->setPicklistValues( Array ('---', 'DELETE_YES', 'DELETE_NO') );
 $block1->addField($field1); */
 
 $field13 = new Vtiger_Field();

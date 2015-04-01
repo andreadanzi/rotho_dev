@@ -455,7 +455,7 @@ class importer{
 							$new_val = $value_map[$vte_field];
 							if(!empty($new_val) && $new_val != '' && $new_val != $current_val )
 							{
-								echo "Per campo ".$vte_field. " il valore passa da " .$current_val. " a ".  $new_val. " mapping_column_field = " .$mapping_column_field." AGENT_NUMBER=".$AGENT_NUMBER."\n";
+								echo $id." - (".$row['base_number'].") Per campo ".$vte_field. " il valore passa da " .$current_val. " a ".  $new_val. " mapping_column_field = " .$mapping_column_field." AGENT_NUMBER=".$AGENT_NUMBER."\n";
 								$templateId = 0;
 								$base_language = strtoupper($row['base_language']); // Lingua Base
 								// Cerco template di tipo 'Notifiche Clienti' sulla base della lingua
