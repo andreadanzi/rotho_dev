@@ -1,0 +1,53 @@
+notifiche
+
+1) CommonUtils.php contiene nuove funzioni: searchTemplate, getTemplateTypeValues (per il tipo template), get_account_reference_users, schedule_client_notification OK
+2) AccountsHandler.php, verifica su update (cambio agente, etc) o insert (nuova attivazione)
+3) AccountsRotho.php (in SDK) implementa medodi specifici della classe Accounts
+4) listemailtemplates.php in modules/Settings recupera il tipo template per mostrarlo nel fiel Smarty OK
+5) ListEmailTemplates.tpl aggiunto templatetype OK
+6) classes.php gestione cambio agente per import semiramis
+7) Accounts_functions.php gestione nuove attivazioni
+8) CommunicationClass in RothoBus
+9) Bisogna Creare i template....
+
+ING. ANDREA FICARA è passato da GIANPAOLOC - Ciuppani Gian Paolo a andreah - 
+
+
+è un casino quando ci sono aziende duplicate, perchè capita che alcuni record in CRM_AZIENDE hanno  lo stesso BASE_NUMBER ma agenti differenti o addirittura a NULL
+Esempio
+
+"KEYID";"INSERTDATE";"BASE_NUMBER";"BASE_NAME";"AGENT_NUMBER";"AGENT_NAME";"AGENT_SEQUENCE"
+"4257";"2015-02-14 04:33:27";"14855";"GOTHIA FASTTEKNIK AB";\N;\N;\N
+"4258";"2015-02-14 04:33:27";"14855";"GOTHIA FASTTEKNIK AB";"SWEDEN";"SWEDEN";"1"
+"8854";"2015-02-14 04:33:27";"1922758";"LAUKOPER ASESORES";"RGR";"GRUPPO ROTHO";"1"
+"8855";"2015-02-14 04:33:27";"1922758";"LAUKOPER ASESORES";\N;\N;\N
+"22866";"2015-02-14 04:33:30";"BR001";"Rothoblaas Sistemas de Fixação Ltda";"RBCHI";"RB CHILE";"1"
+"22867";"2015-02-14 04:33:30";"BR001";"Rothoblaas Sistemas de Fixação Ltda";"CHRISTIANL";"Christian Jorge Lugarini";"1"
+"22868";"2015-02-14 04:33:30";"BR001";"Rothoblaas Sistemas de Fixação Ltda";"RBBRA";"RB BRASILE";"1"
+
+Poi ci sono aziende che hanno AGENT_NUMBER che in vtiger non c'è...tipo RBBRA
+
+Ci sono 30 Aziende che  non rispettano questa query
+
+select count(*) from erp_temp_crm_aziende
+JOIN erp_temp_crm_agenti ON erp_temp_crm_agenti.AGENT_NUMBER = erp_temp_crm_aziende.AGENT_NUMBER  
+ where 
+erp_temp_crm_agenti.AGENT_NUMBER IS NOT NULL
+AND erp_temp_crm_agenti.AGENT_NUMBER <>''
+
+Cosa succede??
+
+
+
+select * from erp_temp_crm_aziende where erp_temp_crm_aziende.BASE_CRMNUMBER = 'ACC158679' 
+
+In semiramis ci sono tre aziende con BASE_CRMNUMBER = 'ACC158679' , due sono duplicati con BASE_NUMBER = 33683 (ALEXANDER MAJDE S.P. KRITINE MAJDE) e una ha BASE_NUMBER =33692 ( SURCOMPANY LTDA) . Le due duplicate, BASE_NUMBER = 33683, sono sbagliate...non esistono in CRM con Codice Cliente '33683'....ma senza codice e con BASE_CRMNUMBER = 'ACC158926', questo è un problema
+
+
+Questa c'è con BASE_NUMBER=30780...ma forse è stata aggiornata
+Azienda con BASE_NUMBER=30780 numero righe = 0 e accountid = 1011292 
+Azienda con BASE_NUMBER=0 e accountid = 1011292 ha assigned_user_id = 71
+Verifica campo assigned_user_id
+Per campo assigned_user_id il valore passa da 71 a 146 mapping_column_field = agent_number AGENT_NUMBER=MICHALW
+Verifica campo codice_vendite_int
+Verifica campo area_mng_no
