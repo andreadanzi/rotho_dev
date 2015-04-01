@@ -92,7 +92,7 @@ $(function() {
 				<input type="hidden" name="publicid" value="ec11fab0b7d74c34c3a07a83d49039d1"></input>
 					<input type="hidden" name="name" value="fileform"></input>
 					<input type="hidden" value="File Fiere" name="leadsource"></input>
-					<input type="hidden" id="rdrct"  name="rdrct" value="_test/xlsxfiere"></input>
+					<input type="hidden" id="rdrct"  name="rdrct" value="xlsxfiere"></input>
 					<table width="800px">
 					<tbody>
 						<tr VALIGN=TOP>

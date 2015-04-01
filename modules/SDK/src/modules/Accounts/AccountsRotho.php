@@ -3,7 +3,11 @@ require_once('modules/Accounts/Accounts.php');
 require_once('modules/Emails/mail.php');
 // danzi.tn@20140717 creazione nuovo modulo Marketprices => get_marketprices
 // danzi.tn@20150205 per la gestione delle notifiche
+// danzi.tn@20150304 aggiunto cf_1078 - importi ordini - in sortby_fields, la lista delle colonne ordinabili 
 class AccountsRotho extends Accounts {
+	
+	
+	var $sortby_fields = Array('accountname','bill_city','website','phone','smownerid','cf_1078');	
 	
 	var $list_fields_name = Array(
 		'Account Name'=>'accountname',
@@ -410,10 +414,20 @@ class AccountsRotho extends Accounts {
 	}
 	//danzi.tn@20150205e
 	
-	/*
-	
-	
-	
-	*/
+    
+    //danzi.tn@20150327 track di chi cancella un'azienda
+    function mark_deleted($id)
+	{
+		global $table_prefix, $current_user;
+		$date_var = date('Y-m-d H:i:s');
+        if(!empty($current_user) && $current_user->id > 0) {
+            $query = "UPDATE ".$table_prefix."_crmentity set deleted=?,modifiedtime=? , modifiedby=? where crmid=?";
+            $this->db->pquery($query, array('1',$this->db->formatDate($date_var, true),$current_user->id,$id), true,"Error marking record deleted: ");
+        } else {
+            $query = "UPDATE ".$table_prefix."_crmentity set deleted=?,modifiedtime=? , description = convert(varchar, description) + '[deleted_by_some_automation - '+ convert(varchar,GETDATE(),120)+']' where crmid=?";
+            $this->db->pquery($query, array('1',$this->db->formatDate($date_var, true),$id), true,"Error marking record deleted by automation: ");
+        }
+	}
+    //danzi.tn@20150327e
 }
 ?>

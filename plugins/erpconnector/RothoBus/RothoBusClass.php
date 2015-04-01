@@ -27,6 +27,8 @@
 	language en
 */
 
+// danzi.tn@20150304 aggiunto Corso + 4 cene + 4 pernottamenti
+
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'include/utils/VtlibUtils.php';
@@ -662,8 +664,13 @@ class RothoBus {
 					if( preg_match("/\b(3 cene|3 abendessen|3 cenas)\b/i",$formula_corso) )	{
 						$formula .= " + 3 cene";
 					}
+					if( preg_match("/\b(4 cene|4 abendessen|4 cenas)\b/i",$formula_corso) )	{
+						$formula .= " + 4 cene";
+					}
 					// danzi.tn@20131029 gestione errore web form con 2 pernotto
-					if( preg_match("/\b(3 pernottamenti|3 pernotto|3 pernotti|3 noches|3 übernachtungen)\b/i",$formula_corso) )	{
+					if( preg_match("/\b(4 pernottamenti|4 pernotto|4 pernotti|4 noches|4 übernachtungen)\b/i",$formula_corso) )	{
+						$formula .= " + 4 pernottamenti";
+					} elseif( preg_match("/\b(3 pernottamenti|3 pernotto|3 pernotti|3 noches|3 übernachtungen)\b/i",$formula_corso) )	{
 						$formula .= " + 3 pernottamenti";
 					} elseif( preg_match("/\b(2 pernottamenti|2 pernotto|2 pernotti|2 noches|2 übernachtungen)\b/i",$formula_corso) )	{
 						$formula .= " + 2 pernottamenti";
@@ -1338,7 +1345,7 @@ class RothoBus {
         // danzi.tn@20141105 se vuoto ritorna
         if(empty($acc_no))  return array($entity_ids,$entity_objects);
         // danzi.tn@20141105e
-		$wsquery = "SELECT crmid FROM ".$table_prefix."_crmentity LEFT JOIN ".$table_prefix."_account ON accountid=crmid WHERE deleted=0 AND account_no='".$acc_no."')"; 
+		$wsquery = "SELECT crmid FROM ".$table_prefix."_crmentity LEFT JOIN ".$table_prefix."_account ON accountid=crmid WHERE deleted=0 AND account_no='".$acc_no."'"; 
 		$wsresult = $adb->query($wsquery);
 		if ($wsresult && $adb->num_rows($wsresult) > 0){
 			while($row = $adb->fetchByAssoc($wsresult)){
