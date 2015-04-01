@@ -12,6 +12,8 @@
 global $app_strings, $mod_strings, $current_language, $currentModule, $theme, $table_prefix, $list_max_entries_per_page;
 // danzi.tn@20140411 update product category 
 // danzi.tn@20150203 gestione per aziende senza ordini di vendita 
+// danzi.tn@20150304 aggiunto 'OR {$table_prefix}_inventoryproductrel.quantity IS NULL' nel CASE
+// danzi.tn@20150331 modifica allo slider, per step da 500 euro
 require_once('Smarty_setup.php');
 require_once('include/ListView/ListView.php');
 require_once 'include/ListView/ListViewByProductController.php';
@@ -217,15 +219,19 @@ if(isset($amountrange) && $amountrange!="" )
 {
 	$smarty->assign("amountrangevalue",$amountrange);
 	$amountrange_splitted = explode("-",$amountrange);
+    $maxVal = $amountrange_splitted[1];
+    if( $amountrange_splitted[1]=="250000" ) {
+        $maxVal = "999000000";
+    } 
 	//danzi.tn@20150203 gestione per aziende senza ordini di vendita CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 
 	if( count($amountrange_splitted) > 1 ){
-		$amount_where_clause = " sum( CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1]. " ";
+		$amount_where_clause = " sum( CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL OR {$table_prefix}_inventoryproductrel.quantity IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
 	} else {
-		$amount_where_clause = " sum( CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) BETWEEN  0 AND 1000*". $amountrange_splitted[1]. " ";
+		$amount_where_clause = " sum( CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL OR {$table_prefix}_inventoryproductrel.quantity IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
 	}
 }
 
-$extra_clause_columns = ", sum(CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) as cf_1078";
+$extra_clause_columns = ", sum(CASE WHEN {$table_prefix}_salesorder.salesorderid IS NULL OR {$table_prefix}_inventoryproductrel.quantity IS NULL THEN 0 ELSE {$table_prefix}_inventoryproductrel.listprice*{$table_prefix}_inventoryproductrel.quantity END) as cf_1078";
 $select_clause_columns = $queryGenerator->getSelectClauseColumnSQL();
 $extra_clause_columns = $select_clause_columns  . $extra_clause_columns ;
 

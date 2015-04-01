@@ -7,7 +7,8 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ********************************************************************************/
-//crmv@add ajax control
+// danzi.tn@20150331 modifica allo slider, per step da 500 euro
+ //crmv@add ajax control
 var ajaxcall_list = null;
 var ajaxcall_count = null;
 
@@ -593,6 +594,56 @@ function getListViewEntries_js(module,url)
 
 function update_filter_values(){
 	// danzi.tn@13022013 url => module=Accounts&action=AccountsAjax&file=ListViewByProduct&ajax=true&changecustomview=true&start=1&viewname=55&parenttab=&lv_user_id=others&filter_type=cat&filter_value=02&startdate=13-02-2007&enddate=13-02-2013&amountrange=1663-6531
+    var ticktoval = {
+        '0':0,
+        '1':500,
+        '2':1000,
+        '3':1500,
+        '4':2000,
+        '5':2500,
+        '6':3000,
+        '7':3500,
+        '8':4000,
+        '9':4500,
+        '10':5000,
+        '11':5500,
+        '12':6000,
+        '13':6500,
+        '14':7000,
+        '15':7500,
+        '16':8000,
+        '17':8500,
+        '18':9000,
+        '19':9500,
+        '20':10000,
+        '21':100000,
+        '22':250000,
+   };   
+   var valtotick = {
+       '0':0,
+       '500':1,
+       '1000':2,
+       '1500':3,
+       '2000':4,
+       '2500':5,
+       '3000':6,
+       '3500':7,
+       '4000':8,
+       '4500':9,
+       '5000':10,
+       '5500':11,
+       '6000':12,
+       '6500':13,
+       '7000':14,
+       '7500':15,
+       '8000':16,
+       '8500':17,
+       '9000':18,
+       '9500':19,
+       '10000':20,
+       '100000':21,
+       '250000':22,
+    };
 	var stdValueFilterField = jQuery( "#stdValueFilterField" ),
             valueId = jQuery( "#valueId" ),
             proddate_start = jQuery( "#jscal_field_proddate_start" ),
@@ -609,21 +660,24 @@ function update_filter_values(){
 	minval = 0;
 	maxval = 1;
 	if( currentval_splitted.length > 1 ) {
-	    minval = sva[currentval_splitted[0]];
-	    maxval = sva[currentval_splitted[1]];
+	    minval = valtotick[currentval_splitted[0]];
+	    maxval = valtotick[currentval_splitted[1]];
 	}
 	jQuery( "#slider-range" ).slider({
 	    range: true,
 	    min: 0,
-	    max: 10,
-	    step: 1,
+	    max: 22,
 	    values: [ minval, maxval ],
 	    slide: function( event, ui ) {
-					    jQuery( "#amount" ).val( "€" + asv[ui.values[ 0 ]] + "k - €" + asv[ui.values[ 1 ]]+ "k" );
-					    jQuery("#amount_value").val(asv[ui.values[ 0 ]]+"-"+asv[ui.values[ 1 ]]);
+                        if(ui.values[ 1 ]<22) upperVal = " - €" +ticktoval[ui.values[ 1 ]];
+                        else upperVal = " - Max";
+					    jQuery( "#amount" ).val( "€" + ticktoval[ui.values[ 0 ]] + upperVal);
+					    jQuery("#amount_value").val(ticktoval[ui.values[ 0 ]]+"-"+ticktoval[ui.values[ 1 ]]);
 					 }
 	    });
-	jQuery( "#amount" ).val( "€" + asv[jQuery( "#slider-range" ).slider( "values", 0 )] +"k - €" + asv[jQuery( "#slider-range" ).slider( "values", 1 )]+ "k" );
+    if(jQuery( "#slider-range" ).slider( "values", 1 )<22) upperVal = " - €" +ticktoval[jQuery( "#slider-range" ).slider( "values", 1 )];
+    else upperVal = " - Max";
+	jQuery( "#amount" ).val( "€" + ticktoval[jQuery( "#slider-range" ).slider( "values", 0 )] + upperVal );
 	/*
 	jQuery( "#submit_search" ).button().click(function( event ) {
 	    var parms = "&lv_user_id=" + lv_user_id.val()+"&viewid=" + viewname.val() + "&filter_type=" +stdValueFilterField.val()+ "&filter_value="+ valueId.val()+ "&startdate="+ proddate_start.val()+ "&enddate="+ proddate_end.val()+ "&amountrange="+ amount_value.val();

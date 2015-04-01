@@ -2,6 +2,7 @@
 // danzi.tn@20140417 telefono (Account_phone) per infowindows aziende
 // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
+// danzi.tn@20150331 modifica allo slider, per step da 500 euro
 function getSkippedAccounts($ids)
 {
 	global $adb;
@@ -185,11 +186,15 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 			if(isset($amountrange) && $amountrange!="" )
 			{
 				$amount_where_clause = "";
-				$amountrange_splitted = explode("-",$amountrange);				
+				$amountrange_splitted = explode("-",$amountrange);
+                $maxVal = $amountrange_splitted[1];
+                if( $amountrange_splitted[1]=="250000" ) {
+                     $maxVal = "999000000";
+                }                 
 				if( count($amountrange_splitted) > 1 ){
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1]. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
 				} else {
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND 1000*". $amountrange_splitted[1]. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
 				}
 				$query .= " HAVING " . $amount_where_clause;
 			}
@@ -222,11 +227,15 @@ WHERE AND bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi agg
 			if(isset($amountrange) && $amountrange!="" )
 			{
 				$amount_where_clause = "";
-				$amountrange_splitted = explode("-",$amountrange);				
+				$amountrange_splitted = explode("-",$amountrange);
+                $maxVal = $amountrange_splitted[1];
+                if( $amountrange_splitted[1]=="250000" ) {
+                    $maxVal = "990000000";
+                }                  
 				if( count($amountrange_splitted) > 1 ){
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN 1000*". $amountrange_splitted[0] . " AND 1000*". $amountrange_splitted[1]. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
 				} else {
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND 1000*". $amountrange_splitted[1]. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
 				}
 				$query .= " HAVING " . $amount_where_clause;
 			}

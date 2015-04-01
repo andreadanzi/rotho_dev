@@ -18,6 +18,7 @@ geocoder = new google.maps.Geocoder();
 // danzi.tn@20140902 modifica api
 // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
+// danzi.tn@20150331 modifica allo slider (updateMap), per step da 500 euro
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
@@ -630,12 +631,13 @@ function updateMap() {
 	var currentval = $("#amountrange").val();
 	var currentval_splitted = currentval.split('-');
 	minval = 0;
-	maxval = 100000000;
+	maxval = 999000000;
 	if( currentval_splitted.length > 1 ) {
-		minval = parseInt(currentval_splitted[0])*1000;
-		maxval = 1000*parseInt(currentval_splitted[1]); // 100000000
+		minval = parseInt(currentval_splitted[0]);
+		maxval = parseInt(currentval_splitted[1]); // 100000000
+        if( maxval == 250000 ) maxval = 999000000;
 	}
-	fusion_value = amount*1000;
+	fusion_value = amount;
 	checkMap();
 }
 

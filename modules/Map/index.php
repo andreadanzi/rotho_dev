@@ -11,6 +11,7 @@ $image_path=$theme_path."images/";
 include_once('modules/Map/lib/utils.inc.php');
 require('modules/Map/lib/GeoCoder.inc.php');
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
+// danzi.tn@20150331 modifica allo slider, per step da 500 euro
 
 if(!$_REQUEST['show'])
 	$_REQUEST['show'] = "Accounts";
@@ -650,28 +651,30 @@ $(function () {
 			var currentval = $("#amountrange").val();
 			var currentval_splitted = currentval.split('-');
 			minval = 0;
-			maxval = 10;
+			maxval = 1;
 			if( currentval_splitted.length > 1 ) {
-				minval = sva[currentval_splitted[0]];
-				maxval = sva[currentval_splitted[1]];
+				minval = valtotick[currentval_splitted[0]];
+				maxval = valtotick[currentval_splitted[1]];
 			}
 			
 			$( "#slider-range" ).slider({
 				range: true,
 				min: 0,
-				max: 10,
-				step: 1,
+				max: 22,
 				values: [ minval, maxval ],
 				slide: function( event, ui ) {
-								$( "#amount" ).val( "€" + asv[ui.values[ 0 ]] + "k - €" + asv[ui.values[ 1 ]]+ "k" );
-								$("#amountrange").val(asv[ui.values[ 0 ]]+"-"+asv[ui.values[ 1 ]]);
+                                if(ui.values[ 1 ]<22) upperVal = " - €" +ticktoval[ui.values[ 1 ]];
+                                else upperVal = " - Max";
+								$( "#amount" ).val( "€" + ticktoval[ui.values[ 0 ]] + upperVal );
+								$("#amountrange").val(ticktoval[ui.values[ 0 ]]+"-"+ticktoval[ui.values[ 1 ]]);
 								if (sliderTimer) window.clearTimeout(sliderTimer);
 								sliderTimer = window.setTimeout(updateMap, 500);
 							 }
 			});
 			
-			
-			$( "#amount" ).val( "€" + asv[$( "#slider-range" ).slider( "values", 0 )] +"k - €" + asv[$( "#slider-range" ).slider( "values", 1 )]+ "k" );
+			if($( "#slider-range" ).slider( "values", 1 )<22) upperVal = " - €" +ticktoval[$( "#slider-range" ).slider( "values", 1 )];
+            else upperVal = " - Max";
+			$( "#amount" ).val( "€" + ticktoval[$( "#slider-range" ).slider( "values", 0 )] +upperVal );
 			if (sliderTimer) window.clearTimeout(sliderTimer);
 			sliderTimer = window.setTimeout(updateMap, 500);
 		}
