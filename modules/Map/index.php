@@ -12,6 +12,7 @@ include_once('modules/Map/lib/utils.inc.php');
 require('modules/Map/lib/GeoCoder.inc.php');
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
+// danzi.tn@20150408 modifica all'albero delle categorie per abilitare la selezione multipla
 
 if(!$_REQUEST['show'])
 	$_REQUEST['show'] = "Accounts";
@@ -866,13 +867,20 @@ $(function () {
             .click(function() {
                 $( "#dialog_skipped" ).dialog( "open" );
             });
-			
+	// danzi.tn@20150408 selezione multipla
 	$("#categorytree")
 		.jstree({ "plugins" : ["themes","html_data","ui"] })
 		// 1) if using the UI plugin bind to select_node
-		.bind("select_node.jstree", function (event, data) { 
+		.bind("select_node.jstree deselect_node.jstree", function (event, data) { 
 			// `data.rslt.obj` is the jquery extended node that was clicked
-			document.getElementById("valueId").value = data.rslt.obj.attr("id");
+            var i, j, r = [];
+            var selected_data = data.inst.get_selected();
+            for(i = 0, j = selected_data.length; i < j; i++) {
+              r.push(selected_data[i].id);
+            }
+            var sJoined = r.join(',');
+			// document.getElementById("valueId").value = data.rslt.obj.attr("id");
+            document.getElementById("valueId").value = sJoined;
 			// alert(data.rslt.obj.attr("id"));
 		})
 		// 2) if not using the UI plugin - the Anchor tags work as expected

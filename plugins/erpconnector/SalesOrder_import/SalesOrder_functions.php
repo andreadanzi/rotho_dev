@@ -1,6 +1,7 @@
 <?php
 // danzi.tn@20140820 aggiornamento annualrevenue sulla base degli ordini dell'ultimo anno
 // danzi.tn@20141218 aggiornamento rating attuale degli ultimi 2 anni
+// danzi.tn@20150408 introduzione fatturato anno precendente e fatturato anno precedente -1
 function do_import_accounts($time_start) {
 	global $adb;
 	global $seq_log,$current_user,$mapping,$root_directory,$external_code,$module,$table,$fields_auto_create,$fields_auto_update,$where;	
@@ -60,9 +61,11 @@ function do_import_accounts($time_start) {
 			//migrate_crmentity_data_accounts($ext_cod);
 		}
 	}
-    // danzi.tn@20140820
-    update_account_annual_revenue();
-    // danzi.tn@20140820e
+    // danzi.tn@20150408
+    // update_account_annual_revenue();
+    update_account_annual_revenue("1", "last_annual_revenue");
+    update_account_annual_revenue("2", "pre_last_annual_revenue");
+    // danzi.tn@20150408e
 	
 	// danzi.tn@20141218
 	update_rating_attuale();
@@ -92,12 +95,13 @@ function migrate_crmentity_data_accounts($ext_cod){
 	
 }
 // danzi.tn@20140820 aggiornamento annualrevenue sulla base degli ordini dell'ultimo anno
-function update_account_annual_revenue() {
+// danzi.tn@20150408 introduzione fatturato anno precendente e fatturato anno precedente -1
+function update_account_annual_revenue($past_years = "1", $field_to_update="last_annual_revenue") {
     global $adb;
     $q = "UPDATE
             VTACC
             SET
-            VTACC.annualrevenue = VTTOTALS.TotalSales
+            VTACC.".$field_to_update." = VTTOTALS.TotalSales
             FROM vtiger_account AS VTACC INNER JOIN
             (SELECT 
             vtiger_account.accountid,
@@ -111,6 +115,7 @@ function update_account_annual_revenue() {
             JOIN vtiger_salesorder ON vtiger_salesorder.accountid  = vtiger_account.accountid  
             JOIN vtiger_crmentity as salent ON vtiger_salesorder.salesorderid = salent.crmid  AND salent.deleted =0
             LEFT JOIN vtiger_inventoryproductrel on  vtiger_inventoryproductrel.id  = vtiger_salesorder.salesorderid
+            WHERE  YEAR(vtiger_salesorder.data_ordine_ven) = YEAR(DATEADD(year,-".$past_years.",GETDATE()))
             GROUP BY vtiger_account.accountid) VTTOTALS
             ON VTTOTALS.accountid = VTACC.accountid";
     $res = $adb->query($q);

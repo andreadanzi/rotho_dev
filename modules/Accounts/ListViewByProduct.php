@@ -14,6 +14,7 @@ global $app_strings, $mod_strings, $current_language, $currentModule, $theme, $t
 // danzi.tn@20150203 gestione per aziende senza ordini di vendita 
 // danzi.tn@20150304 aggiunto 'OR {$table_prefix}_inventoryproductrel.quantity IS NULL' nel CASE
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
+// danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 require_once('Smarty_setup.php');
 require_once('include/ListView/ListView.php');
 require_once 'include/ListView/ListViewByProductController.php';
@@ -200,17 +201,26 @@ else
 	$stdvaluefiltershtml = array('nd'=> array('selected'=>'selected','value'=>'nd','text'=>$mod_strings['LBL_ND']),"cat"=>array('selected'=>'','value'=>'cat','text'=>$mod_strings['LBL_CAT']),'prod'=>array('selected'=>'','value'=>'prod','text'=>$mod_strings['LBL_PROD']));
 }
 $valueIdValue = '';
+// danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 if(isset($filter_value) && $filter_value!="" && $filter_value!="ND" )
 {
 	$valueIdValue = $filter_value;
+    $keywords = preg_split("/[\s,]+/", $filter_value);
+    $whereclause = array();
+    foreach($keywords as $kw) {
+        if( $filter_type=='prod' ) {
+            $whereclause[] = " {$table_prefix}_products.base_no LIKE '$kw%'";
+         } else {
+            $whereclause[] = " {$table_prefix}_products.product_cat LIKE '$kw%'";
+         }
+    }
 	if( isset($filter_type) && $filter_type!="" )	{
-		if( $filter_type=='prod' ) {
-			$extra_where_clause .= " AND {$table_prefix}_products.base_no LIKE '$filter_value%'";
-		} else {
-			$extra_where_clause .= " AND {$table_prefix}_products.product_cat LIKE '$filter_value%'"; 
-		}
+        $extra_where_clause .= " AND (";
+        $extra_where_clause .= implode(" OR ",$whereclause);
+        $extra_where_clause .= ") ";
 	}
 }
+// danzi.tn@20150408e
 $smarty->assign("STDVALUEFILTERS",$stdvaluefiltershtml);
 $smarty->assign("valueIdValue",$valueIdValue);
 

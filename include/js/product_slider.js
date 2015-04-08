@@ -4,6 +4,7 @@
  *
  ********************************************************************************/
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
+// danzi.tn@20150408 modifica all'albero delle categorie per abilitare la selezione multipla
 var asv = { 0:"0", 1:"1", 2:"5", 3:"10", 4:"20", 5:"30", 6:"50", 7:"100" , 8:"500", 9:"1000", 10:"100000"};
 var sva = { "0":0, "1":1, "5":2, "10":3, "20":4, "30":5, "50":6, "100":7 , "500":8, "1000":9, "100000":10};
 
@@ -122,12 +123,20 @@ jQuery(function() {
             }
         });
     /**/
+    // danzi.tn@20150408 selezione multipla
     jQuery("#categorytree")
 		.jstree({ "plugins" : ["themes","html_data","ui"] })
 		// 1) if using the UI plugin bind to select_node
-		.bind("select_node.jstree", function (event, data) { 
+		.bind("select_node.jstree deselect_node.jstree", function (event, data) { 
 			// `data.rslt.obj` is the jquery extended node that was clicked
-			document.getElementById("valueId").value = data.rslt.obj.attr("id");
+            var i, j, r = [];
+            var selected_data = data.inst.get_selected();
+            for(i = 0, j = selected_data.length; i < j; i++) {
+              r.push(selected_data[i].id);
+            }
+            var sJoined = r.join(',');
+            document.getElementById("valueId").value = sJoined;
+			// document.getElementById("valueId").value = data.rslt.obj.attr("id");
 			// alert(data.rslt.obj.attr("id"));
 		})
 		// 2) if not using the UI plugin - the Anchor tags work as expected

@@ -3,6 +3,7 @@
 // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
+// danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 function getSkippedAccounts($ids)
 {
 	global $adb;
@@ -114,6 +115,7 @@ function getResult($gc,$query)
 }
 
 // danzi.tn@20150204 gestione parametri passati da ListViewByProduct
+// danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 function getResults($type,$ids,$extra_ids=null,$prod_id=null,$mindate=null,$maxdate=null,$amountrange, $user_uid)
 {
 	$extra_from_clause = "";
@@ -173,14 +175,32 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 			 	$query .= " JOIN dnz_temp_account ON dnz_temp_account.accountid = vtiger_account.accountid AND useruid='".$user_uid."'";
 			}
 			$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL  ";
+            // danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 			if($extra_ids)
 			{
-				$query .= " AND vtiger_products.product_cat LIKE '$extra_ids%' ";
+                // $query .= " AND vtiger_products.product_cat LIKE '$extra_ids%' ";              
+                $keywords = preg_split("/[\s,]+/", $extra_ids);
+                $whereclause = array();
+                foreach($keywords as $kw) {
+                    $whereclause[] = " vtiger_products.product_cat LIKE '$kw%'";
+                }
+                $query .= " AND (";
+                $query .= implode(" OR ",$whereclause);
+                $query .= ") ";
 			}
 			if($prod_id)
 			{
-				$query .= " AND vtiger_products.base_no LIKE '$prod_id%' ";
+				// $query .= " AND vtiger_products.base_no LIKE '$prod_id%' ";
+                $keywords = preg_split("/[\s,]+/", $prod_id);
+                $whereclause = array();
+                foreach($keywords as $kw) {
+                    $whereclause[] = " vtiger_products.base_no LIKE '$kw%'";
+                }
+                $query .= " AND (";
+                $query .= implode(" OR ",$whereclause);
+                $query .= ") ";
 			}
+            // danzi.tn@20150408e
 			// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
 			$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //					
 			if(isset($amountrange) && $amountrange!="" )
@@ -220,8 +240,19 @@ left join vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.c
 left join vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
 left join vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid
 WHERE AND bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi aggiunto - 11.04.2012 
-			if($ids)
-				$query .= "AND vtiger_products.product_cat LIKE '$ids%'"; 
+            // danzi.tn@20150408 selezione multipla su categoria
+			if($ids) {
+				// $query .= "AND vtiger_products.product_cat LIKE '$ids%'"; 
+                $keywords = preg_split("/[\s,]+/", $ids);
+                $whereclause = array();
+                foreach($keywords as $kw) {
+                    $whereclause[] = " vtiger_products.product_cat LIKE '$kw%'";
+                }
+                $query .= " AND (";
+                $query .= implode(" OR ",$whereclause);
+                $query .= ") ";
+            }
+            // danzi.tn@20150408e
 			$query .= "GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.external_code, vtiger_account.phone"; //
 			// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
 			if(isset($amountrange) && $amountrange!="" )
