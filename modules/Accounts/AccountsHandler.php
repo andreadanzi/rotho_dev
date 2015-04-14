@@ -7,8 +7,9 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  *************************************************************************************/
- // danzi.tn@20150108 nuova classificazione 
- // danzi.tn@20150205 gestione cambio agente o qualsiasi altro riferimento	
+// danzi.tn@20150108 nuova classificazione 
+// danzi.tn@20150205 gestione cambio agente o qualsiasi altro riferimento	
+// danzi.tn@20150408 aggiornare smownerid dei contatti collegati all'azienda corrente
 include_once('config.php');
 require_once('include/logging.php');
 require_once('include/database/PearDatabase.php');
@@ -87,6 +88,25 @@ class AccountsHandler extends VTEventHandler {
 			} else {
 				$log->debug("handleEvent vtiger.entity.aftersave this is an update");
 			}
+            // danzi.tn@20150408 aggiornare smownerid dei contatti collegati all'azienda corrente
+            $update_contact_owner = "UPDATE 
+                            ".$table_prefix."_crmentity
+                            SET
+                            ".$table_prefix."_crmentity.smownerid = 
+                            CASE 
+                                WHEN accentity.smownerid IS NULL THEN ".$table_prefix."_crmentity.smownerid
+                                ELSE accentity.smownerid
+                            END	
+                            from ".$table_prefix."_crmentity
+                            join ".$table_prefix."_contactdetails on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_contactdetails.contactid 
+                            join ".$table_prefix."_account on ".$table_prefix."_account.accountid = ".$table_prefix."_contactdetails.accountid
+                            join ".$table_prefix."_crmentity accentity on accentity.crmid = ".$table_prefix."_account.accountid and accentity.deleted = 0
+                            where 
+                            ".$table_prefix."_crmentity.deleted = 0
+                            AND
+                            ".$table_prefix."_contactdetails.accountid = ?";
+            $adb->pquery($update_contact_owner,array($focus->id));
+            // danzi.tn@20150408e
 			$log->debug("handleEvent vtiger.entity.aftersave terminated");
 		}
 	}

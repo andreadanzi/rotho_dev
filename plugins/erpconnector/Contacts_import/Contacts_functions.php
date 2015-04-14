@@ -1,4 +1,5 @@
 <?
+// danzi.tn@20150408 aggiornare smownerid del contatto sulla base di quello dell'azienda collegata
 function do_import_contacts($time_start) {
 	global $adb,$seq_log,$current_user,$mapping,$root_directory,$external_code,$module,$table,$fields_auto_create,$fields_auto_update,$where;	
 	$import = new importer($module,$mapping,$external_code,$time_start,$fields_auto_create,$fields_auto_update);
@@ -30,6 +31,7 @@ function do_import_contacts($time_start) {
 	}
 	echo "import_contacts_info terminated!\n";
 	update_vendor_id();
+    update_smownerid();
 	echo "update_vendor_id terminated!\n";
 	return $import_info;
 }
@@ -46,6 +48,27 @@ function update_vendor_id() {
 		JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_contactdetails.contactid and deleted = 0
 		JOIN vtiger_vendorcf ON vtiger_vendorcf.cf_1115 = vtiger_contactscf.cf_1249 
 		WHERE vtiger_vendorcf.cf_1115 IS NOT NULL AND vtiger_vendorcf.cf_1115 <>''";
+	$adb->query($sql);	
+}
+
+// danzi.tn@20150408 aggiornare smownerid del contatto sulla base di quello dell'azienda collegata
+function update_smownerid() {
+    global $adb,$table_info,$external_code_info;
+	$sql = "UPDATE 
+            vtiger_crmentity
+            SET
+            vtiger_crmentity.smownerid = 
+            CASE 
+                WHEN accentity.smownerid IS NULL THEN vtiger_crmentity.smownerid
+                ELSE accentity.smownerid
+            END	
+            from vtiger_crmentity
+            join vtiger_contactdetails on vtiger_crmentity.crmid = vtiger_contactdetails.contactid 
+            join vtiger_account on vtiger_account.accountid = vtiger_contactdetails.accountid
+            join vtiger_crmentity accentity on accentity.crmid = vtiger_account.accountid and accentity.deleted = 0
+            where 
+            vtiger_crmentity.deleted = 0
+            AND accentity.smownerid <> vtiger_crmentity.smownerid";
 	$adb->query($sql);	
 }
 

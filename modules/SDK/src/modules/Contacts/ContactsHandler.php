@@ -1,5 +1,5 @@
 <?php
-
+// danzi.tn@20150408 aggiornare smownerid del contatto corrente sulla base di quello dell'azienda collegata
 class ContactsHandler extends VTEventHandler {
     
     function handleEvent($eventName, $data) {
@@ -32,8 +32,25 @@ class ContactsHandler extends VTEventHandler {
 				$log->debug("handleEvent ContactsHandler vtiger.entity.aftersave UPDATE ext_code sql=".$sql);
 				$adb->query($sql);
 			}
-			
-
+            // danzi.tn@20150408 aggiornare smownerid del contatto corrente sulla base di quello dell'azienda collegata
+			$update_owner = "UPDATE 
+                            ".$table_prefix."_crmentity
+                            SET
+                            ".$table_prefix."_crmentity.smownerid = 
+                            CASE 
+                                WHEN accentity.smownerid IS NULL THEN ".$table_prefix."_crmentity.smownerid
+                                ELSE accentity.smownerid
+                            END	
+                            from ".$table_prefix."_crmentity
+                            join ".$table_prefix."_contactdetails on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_contactdetails.contactid 
+                            left join ".$table_prefix."_account on ".$table_prefix."_account.accountid = ".$table_prefix."_contactdetails.accountid
+                            left join ".$table_prefix."_crmentity accentity on accentity.crmid = ".$table_prefix."_account.accountid and accentity.deleted = 0
+                            where 
+                            ".$table_prefix."_crmentity.deleted = 0
+                            AND
+                            ".$table_prefix."_contactdetails.contactid = ?";
+            $adb->pquery($update_owner,array($focus->id));
+            // danzi.tn@20150408e
 			/* danzi.tn@20140213, oppure qui bisogna aggiungere $sql = "UPDATE ".$table_prefix."_contactscf SET cf_1229 = NULL WHERE ".$table_prefix."_contactscf.contactid = ".$focus->id;
 			   oppure pensare a fare un set in un vtiger.entity.beforesave
 			   $sql = "UPDATE ".$table_prefix."_contactscf SET cf_1229 = 'ABC' WHERE ".$table_prefix."_contactscf.contactid = ".$focus->id;
