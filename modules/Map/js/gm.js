@@ -19,6 +19,7 @@ geocoder = new google.maps.Geocoder();
 // danzi.tn@20141212 nova classificazione cf_762 sostituito con vtiger_account.account_client_type
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider (updateMap), per step da 500 euro
+// danzi.tn@20150414 modifica alla infowindow e a circle
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
@@ -453,7 +454,24 @@ function createArrays() {
 		// if(fusion_value > result["map_value"]) continue;
 		if( minval > result["map_value"] || result["map_value"] > maxval ) continue;
 		var pos = new google.maps.LatLng(result["pos"][0], result["pos"][1]);
-		var contentString = getDescription(j, pos ,result["name"] ,result["type"] ,result["map_value"],result["city"],result["extra"],result["map_aurea"],result);
+        sType = "";
+        if(result["type_trans"])
+        {
+            sType += "<br/>"+result["type_trans"];
+        }
+        if(result["account_line"] && result["account_line"] != "---")
+        {
+            sType += " - " +result["account_line"];
+        }
+        if(result["account_main_activity"] && result["account_main_activity"] != "---")
+        {
+            sType += "<br/>"+result["account_main_activity"];
+        }
+        if(result["account_sec_activity"] && result["account_sec_activity"] != "---")
+        {
+            sType += "<br/>"+result["account_sec_activity"];
+        }
+		var contentString = getDescription(j, pos ,result["name"] ,sType ,result["map_value"],result["city"],result["extra"],result["map_aurea"],result);
 		// pos, name, type, desc, icon
 		if( result["city"] == "Chur")
 		{
@@ -544,8 +562,8 @@ function stripDollarSign(s) {
 
 function getCircle2(mapValue, pos, name, desc)
 {		
-	var displayRadius = Math.log(mapValue)*400;
-	if (mapValue < 10) displayRadius = Math.log(10)*400;
+	var displayRadius = Math.log( mapValue + 0.0 ) * 1200;
+	//if (mapValue < 10) displayRadius = Math.log(10)*800;
 	switch(module) // TODO: qui bisogna decidere se allaragre solo il raggio dei nodi in caso di Ordini di Venita o anche il valore in ingresso map_value
 	{
 		case "Accounts": 
@@ -558,45 +576,49 @@ function getCircle2(mapValue, pos, name, desc)
 			displayRadius = displayRadius*3;
 			break;
 	}
-	var nStrokeOpacity = 0.7;
+	var nStrokeOpacity = 0.8;
 	var nFillOpacity = 0.35;
 	var fillColorForNumbers = "#D6FF2F";
 	var sStrokeColor = "#9F9745";
-	if( mapValue < 1000 ) 
+	if( mapValue < 2000 ) 
 	{
 		fillColorForNumbers = "#D6FF2F";
-		sStrokeColor="#00AF07";
-		nStrokeOpacity = 0.5;
+		// sStrokeColor="#00AF07";
+        sStrokeColor="#000";
 	}
-	else if( mapValue >= 1000 &&  mapValue < 10000 )
+	else if( mapValue >= 2000 &&  mapValue < 4000 )
 	{
 		fillColorForNumbers = "#00AF07";
-		sStrokeColor="#00ECFF";
-		nStrokeOpacity = 0.6;
+		// sStrokeColor="#00ECFF";
+        sStrokeColor="#000";
 	}
-	else if( mapValue >= 10000 &&  mapValue < 100000 )
+	else if( mapValue >= 4000 &&  mapValue < 6000 )
 	{
 		fillColorForNumbers = "#00ECFF";
-		sStrokeColor = "#0069BF";
+		// sStrokeColor = "#0069BF";
+        sStrokeColor="#000";
 	}
-	else if( mapValue >= 100000 &&  mapValue < 1000000 )
+	else if( mapValue >= 6000 &&  mapValue < 8000 )
 	{
 		fillColorForNumbers = "#0069BF";
-		sStrokeColor = "#FFA200";
+		// sStrokeColor = "#FFA200";
+        sStrokeColor="#000";
 	}
-	else if( mapValue >= 1000000 &&  mapValue < 10000000 )
+	else if( mapValue >= 8000 &&  mapValue < 10000 )
 	{
 		fillColorForNumbers = "#FFA200";
-		nStrokeOpacity = 0.8;
 		nFillOpacity = 0.7;
-		sStrokeColor = "#FF2A00";
+		// sStrokeColor = "#FF2A00";
+        sStrokeColor="#000";
 	}
-	else if( mapValue >= 10000000 )
+	else if( mapValue >= 10000 )
 	{
 		fillColorForNumbers = "#FF2A00";
 		nStrokeOpacity = 0.9;
 		nFillOpacity = 0.8;
-		sStrokeColor = "#6F390D";
+		//sStrokeColor = "#6F390D";
+        sStrokeColor="#000";
+        displayRadius = 15500.0+0.0;
 	}
 	var circleOptions = {
 		strokeColor: sStrokeColor,

@@ -750,7 +750,24 @@ $(function () {
 									result["street"] = indirizzo.val();
 									result["account_phone"] = account_phone.val();
 									result["extra"] = result['street'] + "<br/>" + result['code'] + " "+ result['city'] + "(" + result["state"] + ")"+ "<br/>" + result["account_phone"];
-									contentString = getDescription(map_id, pos ,result["name"] ,result["type"] ,result["map_value"],result["city"],result["extra"],result["map_aurea"],result);
+                                    sType = "";
+                                    if(result["type_trans"])
+                                    {
+                                        sType += "<br/>"+result["type_trans"];
+                                    }
+                                    if(result["account_line"] && result["account_line"] != "---")
+                                    {
+                                        sType += " - " +result["account_line"];
+                                    }
+                                    if(result["account_main_activity"] && result["account_main_activity"] != "---")
+                                    {
+                                        sType += "<br/>"+result["account_main_activity"];
+                                    }
+                                    if(result["account_sec_activity"] && result["account_sec_activity"] != "---")
+                                    {
+                                        sType += "<br/>"+result["account_sec_activity"];
+                                    }
+									contentString = getDescription(map_id, pos ,result["name"] ,sType ,result["map_value"],result["city"],result["extra"],result["map_aurea"],result);
 									var infowindow = new google.maps.InfoWindow;
 									bindInfoW(local_markersArray[i], contentString, infowindow);
 									map.setCenter(pos);

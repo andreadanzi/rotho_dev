@@ -4,6 +4,7 @@
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
 // danzi.tn@20150408 selezione multipla su categoria e codice prodotto
+require_once('include/utils/CommonUtils.php');
 function getSkippedAccounts($ids)
 {
 	global $adb;
@@ -75,6 +76,9 @@ function getResult($gc,$query)
 			$ret[$row['id']] = array(
 						"name" => addslashes($row['name']),
 						"type" => addslashes($row['type']), // Andrea Danzi aggiunto type - 24.03.2012
+						"account_line" => addslashes($row['account_line']), // danzi.tn@20150414 aggiunto account_line - 14.04.2015
+						"account_main_activity" => addslashes($row['account_main_activity']), // danzi.tn@20150414 aggiunto account_main_activity - 14.04.2015
+						"account_sec_activity" => addslashes($row['account_sec_activity']), // danzi.tn@20150414 aggiunto account_sec_activity - 14.04.2015
 						"map_value" => addslashes($row['map_value']), // Andrea Danzi aggiunto map_value - 26.03.2012
 						"city" => addslashes(ucwords(strtolower($row['city']))),
 						"extra" => addslashes(ucwords(strtolower($row['street']."<br/>".$row['code']." ".$row['city'])).$state.$approx."<br/>".$row['account_phone']), 
@@ -92,6 +96,9 @@ function getResult($gc,$query)
 		{
 			$not_found[$row['id']] = array( "name"=> addslashes($row['name']),
 						"type"=> addslashes($row['type']), // Andrea Danzi aggiunto type - 24.03.2012
+						"account_line" => addslashes($row['account_line']), // danzi.tn@20150414 aggiunto account_line - 14.04.2015
+						"account_main_activity" => addslashes($row['account_main_activity']), // danzi.tn@20150414 aggiunto account_main_activity - 14.04.2015
+						"account_sec_activity" => addslashes($row['account_sec_activity']), // danzi.tn@20150414 aggiunto account_sec_activity - 14.04.2015
 						"map_value" => addslashes($row['map_value']), // Andrea Danzi aggiunto map_value - 26.03.2012
 						"city" => addslashes(ucwords(strtolower($row['city']))),
 						"extra" => addslashes(ucwords(strtolower($row['street']." - ".$row['code']." ".$row['city'])).$state.$approx),
@@ -160,6 +167,9 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 							bill_state as state,
 							bill_street as street, 
 							vtiger_account.account_client_type as type ,
+                            vtiger_account.account_line,
+                            vtiger_account.account_main_activity,
+                            vtiger_account.account_sec_activity,
 							sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value, 
 							CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, 
 							vtiger_account.phone as account_phone
@@ -202,7 +212,20 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 			}
             // danzi.tn@20150408e
 			// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
-			$query .= " GROUP BY vtiger_account.accountid, accountname, bill_code,bill_city, bill_country,  bill_state , bill_street, vtiger_account.account_client_type, vtiger_account.external_code, vtiger_account.phone"; //					
+			$query .= " GROUP BY 
+                            vtiger_account.accountid, 
+                            accountname, 
+                            bill_code,
+                            bill_city, 
+                            bill_country,  
+                            bill_state , 
+                            bill_street, 
+                            vtiger_account.account_client_type, 
+                            vtiger_account.account_line,
+                            vtiger_account.account_main_activity,
+                            vtiger_account.account_sec_activity, 
+                            vtiger_account.external_code, 
+                            vtiger_account.phone"; //					
 			if(isset($amountrange) && $amountrange!="" )
 			{
 				$amount_where_clause = "";
@@ -360,7 +383,13 @@ function getProductCategoryTree()
 	 $tree_string.="</ul>\n	";
 	return $tree_string;
 }
-
+/*
+getTranslatedString($str,$module='')
+ vtiger_account.account_line,
+                            vtiger_account.account_main_activity,
+                            vtiger_account.account_sec_activity,
+                            
+                            */
 function printResultLayer($results,$skippedAccs=null)
 {	
 	echo "var resultLayer = {\n";
@@ -373,6 +402,10 @@ function printResultLayer($results,$skippedAccs=null)
 		// echo "\t'name': '{$result['name']}', \n";
 		echo "\t'name': '{$res_name}', \n";
 		echo "\t'type': '{$result['type']}', \n"; // Andrea Danzi aggiunto type - 24.03.2012
+        echo "\t'type_trans': '".getTranslatedString($result['type'],'Accounts')."', \n"; // danzi.tn@20150414 aggiunto type_trans
+        echo "\t'account_line': '{$result['account_line']}', \n"; // danzi.tn@20150414 aggiunto account_line
+        echo "\t'account_main_activity': '".getTranslatedString($result['account_main_activity'],'Accounts')."', \n"; // danzi.tn@20150414 aggiunto account_main_activity
+        echo "\t'account_sec_activity': '".getTranslatedString($result['account_sec_activity'],'Accounts')."', \n"; // danzi.tn@20150414 aggiunto account_sec_activity
 		echo "\t'map_value': '{$result['map_value']}', \n"; // Andrea Danzi aggiunto map_value - 26.03.2012
 		echo "\t'city': '{$result['city']}', \n";
 		echo "\t'code': '{$result['code']}', \n";
