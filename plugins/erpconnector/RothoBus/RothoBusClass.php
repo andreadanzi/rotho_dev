@@ -28,6 +28,7 @@
 */
 
 // danzi.tn@20150304 aggiunto Corso + 4 cene + 4 pernottamenti
+// danzi.tn@20150414 nuovo corso 564  - RFCACN - Progettazione edifici legno: statica, sismica, can
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -53,7 +54,7 @@ class RothoBus {
 	var $uids_array_safe_tt_address_skipped = Array();
 	var $mapping = Array();
 	var $group_mapping = Array();
-	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504,515,535);
+	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504,515,535,564);
 	var $pids_list_download = Array(137,139,141,143,200,205);
 	var $pids_list_forms = Array(505);
 	var $pids_list_newsletter = Array(124);
