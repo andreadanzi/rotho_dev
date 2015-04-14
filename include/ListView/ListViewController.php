@@ -680,7 +680,8 @@ class ListViewController {
 				//crmv@21092e	crmv@23734e
 				}
 				if ( in_array($uitype,array(71,72,7,9,90)) ) {
-					$value = "<span align='right'>$value</span>";
+                    // danzi.tn@20150414 formattazione importi
+					$value = "<span align='right'>".number_format($value+0.0,2, ',', '.')."</span>";
 				}
 				//crmv@16312
 				$parenttab = getParentTab();

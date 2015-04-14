@@ -1096,11 +1096,19 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields,$
 		if($fieldname == 'unit_price') {
 			$rate_symbol=getCurrencySymbolandCRate(getProductBaseCurrency($col_fields['record_id'], $module));
 			$label_fld[]  = $col_fields[$fieldname];
-		} else {
-			$rate_symbol=getCurrencySymbolandCRate($user_info['currency_id']);
-			$rate = $rate_symbol['rate'];
-			$label_fld[]  = convertFromDollar($col_fields[$fieldname],$rate);
-		}
+        // danzi.tn@20150414 formattazione importi per campi last_annual_revenue e pre_last_annual_revenue
+		} else if($fieldname == 'last_annual_revenue' || $fieldname == 'pre_last_annual_revenue') {
+            $rate_symbol=getCurrencySymbolandCRate($user_info['currency_id']);
+            $rate = $rate_symbol['rate'];
+            $tmpVal = convertFromDollar($col_fields[$fieldname],$rate);
+            $label_fld[]  = number_format($tmpVal+0.0,2, ',', '.');
+        // danzi.tn@20150414e
+        } else {
+            $rate_symbol=getCurrencySymbolandCRate($user_info['currency_id']);
+            $rate = $rate_symbol['rate'];
+            $label_fld[]  = convertFromDollar($col_fields[$fieldname],$rate);
+        }
+    
         $currency = $rate_symbol['symbol'];
         $label_fld["cursymb"] = $currency;
 	}
