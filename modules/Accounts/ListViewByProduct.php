@@ -186,7 +186,7 @@ $list_query = $queryGenerator->getQuery();
 //danzi.tn@20130207
 $smarty->assign("JS_DATEFORMAT",parse_calendardate($app_strings['NTC_DATE_FORMAT']));
 $calendar_format = parse_calendardate($app_strings['NTC_DATE_FORMAT']);
-$extra_where_clause ="";
+$extra_where_clause = " AND {$table_prefix}_crmentity_sales.deleted=0 ";
 
 if(isset($filter_type) && $filter_type!="" )
 {
@@ -255,7 +255,7 @@ if(isset($startdate) && $startdate!="" && isset($enddate) && $enddate!="" )
 	$smarty->assign("ENDDATE",$enddate);
 	$extra_from_clause .= " AND data_ordine_ven BETWEEN CONVERT(datetime,".$db->quote(getDBInsertDateValue($startdate)).",120) AND CONVERT(datetime,".$db->quote(getDBInsertDateValue($enddate)).",120) ";
 }
-$extra_from_clause .= " LEFT JOIN {$table_prefix}_crmentity AS {$table_prefix}_crmentity_sales ON {$table_prefix}_salesorder.salesorderid = {$table_prefix}_crmentity_sales.crmid  AND {$table_prefix}_crmentity_sales.deleted=0 
+$extra_from_clause .= " LEFT JOIN {$table_prefix}_crmentity AS {$table_prefix}_crmentity_sales ON {$table_prefix}_salesorder.salesorderid = {$table_prefix}_crmentity_sales.crmid  
 LEFT JOIN {$table_prefix}_inventoryproductrel on {$table_prefix}_salesorder.salesorderid = {$table_prefix}_inventoryproductrel.id  
 LEFT JOIN {$table_prefix}_products on {$table_prefix}_products.productid = {$table_prefix}_inventoryproductrel.productid ";
 // danzi.tn@20150203e

@@ -79,6 +79,9 @@ if ($focus->mode == 'edit')
 	$smarty->display('modules/Nonconformities/salesEditView.tpl');
 }
 else {
+    // select * from vtiger_groups where vtiger_groups.groupname = 'Acquisti'
+    $smarty->assign("DEFAULTGROUP","133018");
+    $smarty->assign("DEFAULTGROUP_DESCR","Acquisti");
 	$smarty->display('modules/Nonconformities/CreateView.tpl');
 }
 	//$smarty->display('CreateView.tpl');

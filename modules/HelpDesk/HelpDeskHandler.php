@@ -12,20 +12,21 @@ class HelpDeskHandler extends VTEventHandler {
 	//danzi.tn@20140716 gestione Collegato a fisso su  Ticket Rothoblaas con id = 1306471 nel caso di categoria = Segnalazione prodotti
 	//danzi.tn@20140730 gestione A.M. associati a agenti di riferimento 
     //danzi.tn@20140930 update del ticket => update della nc collegata
+    //danzi.tn@20150518 stato della NC sulla base della categoria : Prodotto => Aperto PE / Servizio => Aperto PO
 	function handleEvent($eventName, $data) {
 		global $adb, $current_user,$log;
 		global $table_prefix;
 		$when = array();
-		$when['Prodotto incompleto']['Fornitore'] = array("Vendor","Prodotto");
-		$when['Difetto prodotto']['Fornitore'] = array("Vendor","Prodotto");
-		$when['Materiale danneggiato - confezione']['Fornitore'] = array("Vendor","Servizio");
-		$when['Materiale danneggiato - confezione']['Trasportatore'] = array("Vendor","Servizio");
-		$when['Quantita` errata']['Fornitore'] = array("Vendor","Servizio");
-		$when['Articolo sbagliato']['Fornitore'] = array("Vendor","Servizio");
-		$when['Consegna in ritardo']['Fornitore'] = array("Vendor","Servizio");
-		$when['Consegna in ritardo']['Trasportatore'] = array("Vendor","Servizio");
-		$when['Consegna in ritardo']['RB-Acquisto Interno'] = array("Internal","Servizio");
-		$when['Smarrito']['Fornitore'] = array("Vendor","Servizio");
+		$when['Prodotto incompleto']['Fornitore'] = array("Vendor","Prodotto","Aperta PE");
+		$when['Difetto prodotto']['Fornitore'] = array("Vendor","Prodotto","Aperta PE");
+		$when['Materiale danneggiato - confezione']['Fornitore'] = array("Vendor","Servizio","Aperta PO");
+		$when['Materiale danneggiato - confezione']['Trasportatore'] = array("Vendor","Servizio","Aperta PO");
+		$when['Quantita` errata']['Fornitore'] = array("Vendor","Servizio","Aperta PO");
+		$when['Articolo sbagliato']['Fornitore'] = array("Vendor","Servizio","Aperta PO");
+		$when['Consegna in ritardo']['Fornitore'] = array("Vendor","Servizio","Aperta PO");
+		$when['Consegna in ritardo']['Trasportatore'] = array("Vendor","Servizio","Aperta PO");
+		$when['Consegna in ritardo']['RB-Acquisto Interno'] = array("Internal","Servizio","Aperta PO");
+		$when['Smarrito']['Fornitore'] = array("Vendor","Servizio","Aperta PO");
 		// check irs a timcard we're saving.
 		if (!($data->focus instanceof HelpDesk)) {
 			return;
@@ -201,7 +202,7 @@ class HelpDeskHandler extends VTEventHandler {
         $nc_source_field = $nc_source[0];
         array_push($cf_parms, $cf_1273);
         // UPDATE Main Table
-		$nonconformity_state = "Aperta"; // picklist        
+		$nonconformity_state = $source[2]; // Stato = "Aperta PE" oppure  "Aperta PO"; // picklist        
 		$update_sql = "UPDATE ".$table_prefix."_nonconformities SET 
                     nc_source = '".$nc_source_field."' , 
                     productid = ".$product_id."  ,
@@ -263,7 +264,7 @@ class HelpDeskHandler extends VTEventHandler {
 		$newNC->column_fields['cf_1257'] = $data_array['cf_777'];
 		$newNC->column_fields['cf_1273'] = $source[1];
 		// danzi.tn@20140630e
-		$newNC->column_fields['nonconformity_state'] = "Aperta"; // picklist
+		$newNC->column_fields['nonconformity_state'] = $source[2]; // Stato = "Aperta PE" oppure  "Aperta PO"
 		$newNC->column_fields["description"] =  $data_array['description'].  " -- ". $data_array["ticket_title"] . " (".$data_array["ticket_no"].", '".$ticketsubcategories."', '".$cf_798."') --";
 		$newNC->save($module_name='Nonconformities');
 		$nc_id = $newNC->id;

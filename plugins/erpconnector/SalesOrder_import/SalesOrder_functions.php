@@ -26,40 +26,51 @@ function do_import_accounts($time_start) {
 	$array_key[$key]="NULL as SUBTOTAL";
 	$key = array_search('STATO', $array_key);
 	$array_key[$key]="NULL as STATO";
-	
+	$at1 = microtime(True);
 	$sql = "select ".implode(",",$array_key)." from $table $where";
 	//echo $sql;die;
 	$num_rows = $adb->num_rows($adb->query($sql));
 	if ($num_rows == 0) {
 		echo "WARNING: no rows";
 	}
-
+    $at2 = microtime(True);
+    echo sprintf("After num_rows:  %f\n", $at2-$at1);
 	$interval = 10000;
 	if($interval < $num_rows){
+        echo sprintf("More than %d rows (%d)\n", $interval,$num_rows );
 		$num=0;
 		while($num<=$num_rows){
 			$sql1=$sql;//" limit $num,$interval";
+            $at1 = microtime(True);
 			$tmp_result=$import->go($sql1);
+            $at2 = microtime(True);
+            echo sprintf("After go:  %f\n", $at2-$at1);
 			
 			$num += $interval;
-			
+			/*
 			foreach($tmp_result['external_code_rows'] as $ext_cod){
 				//migrate_crmentity_data_accounts($ext_cod);
 			}
+            */
 			
 			$import_result['records_created']+=$tmp_result['records_created'];
 			$import_result['records_updated']+=$tmp_result['records_updated'];
 			//free resurces
 			unset($import);
 			//new instance
+            $at1 = microtime(True);
 			$import = new importer($module,$mapping,$external_code,$time_start,$fields_auto_create,$fields_auto_update);
+            $at2 = microtime(True);
+            echo sprintf("After importer (num=%d):  %f\n", $num , $at2-$at1);
 		}
 	}
 	else{
 		$import_result = $import->go($sql);
+        /*
 		foreach($import_result['external_code_rows'] as $ext_cod){
 			//migrate_crmentity_data_accounts($ext_cod);
 		}
+        */
 	}
     // danzi.tn@20150408
     // update_account_annual_revenue();
@@ -96,6 +107,7 @@ function migrate_crmentity_data_accounts($ext_cod){
 }
 // danzi.tn@20140820 aggiornamento annualrevenue sulla base degli ordini dell'ultimo anno
 // danzi.tn@20150408 introduzione fatturato anno precendente e fatturato anno precedente -1
+// danzi.tn@20150421 calcolo eseguito sul vtiger_salesorder.total e non su pressi unitari
 function update_account_annual_revenue($past_years = "1", $field_to_update="last_annual_revenue") {
     global $adb;
     $q = "UPDATE
@@ -105,16 +117,11 @@ function update_account_annual_revenue($past_years = "1", $field_to_update="last
             FROM vtiger_account AS VTACC INNER JOIN
             (SELECT 
             vtiger_account.accountid,
-            sum( 
-            case when vtiger_inventoryproductrel.listprice is NULL then 0 
-            when vtiger_inventoryproductrel.quantity is null then 0 
-            else vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity 
-            END) as TotalSales
+            sum( vtiger_salesorder.total) as TotalSales
             from vtiger_account
             JOIN vtiger_crmentity as accent on accent.crmid = vtiger_account.accountid and accent.deleted = 0
             JOIN vtiger_salesorder ON vtiger_salesorder.accountid  = vtiger_account.accountid  
-            JOIN vtiger_crmentity as salent ON vtiger_salesorder.salesorderid = salent.crmid  AND salent.deleted =0
-            LEFT JOIN vtiger_inventoryproductrel on  vtiger_inventoryproductrel.id  = vtiger_salesorder.salesorderid
+            JOIN vtiger_crmentity as salent ON vtiger_salesorder.salesorderid = salent.crmid  AND salent.deleted =0            
             WHERE  YEAR(vtiger_salesorder.data_ordine_ven) = YEAR(DATEADD(year,-".$past_years.",GETDATE()))
             GROUP BY vtiger_account.accountid) VTTOTALS
             ON VTTOTALS.accountid = VTACC.accountid";
@@ -160,14 +167,15 @@ function update_rating_attuale() {
 					END
 			END
 			FROM vtiger_accountscf
-			JOIN vtiger_crmentity accent on vtiger_accountscf.accountid = accent.crmid AND accent.deleted = 0
+			JOIN vtiger_crmentity accent on vtiger_accountscf.accountid = accent.crmid AND accent.deleted = 0 
 			JOIN vtiger_account on vtiger_account.accountid = vtiger_accountscf.accountid 
-			LEFT JOIN vtiger_salesorder on vtiger_account.accountid = vtiger_salesorder.accountid
-			AND vtiger_salesorder.data_ordine_ven BETWEEN  DATEADD(MONTH,-24,GETDATE() ) AND GETDATE()
-			LEFT JOIN vtiger_crmentity salent on vtiger_salesorder.salesorderid = salent.crmid AND salent.deleted = 0
+			LEFT JOIN vtiger_salesorder on vtiger_account.accountid = vtiger_salesorder.accountid 
+			LEFT JOIN vtiger_crmentity salent on vtiger_salesorder.salesorderid = salent.crmid 
 			WHERE 
 			vtiger_account.external_code <> '' -- Codice Cleinte Valorizzato
-			AND vtiger_account.external_code IS NOT NULL -- Codice Cleinte Valorizzato";
+			AND vtiger_account.external_code IS NOT NULL -- Codice Cleinte Valorizzato
+			AND vtiger_salesorder.data_ordine_ven BETWEEN  DATEADD(MONTH,-24,GETDATE() ) AND GETDATE()
+            AND salent.deleted = 0";
     $res = $adb->query($q);
 }
 // danzi.tn@20141218

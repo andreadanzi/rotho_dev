@@ -177,14 +177,14 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 			JOIN vtiger_accountbillads on vtiger_account.accountid=vtiger_accountbillads.accountaddressid 
 			JOIN vtiger_accountscf on vtiger_accountscf.accountid=vtiger_account.accountid 
 			LEFT JOIN vtiger_salesorder on vtiger_salesorder.accountid  = vtiger_account.accountid ".$extra_from_clause." 
-			LEFT JOIN vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.crmid  = vtiger_salesorder.salesorderid and vtiger_crmentity_sales.deleted = 0
+			LEFT JOIN vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.crmid  = vtiger_salesorder.salesorderid 
 			LEFT JOIN vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
 			LEFT JOIN vtiger_products on vtiger_products.productid = vtiger_inventoryproductrel.productid";			
 			if($ids)
 			{
 			 	$query .= " JOIN dnz_temp_account ON dnz_temp_account.accountid = vtiger_account.accountid AND useruid='".$user_uid."'";
 			}
-			$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL  ";
+			$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL and vtiger_crmentity_sales.deleted = 0 ";
             // danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 			if($extra_ids)
 			{

@@ -228,12 +228,23 @@
 						{/if}
 					{/foreach}
 				{/foreach}
+                {if $MODULE eq 'Nonconformities'}               
+                    {if $DEFAULTGROUP}
+                     <!-- danzi.tn@20150507 default is Group, DEFAULTGROUP = {$DEFAULTGROUP} -->
+                    {* force group view *}
+                    {assign var=check value=1}
+                    {/if}
+                {/if}
+                
+                
 				{if $check eq 0}
+                    <!-- danzi.tn@20150507 check eq 0 -->
 					{assign var=select_user value='selected="selected"'}
 					{assign var=select_group value=''}
 					{assign var=style_user value='display:block'}
 					{assign var=style_group value='display:none'}
 				{else}
+                    <!-- danzi.tn@20150507 check neq 0 -->
 					{assign var=select_user value=''}
 					{assign var=select_group value='selected="selected"'}
 					{assign var=style_user value='display:none'}
@@ -296,7 +307,16 @@
 								{/if}
 							{/foreach}
 						{/foreach}
-						<input id="assigned_group_id" name="assigned_group_id" type="hidden" value="{$fld_secondvalue}">
+                        <!-- danzi.tn@20150507 default is Group {$DEFAULTGROUP} = {$DEFAULTGROUP_DESCR}-->
+                        {if $MODULE eq 'Nonconformities'}               
+                            {if $DEFAULTGROUP}
+                                {assign var=fld_secondvalue value=$DEFAULTGROUP}
+                                {assign var=fld_displaysecondvalue value=$DEFAULTGROUP_DESCR}
+                            {/if}
+                        {/if}
+                        <input id="assigned_group_id" name="assigned_group_id" type="hidden" value="{$fld_secondvalue}">
+                        
+						
 						{assign var=fld_style value='class="detailedViewTextBox detailedViewReference detailedViewReferenceRO" readonly'}
 						{if $fld_displaysecondvalue|trim eq ''}
 							{assign var=fld_displaysecondvalue value='LBL_SEARCH_STRING'|getTranslatedString}

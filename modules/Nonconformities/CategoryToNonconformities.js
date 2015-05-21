@@ -1,5 +1,6 @@
 // danzi.tn@20150316 added purchase_user_id and purchase_user_id_display
-function return_category_to_nonconformity(recordid,value,target_fieldname,product_description,product_category, vendor_id, vendor_descr, purchase_user_id, purchase_user_id_display) {
+// danzi.tn@20150505 nuovo campo Responsabile strategico di prodotto
+function return_category_to_nonconformity(recordid,value,target_fieldname,product_description,product_category, vendor_id, vendor_descr, purchase_user_id, purchase_user_id_display,product_resp_no, product_resp_name) {
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
 	if (form) {
@@ -26,6 +27,12 @@ function return_category_to_nonconformity(recordid,value,target_fieldname,produc
 			}
 			if (form.elements['purchase_user_id_display']) {
 				form.elements['purchase_user_id_display'].value = purchase_user_id_display;
+			}
+			if (form.elements['product_resp_no']) {
+				form.elements['product_resp_no'].value = product_resp_no;
+			}
+			if (form.elements['product_resp_name']) {
+				form.elements['product_resp_name'].value = product_resp_name;
 			}
 		}
 		return true;
