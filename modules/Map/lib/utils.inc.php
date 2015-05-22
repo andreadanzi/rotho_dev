@@ -4,6 +4,7 @@
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
 // danzi.tn@20150408 selezione multipla su categoria e codice prodotto
+// danzi.tn@20150522 gestione di crmentity_sales.deleted=0 all'interno del SUM(CASE
 require_once('include/utils/CommonUtils.php');
 function getSkippedAccounts($ids)
 {
@@ -170,7 +171,7 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
                             vtiger_account.account_line,
                             vtiger_account.account_main_activity,
                             vtiger_account.account_sec_activity,
-							sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value, 
+							sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 WHEN vtiger_crmentity_sales.deleted = 1 THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value, 
 							CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, 
 							vtiger_account.phone as account_phone
 			FROM vtiger_account
@@ -184,7 +185,7 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 			{
 			 	$query .= " JOIN dnz_temp_account ON dnz_temp_account.accountid = vtiger_account.accountid AND useruid='".$user_uid."'";
 			}
-			$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL and vtiger_crmentity_sales.deleted = 0 ";
+			$query .= " WHERE bill_code IS NOT NULL AND bill_city IS NOT NULL ";
             // danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 			if($extra_ids)
 			{
@@ -235,9 +236,9 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
                      $maxVal = "999000000";
                 }                 
 				if( count($amountrange_splitted) > 1 ){
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 WHEN vtiger_crmentity_sales.deleted = 1 THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
 				} else {
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 WHEN vtiger_crmentity_sales.deleted = 1 THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
 				}
 				$query .= " HAVING " . $amount_where_clause;
 			}
@@ -253,7 +254,7 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 		break;
 		case "ProductCategory":
 			$query = "select vtiger_account.accountid as id,accountname as name, bill_code as code, bill_city as city,bill_country as country,bill_state as state,bill_street as street, vtiger_products.product_cat as type ,
-sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
+sum(CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 WHEN vtiger_crmentity_sales.deleted = 1 THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) as map_value , CASE external_code WHEN NULL THEN 'ND' WHEN '' THEN 'ND' ELSE 'OK' END AS map_aurea, vtiger_account.phone as account_phone
 from vtiger_account
 JOIN vtiger_crmentity accentity ON accentity.crmid  = vtiger_account.accountid AND accentity.deleted = 0
 join vtiger_accountbillads on vtiger_account.accountid=vtiger_accountbillads.accountaddressid 
@@ -287,9 +288,9 @@ WHERE AND bill_code IS NOT NULL AND bill_city IS NOT NULL "; // Andrea Danzi agg
                     $maxVal = "990000000";
                 }                  
 				if( count($amountrange_splitted) > 1 ){
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 WHEN vtiger_crmentity_sales.deleted = 1 THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN ". $amountrange_splitted[0] . " AND ". $maxVal. " ";
 				} else {
-					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
+					$amount_where_clause = " sum( CASE WHEN vtiger_salesorder.salesorderid IS NULL THEN 0 WHEN vtiger_crmentity_sales.deleted = 1 THEN 0 ELSE vtiger_inventoryproductrel.listprice*vtiger_inventoryproductrel.quantity END) BETWEEN  0 AND ". $maxVal. " ";
 				}
 				$query .= " HAVING " . $amount_where_clause;
 			}

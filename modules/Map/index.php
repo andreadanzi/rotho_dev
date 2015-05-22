@@ -268,11 +268,12 @@ else //calculate ids using filters
 
         // echo "<!-- QUERY IDS  ". $query ." -->";
 	// $list_result = $adb->pquery($query, array());
+    // danzi.tn@20150522 gestione tabella temporanea
 	$user_uids = uniqid();
 	while($row = $adb->fetch_array($res_2)) {
 		$ids[] = $row["accountid"];
-		$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid) VALUES (?,?)";
-		$adb->pquery($insert_sql, array($user_uids,$row["accountid"]));
+		$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid,insertdate,insertuserid) VALUES (?,?,GETDATE(),?)";
+		$adb->pquery($insert_sql, array($user_uids,$row["accountid"],$current_user->id));
 	}
 	/* MASSIVE INSERT
 	$insert_values = implode("),('".$user_uids."',",$ids);
