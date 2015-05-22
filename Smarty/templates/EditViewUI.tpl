@@ -229,7 +229,7 @@
 					{/foreach}
 				{/foreach}
                 {if $MODULE eq 'Nonconformities'}               
-                    {if $DEFAULTGROUP}
+                    {if $DEFAULTGROUP and $fldname eq 'assigned_user_id'}
                      <!-- danzi.tn@20150507 default is Group, DEFAULTGROUP = {$DEFAULTGROUP} -->
                     {* force group view *}
                     {assign var=check value=1}
@@ -309,7 +309,7 @@
 						{/foreach}
                         <!-- danzi.tn@20150507 default is Group {$DEFAULTGROUP} = {$DEFAULTGROUP_DESCR}-->
                         {if $MODULE eq 'Nonconformities'}               
-                            {if $DEFAULTGROUP}
+                            {if $DEFAULTGROUP and $fldname eq 'assigned_user_id'}
                                 {assign var=fld_secondvalue value=$DEFAULTGROUP}
                                 {assign var=fld_displaysecondvalue value=$DEFAULTGROUP_DESCR}
                             {/if}

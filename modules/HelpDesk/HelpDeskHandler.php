@@ -160,6 +160,8 @@ class HelpDeskHandler extends VTEventHandler {
 				WHERE 
 				prodnonconf.productname = prodtickets.productname
 				AND ".$table_prefix."_crmentityrel.crmid IS NULL
+                AND ".$table_prefix."_ticketcf.cf_777 <> ''
+    			AND ".$table_prefix."_ticketcf.cf_777 IS NOT NULL 
 				AND ".$table_prefix."_troubletickets.ticketid = ?
 				ORDER BY ".$table_prefix."_crmentity.createdtime DESC";
 			$result = $adb->pquery($query,array($hd_id));
@@ -260,6 +262,7 @@ class HelpDeskHandler extends VTEventHandler {
 		// danzi.tn@20140603 assegnare al gruppo Ufficio Acquisti
 		$newNC->column_fields['assigned_user_id'] = 133018; //$data_array['assigned_user_id'];
 		$newNC->column_fields['smownerid'] = 133018; //$data_array['assigned_user_id'];
+		$newNC->column_fields['filled_by_id'] = $current_user->id; //$data_array['assigned_user_id'];
 		// danzi.tn@20140630 aggiunto numero lotto
 		$newNC->column_fields['cf_1257'] = $data_array['cf_777'];
 		$newNC->column_fields['cf_1273'] = $source[1];
