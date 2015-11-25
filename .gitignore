@@ -1,2 +1,5 @@
 # immagini
 themes/rothosofted/images
+*.log
+plugins/erpconnector/SalesOrder_import/ordini.txt
+*.csv

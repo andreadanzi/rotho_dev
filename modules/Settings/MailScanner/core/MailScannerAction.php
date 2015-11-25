@@ -13,8 +13,10 @@
  // danzi.tn@20140407 Creazione nuovo record in modulo Rumors
  // danzi.tn@20140721 Creazione nuovo record in modulo Market Price
  // danzi.tn@20150113 associazione attachment a Rumors e Market Price
+ // danzi.tn@20150629 HTML to Markdown per descrizione ticket/rumors/etc
 
 require_once('modules/Users/Users.php');
+require_once('include/utils/HTML_To_Markdown.php' );
 
 /**
  * Mail Scanner Action
@@ -264,7 +266,10 @@ class Vtiger_MailScannerAction {
 		// Create trouble ticket record
 		$ticket = CRMEntity::getInstance('HelpDesk');
 		$ticket->column_fields['ticket_title'] = $usetitle;
-		$ticket->column_fields['description'] = $description;
+		//$ticket->column_fields['description'] = $description;
+        // danzi.tn@20150629  HTML_To_Markdown
+		$ticket->column_fields['description'] = getCleanMessage($mailrecord->getBodyHTML()); // $description;
+        // danzi.tn@20150629e
 		$ticket->column_fields['ticketstatus'] = 'Open';
 		//mycrmv@3147m
 		$ticket->column_fields['email_mittente'] = $fromemail; 
@@ -576,7 +581,10 @@ class Vtiger_MailScannerAction {
 		// Create trouble ticket record
 		$ticket = CRMEntity::getInstance('HelpDesk');
 		$ticket->column_fields['ticket_title'] = $usetitle;
-		$ticket->column_fields['description'] = $description;
+		//$ticket->column_fields['description'] = $description;
+        // danzi.tn@20150629  HTML_To_Markdown
+		$ticket->column_fields['description'] = getCleanMessage($mailrecord->getBodyHTML()); // $description;
+        // danzi.tn@20150629e
 		$ticket->column_fields['ticketstatus'] = 'Open';
 		$ticket->column_fields['ticketpriorities'] = 'Normal';
 		$ticket->column_fields['cf_1061'] = 'ESTERNO';
@@ -677,7 +685,10 @@ class Vtiger_MailScannerAction {
 		// Create trouble ticket record
 		$ticket = CRMEntity::getInstance('HelpDesk');
 		$ticket->column_fields['ticket_title'] = $usetitle;
-		$ticket->column_fields['description'] = $description;
+		//$ticket->column_fields['description'] = $description;
+        // danzi.tn@20150629  HTML_To_Markdown
+		$ticket->column_fields['description'] = getCleanMessage($mailrecord->getBodyHTML()); // $description;
+        // danzi.tn@20150629e
 		$ticket->column_fields['ticketstatus'] = 'Open';
 		$ticket->column_fields['ticketpriorities'] = 'Normal';
 		$ticket->column_fields['ticketcategories'] = 'Altro';
@@ -743,7 +754,7 @@ class Vtiger_MailScannerAction {
 	 */
 	function __CreateRumor($mailscanner, $mailrecord) {
 		// Prepare data to create rumor
-		$usetitle = $mailrecord->_subject;
+		$usetitle = $mailrecord->_subject;        
 		$description = $mailrecord->getBodyText();
 		//crmv@2043m
 		$matches = preg_match('/<body[^>]*>(.*)/ims',$description,$tmp);
@@ -766,7 +777,9 @@ class Vtiger_MailScannerAction {
 		// Create trouble rumor record
 		$rumor = CRMEntity::getInstance('Rumors');
 		$rumor->column_fields['rumor_name'] = "Other"; //$usetitle;
-		$rumor->column_fields['description'] = $description;
+        // danzi.tn@20150629  HTML_To_Markdown
+		$rumor->column_fields['description'] = getCleanMessage($mailrecord->getBodyHTML()); // $description;
+        // danzi.tn@20150629e
 		$rumor->column_fields['cf_1215'] = $usetitle;
 		$rumor->column_fields['infosender'] = $fromemail;
 		$rumor->column_fields['product_cat'] = '06';
@@ -816,7 +829,9 @@ class Vtiger_MailScannerAction {
 		// Create trouble marketprice record
 		$marketprice = CRMEntity::getInstance('Marketprices');
 		$marketprice->column_fields['marketprice_name'] = "lbl_mkp_price"; //$usetitle;
-		$marketprice->column_fields['description'] = $description;
+        // danzi.tn@20150629  HTML_To_Markdown
+		$marketprice->column_fields['description'] = getCleanMessage($mailrecord->getBodyHTML()); // $description;
+        // danzi.tn@20150629e
 		$marketprice->column_fields['marketprice_subject'] = $usetitle;
 		$marketprice->column_fields['infosender'] = $fromemail;
 		$marketprice->column_fields['product_cat'] = '06';
@@ -855,6 +870,19 @@ class Vtiger_MailScannerAction {
 	}
 	// danzi.tn@20140721 e
 	
+    
 	
 }
+
+
+// danzi.tn@20150629  HTML_To_Markdown
+function getCleanMessage($htmlDescription) {
+    $markdown = new HTML_To_Markdown();
+    $markdown->set_option('strip_tags', true);
+    $markdown->convert($htmlDescription);
+    $description = $markdown->output();
+    $cleanmessage = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $description);
+    return $cleanmessage;
+}
+
 ?>
