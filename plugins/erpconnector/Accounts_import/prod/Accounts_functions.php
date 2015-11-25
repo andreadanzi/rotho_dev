@@ -5,20 +5,13 @@
 // danzi.tn@20150706 aggiornare sempre anche i recapiti in fase di update
 // danzi.tn@20150408 aggiornare smownerid dei contatti collegati all'azienda corrente
 // danzi.tn@20150714 aggiornare smownerid dei report visite collegati all'azienda corrente
-// danzi.tn@20150820 import Agenti e Dipendenti come Aziende       
+       
 function do_import_accounts($time_start) {
 	global $adb,$seq_log,$current_user,$mapping,$root_directory,$external_code,$module,$table,$fields_auto_create,$fields_auto_update,$where;	
 	$import = new importer($module,$mapping,$external_code,$time_start,$fields_auto_create,$fields_auto_update);
 //	$sql="select ".implode(",",array_keys($mapping))." from $table $where";
 	
 	$array_key=array_keys($mapping);
-    // Danzi.tn@20150820 - Agenti e Dipendenti come Aziende
-    $key = array_search('CUSTOMER_TYPEDESC', $array_key);
-	$array_key[$key]="CASE
-                        WHEN CUSTOMER_TYPE ='999' AND CUSTOMER_EMPLOYEETYPE IS NULL THEN '999 - Non Definito'
-                        WHEN CUSTOMER_TYPE ='999' AND CUSTOMER_EMPLOYEETYPE IS NOT NULL THEN CUSTOMER_EMPLOYEETYPEDESC
-                        ELSE CUSTOMER_TYPEDESC 
-                      END CUSTOMER_TYPEDESC";
 	$key = array_search('CUSTOMER_ZONE__DESC', $array_key);
 	$array_key[$key]="customer_zone+' / '+customer_zonedesc as CUSTOMER_ZONE__DESC";
     //danzi.tn@20141126 nuova classificazione
