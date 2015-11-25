@@ -467,8 +467,8 @@ class SDK {
 
  		// insert new
  		$newid = $adb->getUniqueID("sdk_language");
- 		//$qparam = array($newid, $module, $langid, correctEncoding(html_entity_decode($label)), correctEncoding(html_entity_decode($newlabel)));
-		$qparam = array($newid, $module, $langid, $label, utf8_encode($newlabel));
+        $qparam = array($newid, $module, $langid, correctEncoding(html_entity_decode($label)), correctEncoding(html_entity_decode($newlabel)));
+ 		// $qparam = array($newid, $module, $langid, $label, utf8_encode($newlabel));
  		$query = 'insert into sdk_language (languageid, module, language, label, trans_label) values ('.generateQuestionMarks($qparam).')';
  		$res = $adb->pquery($query, $qparam);
  		self::log("Adding SDK Language Entry ($module $langid $label) ... DONE");

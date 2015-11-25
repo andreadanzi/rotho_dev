@@ -210,7 +210,7 @@ class Newsletter extends CRMEntity {
 		
 		$fields_list = getFieldsListFromQuery($sql);
 
-		$query = "SELECT $fields_list, $table_prefix.'_users.user_name AS user_name 
+		$query = "SELECT $fields_list, ".$table_prefix."_users.user_name AS user_name 
 					FROM ".$table_prefix."_crmentity INNER JOIN $this->table_name ON ".$table_prefix."_crmentity.crmid=$this->table_name.$this->table_index";
 
 		if(!empty($this->customFieldTable)) {
@@ -855,7 +855,10 @@ class Newsletter extends CRMEntity {
 		require_once('modules/Emails/mail.php');
 		global $adb;
 		global $table_prefix;
-		$module = getSalesEntityType($crmid);
+		global $default_language, $current_language; //mycrmv@41193 
+		$default_language_tmp = $default_language; //mycrmv@41193
+		$current_language_tmp = $current_language; //mycrmv@41193
+		$module = getSalesEntityType($crmid);		
 		//crmv@25872
 		if ($to_address == '' && $crmid != '') {
 			$focus = CRMEntity::getInstance($module);
@@ -870,20 +873,24 @@ class Newsletter extends CRMEntity {
 		//mycrmv
 		//static $emailtemplates = array();
 		//if (!isset($emailtemplates['templateemailid'])) {
-			$result = $adb->query('select subject,body from '.$table_prefix.'_emailtemplates where templateid = '.$this->column_fields['templateemailid']);
+			$result = $adb->query('select subject,body, newsletter_language from '.$table_prefix.'_emailtemplates where templateid = '.$this->column_fields['templateemailid']); //mycrmv@41193
 			 $description = $adb->query_result($result,0,'body');
 			 $subject = $adb->query_result_no_html($result,0,'subject');	//crmv@25243
+			 $newsletter_language = $adb->query_result_no_html($result,0,'newsletter_language');	//mycrmv@41193
 		//} else {
 		//	$description = $emailtemplates['templateemailid']['description'];
 		//	$subject = $emailtemplates['templateemailid']['subject'];
 	//	}
 	//mycrmv e
 		//crmv@28170e
+		$default_language = $current_language = $newsletter_language; //mycrmv@41193
 		if ($mode != 'test') {
 			$description = getMergedDescription($description,$crmid,$module,$this->id,$this->column_fields['templateemailid']);
 			$description_saved = html_entity_decode($description);	//nella mail che salvo e associo al Contatto/Azienda/Lead non metto i track
 			$description = $this->setTrackLinks($description,$crmid);
 			$subject = getMergedDescription($subject,$crmid,$module,$this->id,$this->column_fields['templateemailid']);
+			$default_language = $default_language_tmp; //mycrmv@41193
+			$current_language = $current_language_tmp; //mycrmv@41193
 		}
 		//logo - i
 		if (is_array($description)) {

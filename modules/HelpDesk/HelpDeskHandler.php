@@ -13,6 +13,7 @@ class HelpDeskHandler extends VTEventHandler {
 	//danzi.tn@20140730 gestione A.M. associati a agenti di riferimento 
     //danzi.tn@20140930 update del ticket => update della nc collegata
     //danzi.tn@20150518 stato della NC sulla base della categoria : Prodotto => Aperto PE / Servizio => Aperto PO
+    // danzi.tn@20151019 gestione Tipologia per NC
 	function handleEvent($eventName, $data) {
 		global $adb, $current_user,$log;
 		global $table_prefix;
@@ -61,25 +62,29 @@ class HelpDeskHandler extends VTEventHandler {
 			$module = $data->getModuleName();
 			$focus = $data->focus;
 			$id = $focus->id;
-			// danzi.tn@20140512 verifica se c'è una NC già relazionata
-			$nonconformitiesid = $this->_checkExistingNC($id);
-			if($nonconformitiesid == 0)
-			{
-				$log->debug("handleEvent vtiger.entity.aftersave nothing found");
-				$ticket_title = $focus->column_fields['ticket_title'];
-				if(	isset($when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']] ) ) {
-					$source = $when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']];
-					$this->_newNonCoformity($id, $focus->column_fields,$source);
-				}
-			} else {
-				$log->debug("handleEvent vtiger.entity.aftersave found nonconformitiesid=".$nonconformitiesid);
-                // danzi.tn@20140930 se c'è una NC già relazionata allora vediamo di fare un UPDATE
-				if(	isset($when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']] ) ) {
-					$source = $when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']];
-                    $this->_updateNonCoformity($nonconformitiesid, $focus->column_fields,$source);
+            // danzi.tn@20151019 gestione Tipologia per NC
+            $cf_1394 = $focus->column_fields['cf_1394'];
+            if(isset($cf_1394) && $cf_1394 == 'Reclamo') {
+                // danzi.tn@20140512 verifica se c'è una NC già relazionata
+                $nonconformitiesid = $this->_checkExistingNC($id);
+                if($nonconformitiesid == 0)
+                {
+                    $log->debug("handleEvent vtiger.entity.aftersave nothing found");
+                    $ticket_title = $focus->column_fields['ticket_title'];
+                    if( isset($when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']] ) ) {
+                        $source = $when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']];
+                        $this->_newNonCoformity($id, $focus->column_fields,$source);
+                    }
+                } else {
+                    $log->debug("handleEvent vtiger.entity.aftersave found nonconformitiesid=".$nonconformitiesid);
+                    // danzi.tn@20140930 se c'è una NC già relazionata allora vediamo di fare un UPDATE
+                    if(	isset($when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']] ) ) {
+                        $source = $when[$focus->column_fields['ticketsubcategories']][$focus->column_fields['cf_798']];
+                        $this->_updateNonCoformity($nonconformitiesid, $focus->column_fields,$source);
+                    }
+                    //danzi.tn@20140930e
                 }
-                //danzi.tn@20140930e
-			}
+            }
 			$log->debug("handleEvent vtiger.entity.aftersave terminated");
 		}
 	}

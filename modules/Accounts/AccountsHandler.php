@@ -10,6 +10,7 @@
 // danzi.tn@20150108 nuova classificazione 
 // danzi.tn@20150205 gestione cambio agente o qualsiasi altro riferimento	
 // danzi.tn@20150408 aggiornare smownerid dei contatti collegati all'azienda corrente
+// danzi.tn@20150714 aggiornare smownerid dei report visite collegati all'azienda corrente
 include_once('config.php');
 require_once('include/logging.php');
 require_once('include/database/PearDatabase.php');
@@ -107,6 +108,30 @@ class AccountsHandler extends VTEventHandler {
                             ".$table_prefix."_contactdetails.accountid = ?";
             $adb->pquery($update_contact_owner,array($focus->id));
             // danzi.tn@20150408e
+            
+            // danzi.tn@20150714 aggiornare smownerid dei report visite collegati all'azienda corrente
+            $update_visitreport_owner = "UPDATE 
+                            ".$table_prefix."_crmentity
+                            SET
+                            ".$table_prefix."_crmentity.smownerid = 
+                            CASE 
+                                WHEN accentity.smownerid IS NULL THEN ".$table_prefix."_crmentity.smownerid
+                                ELSE accentity.smownerid
+                            END	
+                            from ".$table_prefix."_crmentity
+                            join ".$table_prefix."_visitreport on ".$table_prefix."_crmentity.crmid = ".$table_prefix."_visitreport.visitreportid 
+                            join ".$table_prefix."_account on ".$table_prefix."_account.accountid = ".$table_prefix."_visitreport.accountid
+                            join ".$table_prefix."_crmentity accentity on accentity.crmid = ".$table_prefix."_account.accountid and accentity.deleted = 0
+                            WHERE 
+                            ".$table_prefix."_crmentity.deleted = 0
+                            AND 
+                            accentity.smownerid <> ".$table_prefix."_crmentity.smownerid 
+                            AND
+                            ".$table_prefix."_visitreport.accountid = ?";
+            $adb->pquery($update_visitreport_owner,array($focus->id));
+            // danzi.tn@20150714e
+            
+            
 			$log->debug("handleEvent vtiger.entity.aftersave terminated");
 		}
 	}
