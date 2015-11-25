@@ -860,6 +860,7 @@ function getGroupName($groupid)
  * Get the username by giving the user id.   This method expects the user id
  */
 
+ /*
 function getUserName($userid,$with_name=false)
 {
     global $log;
@@ -891,6 +892,58 @@ function getUserName($userid,$with_name=false)
     $log->debug("Exiting getUserName method ...");
     return $user_name;
 }
+*/
+
+//mycrmv@20150717
+function getUserName($userid,$with_name=false,$usernames_cache_input = Array())
+{
+    global $log;
+    $log->debug("Entering getUserName(".$userid.") method ...");
+    $log->info("in getUserName ".$userid);
+    static $usernames_cache = Array();
+    static $usernames_cache_withname = Array();    
+    if (!empty($usernames_cache_input)){
+    	$usernames_cache[$userid] = $usernames_cache_input['withoutname'];
+    	$usernames_cache_withname[$userid] = $usernames_cache_input['withname'];
+    }    
+	$user_name = '';
+    if (file_exists('user_privileges/user_privileges_'.$userid.'.php')) require('user_privileges/user_privileges_'.$userid.'.php');
+	if (!empty($user_info)) {
+		$user_name = $user_info['user_name'];
+		if ($with_name) {
+			$user_name .= " (".$user_info['first_name']." ".$user_info['last_name'].")";
+		}
+	} elseif($userid != '') {
+	    global $adb, $table_prefix;
+    	if ($with_name) {
+        	if (isset($usernames_cache_withname[$userid])){
+    			return $usernames_cache_withname[$userid];
+    		}    		
+ 	        $sql = "select user_name,last_name,first_name from ".$table_prefix."_users where id=?";
+	        $result = $adb->pquery($sql, array($userid));
+	        //mycrmv@34679 
+	        if ($adb->query_result_no_html($result,0,"last_name") != "" || $adb->query_result_no_html($result,0,"first_name") != "") {
+	        	$append = " (".$adb->query_result($result,0,"first_name")." ".$adb->query_result_no_html($result,0,"last_name").")";
+				 $append = correctEncoding($append);
+				}
+			
+			//mycrmv@34679e
+	        $user_name = $adb->query_result($result,0,"user_name").$append;
+	        $usernames_cache_withname[$userid] = $user_name;
+    	} else {
+        	if (isset($usernames_cache[$userid])){
+    			return $usernames_cache[$userid];
+    		}    		
+	        $sql = "select user_name from ".$table_prefix."_users where id=?";
+	        $result = $adb->pquery($sql, array($userid));
+	        $user_name = $adb->query_result($result,0,"user_name");
+	        $usernames_cache[$userid] = $user_name;
+    	}
+    }
+    $log->debug("Exiting getUserName method ...");
+    return $user_name;
+}
+//mycrmv@20150717e
 
 /**
 * Get the user full name by giving the user id.   This method expects the user id
@@ -1353,6 +1406,8 @@ function make_clickable($text)
 function getBlocks($module,$disp_view,$mode,$col_fields='',$info_type='')
 {
 	global $log;
+    // danzi.tn@20150804 profili da verificare - caso speciale
+    $profileSpecialArray = array(11,12,26,28,30);
 	$log->debug("Entering getBlocks(".$module.",".$disp_view.",".$mode.",".$col_fields.",".$info_type.") method ...");
         global $adb,$current_user, $table_prefix;
         global $mod_strings;
@@ -1429,7 +1484,13 @@ function getBlocks($module,$disp_view,$mode,$col_fields='',$info_type='')
   				$profileList = getCurrentUserProfileList();
  				$sql = "SELECT ".$table_prefix."_field.* FROM ".$table_prefix."_field INNER JOIN ".$table_prefix."_def_org_field ON ".$table_prefix."_def_org_field.fieldid=".$table_prefix."_field.fieldid  WHERE ".$table_prefix."_field.tabid=? AND ".$table_prefix."_field.block IN (". generateQuestionMarks($blockid_list) .") AND $display_type_check AND info_type = ? AND ".$table_prefix."_def_org_field.visible=0 and ".$table_prefix."_field.presence in (0,2) ";
  				$sql.=" AND EXISTS(SELECT * FROM ".$table_prefix."_profile2field WHERE ".$table_prefix."_profile2field.fieldid = ".$table_prefix."_field.fieldid AND ".$table_prefix."_profile2field.profileid IN (". generateQuestionMarks($profileList) .") AND ".$table_prefix."_profile2field.visible = 0) ";
- 				$sql.=" ORDER BY block,sequence";
+                // danzi.tn@20150804 caso speciale per campi del blocco semiramis che in creazione non devono essere mostrati
+                $inter = array_intersect($profileSpecialArray,$profileList);
+                if($disp_view == 'create_view' && $module == 'Accounts' && !empty($inter) && count($inter)>0 && in_array(136 ,$blockid_list ) ){
+                   $sql.= " AND (   (".$table_prefix."_field.block = 136 AND ".$table_prefix."_field.fieldid IN (751,753,750,752,763,1062)) OR  ".$table_prefix."_field.block <> 136 )";
+                }     
+                // danzi.tn@20150804e   
+                $sql.=" ORDER BY block,sequence";
  				$params = array($tabid, $blockid_list, $info_type, $profileList);
   			}
 		}
@@ -1445,6 +1506,12 @@ function getBlocks($module,$disp_view,$mode,$col_fields='',$info_type='')
   				$profileList = getCurrentUserProfileList();
  				$sql = "SELECT ".$table_prefix."_field.* FROM ".$table_prefix."_field INNER JOIN ".$table_prefix."_def_org_field ON ".$table_prefix."_def_org_field.fieldid=".$table_prefix."_field.fieldid  WHERE ".$table_prefix."_field.tabid=? AND ".$table_prefix."_field.block IN (". generateQuestionMarks($blockid_list).") AND $display_type_check AND ".$table_prefix."_def_org_field.visible=0 and ".$table_prefix."_field.presence in (0,2) ";
  				$sql.=" AND EXISTS(SELECT * FROM ".$table_prefix."_profile2field WHERE ".$table_prefix."_profile2field.fieldid = ".$table_prefix."_field.fieldid AND ".$table_prefix."_profile2field.profileid IN (". generateQuestionMarks($profileList) .") AND ".$table_prefix."_profile2field.visible = 0) ";
+                // danzi.tn@20150804 caso speciale per campi del blocco semiramis che in creazione non devono essere mostrati
+                $inter = array_intersect($profileSpecialArray,$profileList);
+                if($disp_view == 'create_view' && $module == 'Accounts' && !empty($inter) && count($inter)>0 && in_array(136 ,$blockid_list ) ){
+                   $sql.= " AND (   (".$table_prefix."_field.block = 136 AND ".$table_prefix."_field.fieldid IN (751,753,750,752,763,1062)) OR  ".$table_prefix."_field.block <> 136 )";
+                }     
+                // danzi.tn@20150804e   
  				$sql.=" ORDER BY block,sequence";
 				$params = array($tabid, $blockid_list, $profileList);
   			}
