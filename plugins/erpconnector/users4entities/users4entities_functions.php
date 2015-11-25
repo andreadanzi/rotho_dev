@@ -5,6 +5,7 @@ include_once 'include/utils/VtlibUtils.php';
 include_once 'include/Webservices/Create.php';
 include_once 'include/QueryGenerator/QueryGenerator.php';
 // danzi.tn@20141222 nuova classificazione
+// danzi.tn@20150603 ZERO FILL PER CAP
 function do_users4entities($time_start) {
 	global $log_active, $adb;
 	echo "\n==========================================================\n";
@@ -105,7 +106,7 @@ function get_sql4leads() {
 			".$table_prefix."_leaddetails.lastname,
 			".$table_prefix."_leaddetails.lead_no,
 			".$table_prefix."_leadaddress.city,
-			".$table_prefix."_leadaddress.code,
+            RIGHT('00000'+ISNULL(".$table_prefix."_leadaddress.code,''),5) as code,
 			".$table_prefix."_leadaddress.country,
 			".$table_prefix."_leadaddress.state
 			FROM ".$table_prefix."_crmentity 
@@ -132,7 +133,7 @@ function get_sql4accounts() {
 			".$table_prefix."_account.email1,
 			".$table_prefix."_accountbillads.bill_country,
 			".$table_prefix."_accountbillads.bill_state,
-			".$table_prefix."_accountbillads.bill_code,
+            RIGHT('00000'+ISNULL(".$table_prefix."_accountbillads.bill_code,''),5) as bill_code,
 			".$table_prefix."_accountbillads.bill_city
 			FROM ".$table_prefix."_crmentity 
 			JOIN ".$table_prefix."_account on ".$table_prefix."_account.accountid = ".$table_prefix."_crmentity.crmid
@@ -160,7 +161,7 @@ function get_sql4contacts() {
 			".$table_prefix."_contactdetails.accountid,
 			".$table_prefix."_accountbillads.bill_country,
 			".$table_prefix."_accountbillads.bill_state,
-			".$table_prefix."_accountbillads.bill_code,
+            RIGHT('00000'+ISNULL(".$table_prefix."_accountbillads.bill_code,''),5) as bill_code,
 			".$table_prefix."_accountbillads.bill_city
 			FROM ".$table_prefix."_crmentity 
 			JOIN ".$table_prefix."_contactdetails on ".$table_prefix."_contactdetails.contactid = ".$table_prefix."_crmentity.crmid
@@ -178,26 +179,11 @@ function get_agent4location($state,$code,$city, $previous_owner_id ) {
 	$agent_id = $previous_owner_id;
 	$agent_line = "---";
 	$b_Found = false;
-	if(!empty($city) && !$b_Found) {
-		$sql = "SELECT Agente,  ".$table_prefix."_users.id , ".$table_prefix."_users.user_line ,  COUNT(Agente) 
-				FROM tmp_assegnazione_agenti 
-				JOIN ".$table_prefix."_users ON ".$table_prefix."_users.user_name = Agente
-				WHERE Comune like '".$city."%' 
-				GROUP BY Agente, ".$table_prefix."_users.id, ".$table_prefix."_users.user_line";		
-		$result = $adb->query($sql);
-		while($row=$adb->fetchByAssoc($result)) {
-			$b_Found = true;
-			$agent_id = $row['id'];
-			$agent_line = $row['user_line'];
-			echo "\tFound ".$agent_id." for city=".$city."\n";
-			break;
-		}
-	}
 	if(!empty($code) && !$b_Found) {
 		$sql = "SELECT Agente,  ".$table_prefix."_users.id , ".$table_prefix."_users.user_line ,  COUNT(Agente) 
 				FROM tmp_assegnazione_agenti 
 				JOIN ".$table_prefix."_users ON ".$table_prefix."_users.user_name = Agente
-				WHERE Cap = '".$code."' 
+				WHERE RIGHT('00000'+ISNULL(tmp_assegnazione_agenti.Cap,''),5) = '".$code."' 
 				GROUP BY Agente, ".$table_prefix."_users.id, ".$table_prefix."_users.user_line";
 		$result = $adb->query($sql);
 		while($row=$adb->fetchByAssoc($result)) {
@@ -205,6 +191,21 @@ function get_agent4location($state,$code,$city, $previous_owner_id ) {
 			$agent_id = $row['id'];
 			$agent_line = $row['user_line'];
 			echo "\tFound ".$agent_id." for code=".$code."\n";
+			break;
+		}
+	}
+    if(!empty($city) && !$b_Found) {
+		$sql = "SELECT Agente,  ".$table_prefix."_users.id , ".$table_prefix."_users.user_line ,  COUNT(Agente) 
+				FROM tmp_assegnazione_agenti 
+				JOIN ".$table_prefix."_users ON ".$table_prefix."_users.user_name = Agente
+				WHERE Comune = '".$city."' 
+				GROUP BY Agente, ".$table_prefix."_users.id, ".$table_prefix."_users.user_line";		
+		$result = $adb->query($sql);
+		while($row=$adb->fetchByAssoc($result)) {
+			$b_Found = true;
+			$agent_id = $row['id'];
+			$agent_line = $row['user_line'];
+			echo "\tFound ".$agent_id." for city=".$city."\n";
 			break;
 		}
 	}

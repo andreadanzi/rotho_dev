@@ -2,6 +2,7 @@
 // danzi.tn@20140820 divisione per zero
 // danzi.tn@20150210 gestione notifiche clienti
 // danzi.tn@20150414 sem_importflag aggiornato con vicino la data e così la data per "IN" non cambia
+// danzi.tn@20150702 in seguito a incontro presso Rotho del 01/07/2015 è stato richiesto che l'indirizzo venga sempre sovrascritto
 class log{
 	var $start;
 	var $stop;
@@ -286,6 +287,7 @@ class importer{
 			while ($row = $adb->fetchByAssoc($res,-1,false)){
 //print_r($row); die;
 				//mycrmv@rotho
+                $at_begin = microtime(True);
 				if ($this->module == 'Quotes'){
 					$row['proposal_date'] = self::convert_data(trim($row['proposal_date']));
 					//$row['agent_number'] = self::getUseridByName(trim($row['agent_number']));
@@ -485,7 +487,10 @@ class importer{
 						$this->update($row,$this->existing_entity[$row[$this->external_code]]);
 						//mycrmv@rotho
 						if ($this->module == 'SalesOrder'){
+                            $at1 = microtime(True);
 							$this->set_invetoryproducts($row,$this->existing_entity[$row[$this->external_code]]);
+                            $at2 = microtime(True);
+                            // #echo sprintf("After set_invetoryproducts 1 (code=%s):  %f\n", $row[$this->external_code] , $at2-$at1);
 						} 
 						elseif ($this->module == 'Quotes'){
 							$this->set_invetoryproducts_quotes($row,$this->existing_entity[$row[$this->external_code]]);
@@ -500,13 +505,18 @@ class importer{
 				
 				//mycrmv@30336e
 				if ($this->module == 'SalesOrder'){
+                    $at1 = microtime(True);
 					$this->set_invetoryproducts($row,$this->existing_entity[$row[$this->external_code]]);
+                    $at2 = microtime(True);
+                    // #echo sprintf("After set_invetoryproducts 2 (code=%s):  %f\n", $row[$this->external_code] , $at2-$at1);
 				}
 				elseif ($this->module == 'Quotes'){
 					$this->set_invetoryproducts_quotes($row,$this->existing_entity[$row[$this->external_code]]);
 				}
 				//mycrmv@rotho e
 				$rows[]=$row[$this->external_code];
+                $at_end = microtime(True);
+                // #echo sprintf("Loop for code=%s took %f\n",$row[$this->external_code] , $at_end-$at_begin);
 			}
 			
 			$this->close_files();
@@ -685,9 +695,11 @@ class importer{
 		$update = $this->getcached_update_arr();		
 		foreach ($this->fields as $table => $arr){
 			foreach ($arr as $field){
+                /* danzi.tn@20150702 in seguito a incontro presso Rotho del 01/07/2015 è stato richiesto che l'indirizzo venga sempre sovrascritto
 				if ($this->module == 'Accounts' && (in_array($field,array('bill_city','bill_code','bill_country','bill_state','bill_street')))) {	//mycrmv@2707m
 					continue;
 				}
+                */
 //				$update[$table][$field] = $data[$this->mapping_inverse[$field]];
 				$update[$table][$field] = $data[$this->mapping_column[$field]];
 				//mycrmv@rotho

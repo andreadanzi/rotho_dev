@@ -29,6 +29,8 @@
 
 // danzi.tn@20150304 aggiunto Corso + 4 cene + 4 pernottamenti
 // danzi.tn@20150414 nuovo corso 564  - RFCACN - Progettazione edifici legno: statica, sismica, can
+// danzi.tn@2015617 personalizzazione per corso 586
+// danzi.tn@210151009 modifica Leadsource da 'Richiesta Consulenze (Form)' a 'Technical Consulting Request'
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -54,7 +56,7 @@ class RothoBus {
 	var $uids_array_safe_tt_address_skipped = Array();
 	var $mapping = Array();
 	var $group_mapping = Array();
-	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504,515,535,564);
+	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504,515,535,564,586);
 	var $pids_list_download = Array(137,139,141,143,200,205);
 	var $pids_list_forms = Array(505);
 	var $pids_list_newsletter = Array(124);
@@ -204,8 +206,8 @@ class RothoBus {
 				foreach($entities as $entitykey=>$entity) {
 					if($entityid == $entities->id) continue;
 					$entity->mode = 'edit';
-					$ret_campaigns = $this->_process_campaigns($ret_id_targets,"Richiesta Consulenze (Form)","Attivo",167);
-					$ret_targets = $this->_process_targets($ret_id_targets,"Richiesta Consulenze (Form)","Pronto",167);
+					$ret_campaigns = $this->_process_campaigns($ret_id_targets,"Technical Consulting Request","Attivo",167);
+					$ret_targets = $this->_process_targets($ret_id_targets,"Technical Consulting Request","Pronto",167);
 					$this->_insert_relations_for_entity($ret_targets,$ret_campaigns,$entity);
 					$this->_create_event($entity,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
 					$this->import_result['records_updated']++;
@@ -701,6 +703,12 @@ class RothoBus {
 					$language = substr($item,9);
 					if($this->log_active) echo "Language = ".$language."\n";
 				}
+                // danzi.tn@2015617 personalizzazione per corso 586
+                if( $tt_address['pid']==586 ) {
+                    $date_corso = "11 sett 2015";
+                    $formula = "Corso";
+                    $code_corso = "ND";
+                }
 			}
 			$idtarget = $tt_address['tmp_idtarget'];	
 			$tmp_page_title = $tt_address['tmp_page_title'];
@@ -1031,7 +1039,7 @@ class RothoBus {
 					".$table_prefix."_crmentity.description,
 					".$table_prefix."_leadaddress.fax,
 					'Webform' as type 
-					, 'Richiesta Consulenze (Form)' AS leadsource 
+					, 'Technical Consulting Request' AS leadsource 
 					, 'Held' as leadstatus
 					, '167' as assigned_user_id
 					, ".$table_prefix."_crmentity.createdtime as  insertdate 
@@ -1049,7 +1057,7 @@ class RothoBus {
 					join ".$table_prefix."_leadscf on ".$table_prefix."_leadscf.leadid = ".$table_prefix."_leaddetails.leadid
 					join ".$table_prefix."_leadaddress on ".$table_prefix."_leadaddress.leadaddressid = ".$table_prefix."_leaddetails.leadid
 					join ".$table_prefix."_leadsubdetails on ".$table_prefix."_leadsubdetails.leadsubscriptionid = ".$table_prefix."_leaddetails.leadid
-					WHERE ".$table_prefix."_leaddetails.leadsource = 'Richiesta Consulenze (Form)'
+					WHERE ".$table_prefix."_leaddetails.leadsource = 'Technical Consulting Request'
 					AND ".$table_prefix."_leadscf.cf_808 = 0";
 		return $wsquery;
 	}

@@ -203,7 +203,7 @@ class WebsiteClass {
 				".$this->website_tableweb."
 				JOIN pages on pages.uid = ".$this->website_tableweb.".pid and pages.deleted=0
 				where ".$this->website_tableweb.".deleted=0
-				and ".$this->website_tableweb.".uid  > " . $max_uid . "  order by ".$this->website_tableweb.".uid ";
+				and ".$this->website_tableweb.".uid  > " . $max_uid . " order by ".$this->website_tableweb.".uid ";
 		$this->_build_insert($this->website_dbweb, $this->website_tableweb,$sql,$this->temp_web);
 		return $sql;
 	}
@@ -244,7 +244,7 @@ class WebsiteClass {
 				".$this->website_tableweb."
 				JOIN pages on pages.uid = ".$this->website_tableweb.".pid and pages.deleted=0
 				where ".$this->website_tableweb.".deleted=0
-				and ".$this->website_tableweb.".tstamp  > " . $max_timestamp . "  order by ".$this->website_tableweb.".uid ";
+				and ".$this->website_tableweb.".tstamp  > " . $max_timestamp ." order by ".$this->website_tableweb.".uid ";
 		$this->_build_insert($this->website_dbweb, $this->website_tableweb,$sql,$this->temp_web);
 		return $sql;
 	}

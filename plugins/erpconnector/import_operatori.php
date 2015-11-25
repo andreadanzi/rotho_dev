@@ -6,6 +6,8 @@ include_once("config.inc.php");
 require_once('include/utils/utils.php');
 include_once("plugins/erpconnector/utils.php");
 include_once("modules/Users/Users.php");
+// danzi.tn@20150924 gestione agenti sempre attivi e modifiche puntuali 
+$active_agent_username = array('HANNESB','KONRADF','THOMASG','FRANZR','FRANCESCOT');
 $current_user= new Users();
 $current_user->id = 1;
 global $adb;
@@ -37,6 +39,7 @@ $res=$adb->query($query);
 while($row=$adb->fetchByAssoc($res,-1,false)){
 	
 	$erp_code=$row['agent_number'];
+   
 	$roleid='H59'; //Default Profile
 	
 	if($row['agent_username']=='' || $row['agent_cn']=='ND'){
@@ -47,14 +50,13 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 		$ldap_auth=true;
 		$username=$row['agent_username'];
 	}
-	
 	//mycrmv@26940
 	$capoarea = '';
 	if ($row['agent_codcapoarea'] != null && $row['agent_codcapoarea'] != ''){
 		$capoarea = $row['agent_codcapoarea'];
 	}//mycrmv@26940 e
 	
-	//mycrmv@rotho
+		//mycrmv@rotho
 	$tipo_rapp = '';
 	if ($row['agent_tiporapporto'] != null && $row['agent_tiporapporto'] != ''){
 		$tipo_rapp = $row['agent_tiporapporto'];
@@ -102,9 +104,19 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 		$user->column_fields["imagename"] = '';
 		$user->column_fields["defhomeview"] = 'home_metrics';
 		$user->column_fields["description"] = '';
+        $user->column_fields["sem_importdate"] = date("Y-m-d H:i:s");
 		
 	}
-	
+	//danzi.tn@20150924 agente AM0018 compare con due usernames PETERICA e PETERDCA...quest'ultimo non deve essere collegato a capoarea
+    $user->column_fields["sem_updatedate"] = date("Y-m-d H:i:s");
+    $user->column_fields["sem_rules"] = "";
+    if($username=='PETERDCA') {
+        $erp_code = ''; // se avesse un erp_code risulterebbe un duplicato
+        $capoarea = ''; // se avesse un capoarea risulterebbe una foglia morta
+        $user->column_fields["sem_rules"] = "PETERDCA compare anche come PETERICA - stesso codice Semiramis - erp_code e capoarea vengono sbiancati";
+    }
+    //danzi.tn@20150924e
+    
 	$user->column_fields["erp_code"] = $erp_code;
 	
 	//mycrmv@26940
@@ -125,13 +137,20 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 	}
 	
 	//mycrmv@26940
-	if($row['agent_active'] == 1){
+	if($row['agent_active'] == 1 ){
 		$user->column_fields["status"] = 'Active';
 	}
 	else{
 		$user->column_fields["status"] = 'Inactive';
 	}
+    
 	//mycrmv@26940e
+    //danzi.tn@20150924
+    if(in_array($row['agent_username'],$active_agent_username) ){
+        $user->column_fields["status"] = 'Active';
+        $user->column_fields["sem_rules"] = "Presente nella lista degli utenti forzati ad essere sempre attivi";
+    }
+    //danzi.tn@20150924e
 	
 	if($ldap_auth){
 		//mycrmv@29588
