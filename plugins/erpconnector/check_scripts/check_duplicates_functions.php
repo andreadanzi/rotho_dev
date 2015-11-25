@@ -10,7 +10,8 @@ require_once('modules/Emails/mail.php');
 require_once('modules/Accounts/Accounts.php');
 
 function do_check_duplicates($time_start) {
-	global $log_active, $adb, $days_detail, $days_summary, $to , $subject,$cc;
+	global $log_active, $adb, $days_detail, $days_summary, $to, $from , $subject,$cc;
+    $bfound = false;
 	$import_result = array();
 	$import_result['records_created']=0;
 	$import_result['records_updated']=0;
@@ -60,6 +61,7 @@ function do_check_duplicates($time_start) {
 		$focus->id = $row["min_accountid"];
 		// danzi.tn@test $focus->save($module);
 		$del_message .= _process_duplicates($focus, $fp);
+        $bfound = true;
 		$import_result['records_updated']++;
 	}
 	// CHECK AZIENDE CHE HANNO STESSO NOME MA UNA HA EXTERNAL CODE VALIDO E L'ALTRA CE L'HA VUOTO
@@ -93,6 +95,7 @@ function do_check_duplicates($time_start) {
 		// danzi.tn@test $focus->save($module);
 		$del_message .= _process_duplicates_2($focus, $fp);
 		$import_result['records_updated']++;
+        $bfound = true;
 	}
 	/*
 	// CHECK AZIENDE CHE HANNO STESSO NOME, STESSO STATO, STESSA CITTA ED EXTERNAL CODE VUOTO
@@ -139,6 +142,7 @@ function do_check_duplicates($time_start) {
 		$rs_message = "<p>Running Scripts NONE</p>\r\n";
 		$subject .= " - NO DUPLICATE FOUND";
 	} else {
+        $bfound = true;
 		$subject .= " - FOUND DUPLICATES FOR ".$import_result['records_updated']. " ACCOUNTS";
 	}
 	$message .= $rs_message;
@@ -147,7 +151,7 @@ function do_check_duplicates($time_start) {
 	$message .= $del_message;
 	// if($log_active) echo $message;
 	$message .= "</body></html>";
-	send_mail('Emails',$to ,'ROTHO BLAAS','laura@rothoblaas.com',$subject,$message,$cc,'');
+	if($bfound) send_mail('Emails',$to ,'ROTHO BLAAS',$from,$subject,$message,$cc,'');
 	// _delete_account_tobe_deleted();
 	return $import_result;
 }
@@ -352,12 +356,6 @@ function _set_account_tobe_deleted($del_id, $dupl_id) {
 }
 
 /*
-UPDATE vtiger_crmentity set deleted=1,modifiedtime=GETDATE(),modifiedby=1, description = convert(text, CONVERT ( varchar, case when vtiger_crmentity.description is null then '' else vtiger_crmentity.description end ) +  ' [AZIENDA DUPLICATA - ' + vtiger_account.duplicated_accountid  + ']' )
--- SELECT vtiger_crmentity.description, convert(text, CONVERT ( varchar, case when vtiger_crmentity.description is null then '' else vtiger_crmentity.description end ) +  ' [AZIENDA DUPLICATA - ' + vtiger_account.duplicated_accountid  + ']' )
-FROM				vtiger_crmentity
-				JOIN  vtiger_account on vtiger_account.accountid = vtiger_crmentity.crmid AND vtiger_account.account_to_be_deleted = 'DELETE_YES' 
-				JOIN vtiger_crmentity duplentity on duplentity.crmid = vtiger_account.duplicated_accountid and duplentity.deleted=0
-				WHERE  vtiger_crmentity.deleted=0 
 			SELECT 
 				vtiger_account.accountid,
 				vtiger_account.accountname,
@@ -373,7 +371,7 @@ FROM				vtiger_crmentity
  				AND vtiger_account.duplicated_delete_date < CONVERT(varchar, GETDATE(), 120)
 */				
 function _delete_account_tobe_deleted() {
-	global $log_active, $adb,$table_prefix;;
+	global $log_active, $adb;
 	$query = "SELECT 
 				vtiger_account.accountid,
 				vtiger_account.accountname,
@@ -389,20 +387,6 @@ function _delete_account_tobe_deleted() {
  				AND vtiger_account.duplicated_delete_date < CONVERT(varchar, GETDATE(), 120)
 				ORDER BY vtiger_account.accountname, vtiger_account.accountid";
 	$result = $adb->query($query);
-	/*
-	
-	$date_var = date('Y-m-d H:i:s');
-	$query = "UPDATE ".$table_prefix."_crmentity set deleted=?,modifiedtime=?,modifiedby=?
-				FROM
-				".$table_prefix."_crmentity
-				JOIN  ".$table_prefix."_account on ".$table_prefix."_account.accountid = ".$table_prefix."_crmentity.crmid AND ".$table_prefix."_account.account_to_be_deleted = 'DELETE_YES' 
-				JOIN ".$table_prefix."_crmentity duplentity on duplentity.crmid = ".$table_prefix."_account.duplicated_accountid and duplentity.deleted=0
-				WHERE  ".$table_prefix."_crmentity.deleted=0 
- 				AND ".$table_prefix."_account.duplicated_delete_date < CONVERT(varchar, GETDATE(), 120)
-				";
-	$adb->pquery($query, array('1',$adb->formatDate($date_var, true),'1'), true,"Error marking record deleted: ");
-	
-	
 	$del_value = array();
 	while($row=$adb->fetchByAssoc($result))
 	{
@@ -421,7 +405,6 @@ function _delete_account_tobe_deleted() {
 			$focus->trash("Account",$account_id );
 		}
 	}
-	*/
 }
 
 

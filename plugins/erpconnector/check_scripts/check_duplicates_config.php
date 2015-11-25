@@ -8,8 +8,9 @@ $module = "Check Account Duplicates";
 $days_detail = -1;
 $days_summary = -7;
 
-$to = "andrea.dnz@gmail.com";
-$cc = "help@danzi.tn.it";
+$from = "crm@rothoblaas.com";
+$to = "elisabeth.pojer@rothoblaas.com";
+$cc = "help@danzi.tn.it,laura@rothoblaas.com,";
 $subject = "CHECK CLIENTS+ Duplicated Accounts";
 
 ?>
