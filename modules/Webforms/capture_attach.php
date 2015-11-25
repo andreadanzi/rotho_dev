@@ -71,18 +71,19 @@ class Webform_Capture {
 			// danzi.tn@20130906 e
 		
 			// danzi.tn@20140310 Modifica gestione RothoBUS per Consulenze WEB (non bisogna più creare Lead se esiste e-mail)
+            // danzi.tn@210151009 modifica Leadsource da Richiesta Consulenze (Form) a Technical Consulting Request
 			$rothoBusClass = new RothoBus();
 			$rothoBusClass->setLog(false);
 			$rothoBusClass->setExistingCourses(true);
 			$campaign_id = strtolower (str_replace(' ', '_',$parameters['leadsource']));
-			$parameters['leadsource'] = 'Richiesta Consulenze (Form)';
+			$parameters['leadsource'] = 'Technical Consulting Request';
 			$parameters['idtarget'] = 'form_consulenza_web'; // idtarget
 			$parameters['cf_747'] = 'form_consulenza_web'; // campaign_id
 			$parameters['cf_726'] = 'Formulario WEB richiesta consulenza'; // campaign_title
 			$parameters['cf_728'] = 'ND';
 			$parameters['cf_733'] = 'ND';
 			$parameters['cf_756'] = 'ND';
-			$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Richiesta Consulenze (Form)','Consulenza - Web');
+			$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters, 'Technical Consulting Request','Consulenza - Web');
 			$bFound = $retval[0];
 			if(!$bFound)
 			{				
@@ -113,7 +114,7 @@ class Webform_Capture {
 				$leadId = $leadIdComponents[1];
 				if( isset($leadId) && $leadId > 0 )
 				{
-					$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters,  'Richiesta Consulenze (Form)','Consulenza - Web');
+					$retval = $rothoBusClass->check_web_form($parameters['email'], $parameters,  'Technical Consulting Request','Consulenza - Web');
 					$bFound = $retval[0];
 					if($bFound)
 					{	
