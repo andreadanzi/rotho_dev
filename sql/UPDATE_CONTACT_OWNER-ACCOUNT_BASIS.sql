@@ -31,3 +31,38 @@ join vtiger_crmentity accentity on accentity.crmid = vtiger_account.accountid an
 where 
 vtiger_crmentity.deleted = 0
 AND accentity.smownerid <> vtiger_crmentity.smownerid;
+
+-- danzi.tn@20150714 aggiornare smownerid dei report visite collegati all'azienda corrente
+
+SELECT top 100
+        vtiger_visitreport.visitreportid,
+        vtiger_visitreport.accountid,
+         CASE 
+    WHEN accentity.smownerid IS NULL THEN vtiger_crmentity.smownerid
+    ELSE accentity.smownerid
+END	
+from vtiger_crmentity
+join vtiger_visitreport on vtiger_crmentity.crmid = vtiger_visitreport.visitreportid 
+join vtiger_account on vtiger_account.accountid = vtiger_visitreport.accountid
+join vtiger_crmentity accentity on accentity.crmid = vtiger_account.accountid and accentity.deleted = 0
+where 
+vtiger_crmentity.deleted = 0
+AND accentity.smownerid <> vtiger_crmentity.smownerid;
+
+
+
+UPDATE 
+vtiger_crmentity
+SET
+vtiger_crmentity.smownerid =                              
+CASE 
+    WHEN accentity.smownerid IS NULL THEN vtiger_crmentity.smownerid
+    ELSE accentity.smownerid
+END	
+from vtiger_crmentity
+join vtiger_visitreport on vtiger_crmentity.crmid = vtiger_visitreport.visitreportid 
+join vtiger_account on vtiger_account.accountid = vtiger_visitreport.accountid
+join vtiger_crmentity accentity on accentity.crmid = vtiger_account.accountid and accentity.deleted = 0
+where 
+vtiger_crmentity.deleted = 0
+AND accentity.smownerid <> vtiger_crmentity.smownerid;
