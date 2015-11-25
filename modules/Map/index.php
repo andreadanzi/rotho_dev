@@ -324,7 +324,7 @@ echo "
 <tr>
 <td class='dvInnerHeader' colspan='5'>
 	<div style='float:left;font-weight:bold;'>
-		<b>&nbsp;". $mod_strings['Show']. " " .$app_strings[$_REQUEST['show']] ." (".count($retValues["results"])." " .$mod_strings['Results'] .")</b>
+        <b>&nbsp;". $mod_strings['Show Results']. " (".count($retValues["results"])." " .$mod_strings['Results'] .")</b>
 	</div>
         <!-- QUERY Map ".$retValues["query"] ." -->
 </td>
@@ -364,8 +364,8 @@ echo $select_assigneduser ."</span>
 <td class='dvtCellInfo'>
 <span id='valueSelContainer'>
 
-<input class='small' type='radio' class='small' id='valueSelND'  name='valueSel' value='ND' ".($_REQUEST['valueSel']=='ND'?'checked="checked"':'')." />{$mod_strings['None']}
-<input class='small' type='radio' class='small' id='valueSel'  name='valueSel' value='cat_prodotti' ".($_REQUEST['valueSel']=='cat_prodotti'?'checked="checked"':'')." /> {$mod_strings['Categories']}
+<input class='small' type='radio' class='small' id='valueSelND'  name='valueSel' value='ND' ".($_REQUEST['valueSel']=='ND'?'checked="checked"':'')." /> {$mod_strings['None']}<br/>
+<input class='small' type='radio' class='small' id='valueSel'  name='valueSel' value='cat_prodotti' ".($_REQUEST['valueSel']=='cat_prodotti'?'checked="checked"':'')." /> {$mod_strings['Categories']}<br/>
 <input class='small' type='radio' class='small' id='valueSelPROD'  name='valueSel' value='prodotto' ".($_REQUEST['valueSel']=='prodotto'?'checked="checked"':'')." /> {$mod_strings['Product']}
 </span>
 
@@ -463,7 +463,9 @@ echo $select_assigneduser ."</span>
 <span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Lookup']}:</span>
 </td>
 <td class='dvtCellInfo'>
-<input id='type1' type='radio' name='type_or_value' value='type' ".($_REQUEST['type_or_value']=='type'?'checked="true"':'')."/> {$mod_strings['Showtype']} <input id='type2' type='radio' name='type_or_value' value='value_and_type' ".($_REQUEST['type_or_value']=='value_and_type'?'checked="true"':'')." /> {$mod_strings['Showvalue']} <input id='type3' type='radio' name='type_or_value' value='value' ".($_REQUEST['type_or_value']=='value'?'checked="true"':'')." /> {$mod_strings['onlyvalue']}
+<input id='type1' type='radio' name='type_or_value' value='type' ".($_REQUEST['type_or_value']=='type'?'checked="true"':'')."/> {$mod_strings['Showtype']}<br/>
+<input id='type2' type='radio' name='type_or_value' value='value_and_type' ".($_REQUEST['type_or_value']=='value_and_type'?'checked="true"':'')." /> {$mod_strings['Showvalue']}<br/>
+<input id='type3' type='radio' name='type_or_value' value='value' ".($_REQUEST['type_or_value']=='value'?'checked="true"':'')." /> {$mod_strings['onlyvalue']}
 </td>
 <td class='dvtCellLabel' align='right'>
 <span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Clustering']}:</span> 
@@ -752,6 +754,7 @@ $(function () {
 									result["account_phone"] = account_phone.val();
 									result["extra"] = result['street'] + "<br/>" + result['code'] + " "+ result['city'] + "(" + result["state"] + ")"+ "<br/>" + result["account_phone"];
                                     sType = "";
+                                    sType = result["last_name"] + " " + result["first_name"] + " ("+result["user_name"]+")<br/>"; //  danzi.tn@20150618 aggiunto dati utente
                                     if(result["type_trans"])
                                     {
                                         sType += "<br/>"+result["type_trans"];

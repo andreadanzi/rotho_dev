@@ -33,6 +33,7 @@ class GeoCoder{
 
 	public function __construct()
 	{
+        // https://maps.googleapis.com/maps/api/geocode/xml?parameters
 		$this->baseUrl = 'http://maps.google.com/maps/api/geocode/xml?sensor=false';
 		$this->initialize();
 	}
@@ -255,7 +256,7 @@ class GeoCoder{
 	Save new coordinates to database.
 	@return a GeoCode() object on success, null otherwise
 	*/
-	private function updateCache($location,$xml)
+	private function updateCache($location,$xml,$mappingstatus=0)
 	{
 		global $adb;
 		$lat = $xml->result->geometry->location->lat;
@@ -268,7 +269,7 @@ class GeoCoder{
 		$street = $adb->sql_escape_string($location[4]);
 		$country = $adb->sql_escape_string($location[5]);
 
-		$query = "INSERT INTO vtiger_map (mapid,state,city,postalCode,country,street,lat,lng) VALUES ($id,'$state','$city','$postalCode','$country','$street','$lat','$lng')";
+		$query = "INSERT INTO vtiger_map (mapid,state,city,postalCode,country,street,lat,lng,mappingdate,mappingstatus) VALUES ($id,'$state','$city','$postalCode','$country','$street','$lat','$lng',GETDATE(),$mappingstatus)";
 		$update_result = $adb->query($query);
 		if (!$update_result) {
 			return null;
@@ -311,7 +312,7 @@ class GeoCoder{
 				if ($xml->status == 'OK') {
 					// Successful geocode
 					$geocode_pending = false;
-					$update_result = $this->updateCache($location,$xml);
+					$update_result = $this->updateCache($location,$xml,1);
 					
 					if (!$update_result) {
 						if($this->log_level>0 && $this->file_csv){$location[6]=2; fputcsv($this->file_csv,  $location); }
@@ -337,7 +338,7 @@ class GeoCoder{
 					{
 						if ($xml->status == 'OK') {
 							// Successful geocode
-							$update_result = $this->updateCache(array($location[0],$location[1], $location[2], $location[3], "", $location[5]),$xml);
+							$update_result = $this->updateCache(array($location[0],$location[1], $location[2], $location[3], "", $location[5]),$xml,2);
 							$recordInserted = $recordInserted + 1;
 							$location[7] = 1;
 						}
@@ -351,7 +352,7 @@ class GeoCoder{
 							{
 								if ($xml->status == 'OK') {
 									// Successful geocode
-									$update_result = $this->updateCache(array($location[0],"", $location[2], $location[3], "", $location[5]),$xml);
+									$update_result = $this->updateCache(array($location[0],"", $location[2], $location[3], "", $location[5]),$xml,3);
 									$recordInserted = $recordInserted + 1;
 									$location[7] = 1;
 								}
@@ -363,7 +364,7 @@ class GeoCoder{
 									{
 										if ($xml->status == 'OK') {
 											// Successful geocode
-											$update_result = $this->updateCache(array($location[0],"", "", $location[3], "", $location[5]),$xml);
+											$update_result = $this->updateCache(array($location[0],"", "", $location[3], "", $location[5]),$xml,4);
 											$recordInserted = $recordInserted + 1;
 											$location[7] = 1;
 										}

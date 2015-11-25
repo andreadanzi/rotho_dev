@@ -5,6 +5,7 @@
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
 // danzi.tn@20150408 selezione multipla su categoria e codice prodotto
 // danzi.tn@20150522 gestione di crmentity_sales.deleted=0 all'interno del SUM(CASE
+// danzi.tn@20150618 aggiunto addslashes
 require_once('include/utils/CommonUtils.php');
 function getSkippedAccounts($ids)
 {
@@ -80,6 +81,9 @@ function getResult($gc,$query)
 						"account_line" => addslashes($row['account_line']), // danzi.tn@20150414 aggiunto account_line - 14.04.2015
 						"account_main_activity" => addslashes($row['account_main_activity']), // danzi.tn@20150414 aggiunto account_main_activity - 14.04.2015
 						"account_sec_activity" => addslashes($row['account_sec_activity']), // danzi.tn@20150414 aggiunto account_sec_activity - 14.04.2015
+                        "user_name" => addslashes($row['user_name']), // danzi.tn@20150618 aggiunto user_name
+						"last_name" => addslashes($row['last_name']), // danzi.tn@20150618 aggiunto last_name
+						"first_name" => addslashes($row['first_name']), // danzi.tn@20150618 aggiunto first_name
 						"map_value" => addslashes($row['map_value']), // Andrea Danzi aggiunto map_value - 26.03.2012
 						"city" => addslashes(ucwords(strtolower($row['city']))),
 						"extra" => addslashes(ucwords(strtolower($row['street']."<br/>".$row['code']." ".$row['city'])).$state.$approx."<br/>".$row['account_phone']), 
@@ -100,6 +104,9 @@ function getResult($gc,$query)
 						"account_line" => addslashes($row['account_line']), // danzi.tn@20150414 aggiunto account_line - 14.04.2015
 						"account_main_activity" => addslashes($row['account_main_activity']), // danzi.tn@20150414 aggiunto account_main_activity - 14.04.2015
 						"account_sec_activity" => addslashes($row['account_sec_activity']), // danzi.tn@20150414 aggiunto account_sec_activity - 14.04.2015
+                        "user_name" => addslashes($row['user_name']), // danzi.tn@20150618 aggiunto user_name
+						"last_name" => addslashes($row['last_name']), // danzi.tn@20150618 aggiunto last_name
+						"first_name" => addslashes($row['first_name']), // danzi.tn@20150618 aggiunto first_name
 						"map_value" => addslashes($row['map_value']), // Andrea Danzi aggiunto map_value - 26.03.2012
 						"city" => addslashes(ucwords(strtolower($row['city']))),
 						"extra" => addslashes(ucwords(strtolower($row['street']." - ".$row['code']." ".$row['city'])).$state.$approx),
@@ -167,6 +174,7 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 							bill_country as country,
 							bill_state as state,
 							bill_street as street, 
+                            u.user_name, u.last_name, u.first_name ,
 							vtiger_account.account_client_type as type ,
                             vtiger_account.account_line,
                             vtiger_account.account_main_activity,
@@ -177,6 +185,8 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
 			FROM vtiger_account
 			JOIN vtiger_accountbillads on vtiger_account.accountid=vtiger_accountbillads.accountaddressid 
 			JOIN vtiger_accountscf on vtiger_accountscf.accountid=vtiger_account.accountid 
+            JOIN vtiger_crmentity accent on accent.crmid = vtiger_account.accountid and accent.deleted = 0
+            JOIN vtiger_users u on u.id = accent.smownerid
 			LEFT JOIN vtiger_salesorder on vtiger_salesorder.accountid  = vtiger_account.accountid ".$extra_from_clause." 
 			LEFT JOIN vtiger_crmentity as vtiger_crmentity_sales on vtiger_crmentity_sales.crmid  = vtiger_salesorder.salesorderid 
 			LEFT JOIN vtiger_inventoryproductrel on vtiger_salesorder.salesorderid = vtiger_inventoryproductrel.id  
@@ -221,6 +231,7 @@ WHEN \"Low\" THEN 1000 END as map_value , 'ND' as map_aurea, vtiger_contactdetai
                             bill_country,  
                             bill_state , 
                             bill_street, 
+                            u.user_name, u.last_name, u.first_name ,
                             vtiger_account.account_client_type, 
                             vtiger_account.account_line,
                             vtiger_account.account_main_activity,
@@ -396,26 +407,32 @@ function printResultLayer($results,$skippedAccs=null)
 	echo "var resultLayer = {\n";
 	foreach($results as $key=>$result)
 	{
-                $res_name = $result['name'];
-                $res_name = trim($res_name);
+        $res_name = $result['name'];
+        $res_name = str_replace(array("\r", "\n"), '', $res_name); // danzi.tn@201509004 rimuovere newline 
+        $res_name = addslashes(trim($res_name));
+        $street = addslashes($result['street']);
+        $city = addslashes($result['city']);
 		echo "\t'{$key}': \n";
 		echo "\t{\n";
 		// echo "\t'name': '{$result['name']}', \n";
 		echo "\t'name': '{$res_name}', \n";
 		echo "\t'type': '{$result['type']}', \n"; // Andrea Danzi aggiunto type - 24.03.2012
-        echo "\t'type_trans': '".getTranslatedString($result['type'],'Accounts')."', \n"; // danzi.tn@20150414 aggiunto type_trans
+        echo "\t'type_trans': '".addslashes(getTranslatedString($result['type'],'Accounts'))."', \n"; // danzi.tn@20150414 aggiunto type_trans
         echo "\t'account_line': '{$result['account_line']}', \n"; // danzi.tn@20150414 aggiunto account_line
-        echo "\t'account_main_activity': '".getTranslatedString($result['account_main_activity'],'Accounts')."', \n"; // danzi.tn@20150414 aggiunto account_main_activity
-        echo "\t'account_sec_activity': '".getTranslatedString($result['account_sec_activity'],'Accounts')."', \n"; // danzi.tn@20150414 aggiunto account_sec_activity
+        echo "\t'account_main_activity': '".addslashes(getTranslatedString($result['account_main_activity'],'Accounts'))."', \n"; // danzi.tn@20150414 aggiunto account_main_activity
+        echo "\t'account_sec_activity': '".addslashes(getTranslatedString($result['account_sec_activity'],'Accounts'))."', \n"; // danzi.tn@20150414 aggiunto account_sec_activity        
+        echo "\t'user_name': '{$result['user_name']}', \n"; //  danzi.tn@20150618 aggiunto user_name
+        echo "\t'last_name': '{$result['last_name']}', \n"; //  danzi.tn@20150618 aggiunto last_name
+        echo "\t'first_name': '{$result['first_name']}', \n"; //  danzi.tn@20150618 aggiunto first_name
 		echo "\t'map_value': '{$result['map_value']}', \n"; // Andrea Danzi aggiunto map_value - 26.03.2012
-		echo "\t'city': '{$result['city']}', \n";
+		echo "\t'city': '{$city}', \n";
 		echo "\t'code': '{$result['code']}', \n";
-		echo "\t'street': '{$result['street']}', \n";
+		echo "\t'street': '{$street}', \n";
 		echo "\t'country': '{$result['country']}', \n";
 		echo "\t'state': '{$result['state']}', \n";
 		echo "\t'account_phone': '{$result['account_phone']}', \n";
 		echo "\t'record_id': '{$key}', \n";
-		echo "\t'extra': '".str_replace(array("\r", "\r\n", "\n"), '', $result['extra'])."', \n";
+		echo "\t'extra': '".addslashes( str_replace(array("\r", "\r\n", "\n"), '',$result['extra']))."', \n";
 		echo "\t'pos': [{$result['lat']},{$result['lng']}], \n";
 		echo "\t'map_aurea': '{$result['map_aurea']}', \n";
 		echo "\t},\n";
@@ -427,6 +444,7 @@ function printResultLayer($results,$skippedAccs=null)
 		foreach($skippedAccs as $nkey=>$nresult)
 		{
 	       	        $res_name = $nresult['name'];
+                    $res_name = str_replace(array("\r", "\n"), '', $res_name); // danzi.tn@201509004 rimuovere newline 
 	       	        $res_name = trim($res_name);
 			echo "\t'{$nkey}': \n";
 			echo "\t{\n";

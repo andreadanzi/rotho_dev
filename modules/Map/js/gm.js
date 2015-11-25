@@ -1,13 +1,19 @@
 var local_markersArray = [];
+var heatMapData = [];
 var local_circleArray = [];
 var markerCluster = null;
+var infoPolyWindow;
 var clust_markers = [];
+var polyHullSet = {};
 var map = null;
+var heatmap = null;
+var convexHullSet = {};
 var gmap = null;
 var fusion_value = 0;
 var amountrange_value = 0;
 var minval = 0;
 var maxval = 1;
+var maxInt = 0;
 var directionsDisplay = null;
 var coords = new Object();
 coords.lat = 46.329938;
@@ -20,6 +26,7 @@ geocoder = new google.maps.Geocoder();
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider (updateMap), per step da 500 euro
 // danzi.tn@20150414 modifica alla infowindow e a circle
+// danzi.tn@20150618 aggiunto dati utente e heatMapData
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
@@ -65,6 +72,8 @@ function initialize() {
 	google.maps.event.addDomListener(domElement, 'click',  function() { updateValueFilterContainer(this);} );
 	google.maps.event.addDomListener(domElementND, 'click',  function() { updateValueFilterContainer(this);} );
 	google.maps.event.addDomListener(domElementPROD, 'click',  function() { updateValueFilterContainer(this);} );
+    
+    
    
 }
 
@@ -154,19 +163,19 @@ function getDescription(id, pos, name, type, map_value, city, extra, map_aurea,r
 	switch(module)
 	{
 		case "Accounts": 
-			html += "<br/><b><span style='float: right'><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>"+name+"</a></b>";
+			html += "<br/><b><span><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>"+name+"</a></b>";
 			break;
 		case "Leads": 
-			html += "<br/><b><span style='float: right'><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>"+name+"</a></b>";
+			html += "<br/><b><span><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>"+name+"</a></b>";
 			break;
 		case "SalesOrder": 
-			html += "<br/><b><span style='float: right'><a href='index.php?action=CallRelatedList&module=Accounts&selected_header=Sales Order&relation_id=4&record="+id+"'>"+name+"</a></b>";
+			html += "<br/><b><span><a href='index.php?action=CallRelatedList&module=Accounts&selected_header=Sales Order&relation_id=4&record="+id+"'>"+name+"</a></b>";
 			break;
 		case "HelpDesk":
-			html += "<br/><b><span style='float: right'><a href='index.php?action=CallRelatedList&module=Contacts&selected_header=HelpDesk&relation_id=21&record="+id+"'>"+name+"</a></b>";
+			html += "<br/><b><span><a href='index.php?action=CallRelatedList&module=Contacts&selected_header=HelpDesk&relation_id=21&record="+id+"'>"+name+"</a></b>";
 			break;
 		case "Potentials": 
-			html += "<br/><b><span style='float: right'><a href='index.php?action=CallRelatedList&module=Accounts&selected_header=Potentials&relation_id=2&record="+id+"'>"+name+"</a></b>";
+			html += "<br/><b><span><a href='index.php?action=CallRelatedList&module=Accounts&selected_header=Potentials&relation_id=2&record="+id+"'>"+name+"</a></b>";
 			break;
 	}
 	if(type)
@@ -189,7 +198,7 @@ function getDescription(id, pos, name, type, map_value, city, extra, map_aurea,r
 
 	html += "<br/><a onClick='loadDirectionFrom(\""+pos.lat()+","+pos.lng()+"\",\""+name+"\",\""+city+"\")' href='javascript:void(0)'>"+from_lbl+ " " + name + "</a>";
 	html += "<br/><a onClick='loadDirectionTo(\""+pos.lat()+","+pos.lng()+"\",\""+name+"\",\""+city+"\")' href='javascript:void(0)'>"+to_lbl+ " " +name+"</a>";
-	//html += "<span style='float: right'><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>View</a></span>";
+	//html += "<span ><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>View</a></span>";
 
 	// index.php?module=Accounts&action=DetailView&record=154
 	return html;
@@ -358,6 +367,38 @@ function clearCircleArray() {
   }
 }
 
+
+function toggleHeatmap() {
+  clearMapCluster();
+  deleteCircleArray();
+  deleteMarkersArray();
+  if(heatmap == null) {
+    showHeatMapData();
+  } else {
+    if(heatmap.getMap()) {
+       checkMap();
+    } else {
+       heatmap.setMap(map);
+       for(var key in polyHullSet) {
+            var polyHull = polyHullSet[key];
+            polyHull.setMap(map);
+       }
+    }
+    // heatmap.setMap(heatmap.getMap() ? null : map);
+  }
+}
+
+// heatMapData
+function clearheatMapData() {
+  if (heatMapData) {
+    for ( i in heatMapData) {
+	  if(heatMapData[i] && typeof heatMapData[i] == "object" && typeof heatMapData[i].setMap == "function"){
+	    heatMapData[i].setVisible(false);
+	  }
+    }
+  }
+}
+
 function clearMarkersArray() {
   if (local_markersArray) {
     for (i in local_markersArray) {
@@ -385,6 +426,95 @@ function showCircleArray() {
 	  }
     }
   }
+}
+
+function CustomConvexPolygon(options) {
+     var self = this;
+     // initialize any options
+     console.log('init')
+}
+
+CustomConvexPolygon.prototype = new google.maps.Polygon();
+CustomConvexPolygon.prototype.convex = null;
+
+if (!google.maps.Polygon.prototype.setPolyName) {
+	google.maps.Polygon.prototype.setPolyName = function(name) {
+		this.polyname = name;
+	};
+}
+
+if (!google.maps.Polygon.prototype.getPolyName) {
+	google.maps.Polygon.prototype.getPolyName = function() {
+		return this.polyname;
+	};
+}
+
+// heatMapData
+function showHeatMapData() {
+     for( convexHullKey in convexHullSet ) {
+         convexHull = convexHullSet[convexHullKey];
+         if (convexHull.points.length > 0) {
+            var polyHull = polyHullSet[convexHullKey];
+            if(polyHull == null) {
+                var hullPoints = convexHull.getHull();
+                //Convert to google latlng objects
+                hullPointsLatLng = hullPoints.map(function (item) {
+                    return new google.maps.LatLng(item.y, item.x);
+                });
+                polyHull = new google.maps.Polygon({
+                    paths: hullPointsLatLng,
+                    strokeColor: '#000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#000',
+                    fillOpacity: 0.35
+                });
+                polyHull.set("hullpoints",hullPoints);
+                polyHull.setPolyName(convexHullKey);
+                polyHullSet[convexHullKey] = polyHull;
+                google.maps.event.addListener(polyHull, 'click', function (event) {
+                        var vertices = this.getPath();
+                        var hp = this.get("hullpoints");
+                        var polyName = this.getPolyName();
+                        var contentString = '<b>Agent Map</b><br>' +
+                          'Clicked '+polyName+' on location: <br>' + event.latLng.lat() + ',' + event.latLng.lng() +
+                          '<br>';
+
+                        // Iterate over the vertices.
+                        for (var i =0; i < vertices.getLength(); i++) {
+                            var xy = vertices.getAt(i);
+                            // contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +    xy.lng();
+                        }
+                        var userName = "";
+                        // Iterate over the vertices.
+                        for (var i =0; i < hp.length; i++) {
+                            var hpoint = hp[i];
+                            userName = hpoint.info.user_name;
+                            // contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +    xy.lng();
+                        }
+                      contentString += userName;
+                      // Replace the info window's content and position.
+                      infoPolyWindow.setContent(contentString);
+                      infoPolyWindow.setPosition(event.latLng);
+
+                      infoPolyWindow.open(map);
+                    });    
+            }
+            polyHull.setMap(map);    
+            infoPolyWindow = new google.maps.InfoWindow();
+        }
+    }
+    if (heatMapData) {
+        heatmap = new google.maps.visualization.HeatmapLayer({
+          data: heatMapData,
+          radius: 20,
+          maxIntensity: maxInt,
+        });
+        heatmap.setMap(map);
+    }
+  
+   
+  
 }
 
 function showMarkersArray() {
@@ -432,6 +562,11 @@ function deleteMarkersArray() {
 
 
 function checkMap(name) {
+    if(heatmap) heatmap.setMap(null);
+    for(var key in polyHullSet) {
+        var polyHull = polyHullSet[key];
+        polyHull.setMap(null);
+    }
 	clearMapCluster();
 	deleteCircleArray();
 	deleteMarkersArray();
@@ -448,13 +583,17 @@ function checkMap(name) {
 }
 
 function createArrays() {
+    
+    maxInt = 0;
+    
 	for (var j in resultLayer) 
 	{
 		var result = resultLayer[j];
 		// if(fusion_value > result["map_value"]) continue;
 		if( minval > result["map_value"] || result["map_value"] > maxval ) continue;
 		var pos = new google.maps.LatLng(result["pos"][0], result["pos"][1]);
-        sType = "";
+        sType = result["last_name"] + " " + result["first_name"] + " ("+result["user_name"]+")<br/>"; //  danzi.tn@20150618 aggiunto dati utente
+        
         if(result["type_trans"])
         {
             sType += "<br/>"+result["type_trans"];
@@ -508,7 +647,23 @@ function createArrays() {
 			var circleItem = getCircle2(result["map_value"],pos,result["name"],contentString);
 			local_circleArray.push(circleItem);
 		}
+        // danzi.tn@20150618 heatMap
+        map_value_10 = result["map_value"]/10;
+        var heatMapItem =  {location: pos, weight: map_value_10};
+        var agent = {user_name:result["user_name"],last_name:result["last_name"], first_name:result["first_name"]};
+        var convexHull = null;
+        if( result["user_name"] in convexHullSet ) {
+            convexHull = convexHullSet[result["user_name"]];
+            convexHull.addPoint(pos.lng(), pos.lat(), agent);
+        } else {
+            convexHull = new ConvexHullGrahamScan();
+            convexHull.addPoint(pos.lng(), pos.lat(), agent);
+            convexHullSet[result["user_name"]] = convexHull;
+        }
+        if( maxInt < map_value_10) maxInt = map_value_10;
+        heatMapData.push(heatMapItem);
 	}
+    maxInt = maxInt*0.5;
 }
 
 function bindInfoW(marker, contentString, infowindow)
