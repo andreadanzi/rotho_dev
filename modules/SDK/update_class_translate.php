@@ -55,8 +55,9 @@ SDK::setLanguageEntry("Accounts","es_es","PRODUTTORE SERRAMENTI","Fabricante de 
 SDK::setLanguageEntry("Accounts","pt_pt","PRODUTTORE SERRAMENTI","Produtor de janelas");
 
 // CASE IN LEGNO
-SDK::setLanguageEntry("Accounts","it_it","CASE IN LEGNO","Holzhauser rahmenbau");
-SDK::setLanguageEntry("Accounts","de_de","CASE IN LEGNO","Maisons en bois");
+SDK::setLanguageEntry("Accounts","it_it","CASE IN LEGNO","Case in legno");
+SDK::setLanguageEntry("Accounts","de_de","CASE IN LEGNO","Holzhauser rahmenbau");
+SDK::setLanguageEntry("Accounts","fr_fr","CASE IN LEGNO","Maisons en bois");
 
 //IMPERM
 SDK::setLanguageEntry("Accounts","de_de","IMPERM","Bauabdichtung");
@@ -81,7 +82,7 @@ SDK::setLanguageEntry("Accounts","en_us","DISTRIBUTORE SERRAMENTI","Windows-door
 SDK::setLanguageEntry("Accounts","es_es","DISTRIBUTORE SERRAMENTI","Distribuidor de cerramientos");
 SDK::setLanguageEntry("Accounts","pt_pt","DISTRIBUTORE SERRAMENTI","Distribuidor de perfil - molduras de janelas");
 
-SDK::setLanguageEntry("Accounts","de_de","ENTEPUBB","Oeffentliche aemter");
+SDK::setLanguageEntry("Accounts","de_de","ENTEPUBB","Öffentliche Ämter");
 SDK::setLanguageEntry("Accounts","fr_fr","ORDINI CATEGORIA/ASSOCIAZIONI","Associations");
 SDK::setLanguageEntry("Accounts","fr_fr","AMMINISTRCOND","Administrateurs de immeuble");
 
@@ -89,7 +90,7 @@ SDK::setLanguageEntry("Accounts","fr_fr","AMMINISTRCOND","Administrateurs de imm
 // VISIT REPORT
 
 // "EDIFICI IN LEGNO"
-SDK::setLanguageEntry("Visitreport","de_de","EDIFICI IN LEGNO","Gebaude brettsperrholzbau");
+SDK::setLanguageEntry("Visitreport","de_de","EDIFICI IN LEGNO","Gebäude Brettsperrholzbau");
 SDK::setLanguageEntry("Visitreport","fr_fr","EDIFICI IN LEGNO","Batiments bois");
 
 // GRANDI STRUTTURE

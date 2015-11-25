@@ -12,7 +12,15 @@ session_start();
 $Vtiger_Utils_Log = true;
 include_once('vtlib/Vtiger/Menu.php');
 include_once('vtlib/Vtiger/Module.php');
-//danzi.tn@20151109 traduzioni
+//danzi.tn@20151125 traduzioni varie
+$row = 1;
+if (($handle = fopen("/var/www/dev/modules/SDK/traduzioni_label_20151125_elisabeth.csv", "r")) !== FALSE) {
+    while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
+        $num = count($data);
+        SDK::setLanguageEntry($data[0],$data[2],$data[1],$data[3]);
+        $row++;
 
-
+    }
+    fclose($handle);
+}
 ?>

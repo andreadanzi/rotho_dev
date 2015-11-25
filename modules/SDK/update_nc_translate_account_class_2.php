@@ -12,7 +12,10 @@ session_start();
 $Vtiger_Utils_Log = true;
 include_once('vtlib/Vtiger/Menu.php');
 include_once('vtlib/Vtiger/Module.php');
-//danzi.tn@20151109 traduzioni
-
-
+//danzi.tn@20150527 traduzioni classificazione
+$row = 1;
+SDK::setLanguageEntry('Accounts' , 'de_de' , 'RIVENDITORE' , 'Händler');
+SDK::setLanguageEntry('APP_STRINGS' , 'de_de' , 'RIVENDITORE' , 'Händler');
+SDK::setLanguageEntry('Visitreport' , 'de_de' , 'RIVENDITORE' , 'Händler');
+SDK::setLanguageEntry('Leads' , 'de_de' , 'RIVENDITORE' , 'Händler');
 ?>
