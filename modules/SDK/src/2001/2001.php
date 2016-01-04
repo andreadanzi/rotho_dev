@@ -8,19 +8,20 @@
  * All Rights Reserved.
  ***************************************************************************************/
 /* crmv@36171 */
+// danzi.tn@20160104 passaggio in produzione albero utenti
 
 global $sdk_mode;
 switch($sdk_mode) {
 	case 'detail':
 		$label_fld[] = getTranslatedString($fieldlabel,$module);
 		$label_fld[] = $col_fields[$fieldname];
-		require_once('modules/Map/lib/utils.inc.php');
+		require_once('modules/SDK/src/modules/Accounts/treeUtils.php');
 		$label_fld["options"] = getProductCategoryTree();
 		break;
 	case 'edit':
 		$editview_label[] = getTranslatedString($fieldlabel, $module_name);
 		$fieldvalue[] = $value;
-		require_once('modules/Map/lib/utils.inc.php');
+		require_once('modules/SDK/src/modules/Accounts/treeUtils.php');
 		$fieldvalue[] = getProductCategoryTree();
 		break;
 }

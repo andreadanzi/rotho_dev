@@ -1,5 +1,6 @@
 <?php
-
+//danzi.tn@20151214 parametro bSearchInCache per saltare la cache
+// danzi.tn@20160104 passaggio in produzione albero utenti
 /* Helper class for GeoCoder, contains latitude and longitude */
 class GeoCode
 {
@@ -17,17 +18,18 @@ class GeoCode
 
 
 class GeoCoder{
-	
+
 	private $delay = 0;
 	private $bNeedsDelay = false;
  	private $baseUrl = "";
+ 	private $baseUrlJson = "";
 	public $count_calls = 0;
 	public $log_level=0;
 	public $file_csv = null;
-	
+
 	private function initialize()
 	{
-		
+
 
 	}
 
@@ -35,6 +37,7 @@ class GeoCoder{
 	{
         // https://maps.googleapis.com/maps/api/geocode/xml?parameters
 		$this->baseUrl = 'http://maps.google.com/maps/api/geocode/xml?sensor=false';
+		$this->baseUrlJson = 'http://maps.google.com/maps/api/geocode/json?sensor=false';
 		$this->initialize();
 	}
 	public function needsDelay()
@@ -50,8 +53,8 @@ class GeoCoder{
 	{
 		$this->delay = value;
 	}
-	
-	
+
+
 	public function getCountCalls()
 	{
 		return $this->count_calls;
@@ -63,7 +66,7 @@ class GeoCoder{
 	}
 
 
-	/** 
+	/**
 		Search the given location in cache
 		if $id is specified, retrieve directly the record
 	*/
@@ -83,7 +86,7 @@ class GeoCoder{
 		else
 		{
 			$query = "SELECT lat,lng,CASE WHEN street='' THEN 1 ELSE 0 END as approx FROM vtiger_map WHERE state='$state' AND city='$city' AND postalCode='$postalCode' ";
-			
+
 			if ($street)
 				$street= "AND street='$street' ";
 			if ($country)
@@ -105,7 +108,7 @@ class GeoCoder{
 			}
 
 		}
-		
+
 
 		return null;
 	}
@@ -132,7 +135,7 @@ class GeoCoder{
 		if ($xml->status == 'OK') {
 			// Successful geocode
 			$this->bNeedsDelay = false;
-			return $this->updateCache(array($id,$state,$city,$postalCode,$street,$country),$xml);
+			return $this->updateCache(array($id,$state,$city,$postalCode,$street,$country),$xml, 101);
 		} else if ($xml->status == 'OVER_QUERY_LIMIT') {
 					// sent geocodes too fast
 					$this->bNeedsDelay = true;
@@ -147,7 +150,7 @@ class GeoCoder{
 				{
 					if ($xml->status == 'OK') {
 						// Successful geocode
-						return $this->updateCache(array($id,$state, $city, $postalCode, "", $country),$xml);
+						return $this->updateCache(array($id,$state, $city, $postalCode, "", $country),$xml, 102);
 					}
 					else
 					{
@@ -158,10 +161,10 @@ class GeoCoder{
 						{
 							if ($xml->status == 'OK') {
 								// Successful geocode
-								return $this->updateCache(array($id,"", $city, $postalCode, "", $country),$xml);
+								return $this->updateCache(array($id,"", $city, $postalCode, "", $country),$xml, 103);
 							}
 							else
-							{								
+							{
 								//attempt skipping the street, the state and the postal code
 								$request_url = $this->baseUrl . "&address=" . urlencode("$city, $country");
 								$xml = simplexml_load_file($request_url);
@@ -169,7 +172,7 @@ class GeoCoder{
 								{
 									if ($xml->status == 'OK') {
 										// Successful geocode
-										return $this->updateCache(array($id,"", $city, "", "", $country),$xml);
+										return $this->updateCache(array($id,"", $city, "", "", $country),$xml, 104);
 									}
 									else
 									{
@@ -180,14 +183,14 @@ class GeoCoder{
 										{
 											if ($xml->status == 'OK') {
 												// Successful geocode
-												return $this->updateCache(array($id,"", "", $postalCode, "", $country),$xml);
+												return $this->updateCache(array($id,"", "", $postalCode, "", $country),$xml, 105);
 											}
 										}
 									}
-								}								
+								}
 							}
 						}
-					}					
+					}
 				}
 			}
 			// failure to geocode
@@ -196,22 +199,116 @@ class GeoCoder{
 		}
 	}
 
+    /**
+	Search location on Google Maps GeoCoder and store the result on the database.
+	@return a GeoCode() object on success, null otherwise
+	*/
+	private function retrive_json($id, $state, $city, $postalCode, $street="", $country="")
+	{
+		//echo "No hit in cache: contacting Google Maps.<br/>";
+
+		// Initialize delay in geocode speed
+		$address = "$street, $postalCode, $city, $state, $country";
+		$request_url = $this->baseUrlJson ."&address=" . urlencode($address);
+		$resp_json = file_get_contents($request_url);
+        $resp = json_decode($resp_json);
+		if(!$resp)
+		{
+			//	echo ("Google Maps URL not loading: $request_url");
+			return null;
+		}
+
+		if ($resp->status == 'OK') {
+			// Successful geocode
+			$this->bNeedsDelay = false;
+			return $this->updateCache(array($id,$state,$city,$postalCode,$street,$country),$resp);
+		} else if ($resp->status == 'OVER_QUERY_LIMIT') {
+					// sent geocodes too fast
+					$this->bNeedsDelay = true;
+					echo "Geocode too fast for ".$id." Increasing delay<br/>";
+					if($this->delay<3000000) $this->delay += 100000;
+		} else {
+			if ($resp->status == 'ZERO_RESULTS') {
+				//attempt skipping the street
+				$request_url = $this->baseUrlJson . "&address=" . urlencode("$postalCode, $city, $state, $country");
+				$resp_json = file_get_contents($request_url);
+                $resp = json_decode($resp_json);
+				if($resp)
+				{
+					if ($resp->status == 'OK') {
+						// Successful geocode
+						return $this->updateCache(array($id,$state, $city, $postalCode, "", $country),$resp);
+					}
+					else
+					{
+						//attempt skipping the street and the state
+						$request_url = $this->baseUrlJson . "&address=" . urlencode("$postalCode, $city, $country");
+						$resp_json = file_get_contents($request_url);
+                        $resp = json_decode($resp_json);
+						if($resp)
+						{
+							if ($resp->status == 'OK') {
+								// Successful geocode
+								return $this->updateCache(array($id,"", $city, $postalCode, "", $country),$resp);
+							}
+							else
+							{
+								//attempt skipping the street, the state and the postal code
+								$request_url = $this->baseUrlJson . "&address=" . urlencode("$city, $country");
+								$resp_json = file_get_contents($request_url);
+                                $resp = json_decode($resp_json);
+								if($resp)
+								{
+									if ($resp->status == 'OK') {
+										// Successful geocode
+										return $this->updateCache(array($id,"", $city, "", "", $country),$resp);
+									}
+									else
+									{
+										//attempt skipping the street, the state and the city
+										$request_url = $this->baseUrlJson . "&address=" . urlencode("$postalCode,$country");
+										$resp_json = file_get_contents($request_url);
+                                        $resp = json_decode($resp_json);
+										if($resp)
+										{
+											if ($resp->status == 'OK') {
+												// Successful geocode
+												return $this->updateCache(array($id,"", "", $postalCode, "", $country),$resp);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			// failure to geocode
+			echo "Address '$address' failed to geocoded. Status: ".$resp->status;
+			return null;
+		}
+	}
+
 	/**
-	Search the given location and return the geographic coordination, 
+	Search the given location and return the geographic coordination,
 	First serach in the cache (database table), if no result found lookup the location on Google Maps GeoCoder and save the response for future requests.
 	@return a GeoCode() object on success, null otherwise
 	*/
-	public function getGeoCode($id, $state, $city, $postalCode, $street="", $country="")
+	public function getGeoCode($id, $state, $city, $postalCode, $street="", $country="", $bSearchInCache=true)
 	{
 		if(!$city)
 			return null;
 
 		if($country==null || $country=="" ) $country="it";
-		
+
 		$ret = null;
 
 		//check cache
-		$ret = $this->searchCache($id, $state, $city, $postalCode, $street, $country);
+        if($bSearchInCache) {
+            $ret = $this->searchCache($id, $state, $city, $postalCode, $street, $country);
+        } else {
+            $this->deleteCache($id);
+        }
 		if($ret)
 		{
 			$this->bNeedsDelay = false;
@@ -221,11 +318,11 @@ class GeoCoder{
 			$ret = $this->retrive($id, $state, $city, $postalCode, $street, $country);
 		}
 		return $ret;
-		
+
 	}
-	
+
 		/**
-	Search the given location and return the geographic coordination, 
+	Search the given location and return the geographic coordination,
 	First serach in the cache (database table), if no result found lookup the location on Google Maps GeoCoder and save the response for future requests.
 	@return a GeoCode() object on success, null otherwise
 	*/
@@ -235,7 +332,7 @@ class GeoCoder{
 			return null;
 
 		if($country==null || $country=="" ) $country="it";
-		
+
 		$ret = null;
 
 		//check cache
@@ -244,12 +341,31 @@ class GeoCoder{
 		{
 			$this->bNeedsDelay = false;
 			return $ret;
-		} else 
+		} else
 		{
 			$ret = null;
 		}
 		return $ret;
-		
+
+	}
+	/**
+	Save new coordinates to database.
+	@return a GeoCode() object on success, null otherwise
+	*/
+	private function deleteCache($id)
+	{
+		global $adb;
+		$query = "DELETE vtiger_map WHERE mapid = " . $id;
+		$update_result = $adb->query($query);
+		if (!$update_result) {
+			return false;
+		}
+		else
+		{
+			$query = "UPDATE vtiger_accountscf SET cf_871 = '0' WHERE accountid = " . $id ;
+			$adb->query($query);
+			return true;
+		}
 	}
 
 	/**
@@ -299,7 +415,7 @@ class GeoCoder{
 			$geocode_pending = true;
 			$location[7] = 0;
 			while ($geocode_pending) {
-				$address = "{$location[4]}, {$location[3]}, {$location[2]}, {$location[5]}, {$location[1]}"; 
+				$address = "{$location[4]}, {$location[3]}, {$location[2]}, {$location[5]}, {$location[1]}";
 				$id = $location[0];
 				$request_url = $this->baseUrl . "&address=" . urlencode($address);
 				$xml = simplexml_load_file($request_url);
@@ -313,17 +429,17 @@ class GeoCoder{
 					// Successful geocode
 					$geocode_pending = false;
 					$update_result = $this->updateCache($location,$xml,1);
-					
+
 					if (!$update_result) {
 						if($this->log_level>0 && $this->file_csv){$location[6]=2; fputcsv($this->file_csv,  $location); }
 						break;
 					}
-					else 
+					else
 					{
 						$recordInserted = $recordInserted + 1;
 						$location[7] = 1;
 					}
-// 					else 
+// 					else
 // 						echo "Added $id => {$location['state']},{$location['city']},{$location['postalCode']},$lat,$lng<br/>";
 				} else if ($xml->status == 'OVER_QUERY_LIMIT') {
 					// sent geocodes too fast
@@ -344,8 +460,8 @@ class GeoCoder{
 						}
 						else
 						{
-							
-							
+
+
 							$request_url = $this->baseUrl . "&address=" . urlencode("{$location[3]}, {$location[2]}, {$location[5]}");
 							$xml = simplexml_load_file($request_url);
 							if($xml)
@@ -395,7 +511,7 @@ class GeoCoder{
 			flush();
 		}
 		return $recordInserted;
-		
+
 	}
 }
 

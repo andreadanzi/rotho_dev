@@ -13,8 +13,9 @@
 
 <!-- module header -->
 <!-- danzi.tn@13022013 for the new layout -->
-<script language="JavaScript" type="text/javascript" src="include/js/ListViewByProduct.js"></script>
+<script language="JavaScript" type="text/javascript" src="modules/SDK/src/js/ListViewByProduct.js"></script>
 <!-- danzi.tn@13022013 e -->
+<!-- danzi.tn@20160104 passaggio in produzione albero utenti -->
 <script language="JavaScript" type="text/javascript" src="include/js/search.js"></script>
 <script language="JavaScript" type="text/javascript" src="include/js/Merge.js"></script> {* crmv@8719 *}
 {* crmv@30967 - moved js functions to ListView.js *}
@@ -113,6 +114,25 @@
 	<!-- PUBLIC CONTENTS STARTS-->
 
     <div id="ListViewContents" class="small" style="width:100%;position:relative;">
+        <!-- danzi.tn@20150922 filtro per stato danzi.tn@20150825 -->
+        <input type="hidden" id="tree_ok" value="{$DIALOG_OK}"/>
+        <input type="hidden" id="tree_cancel"  value="{$DIALOG_CLEAR}"/>
+        <input type="hidden" id="tree_close"  value="{$DIALOG_CLOSE}"/>
+        <input type="hidden" id="treeFile" value="ListViewByProduct"/>
+        <div id="agent_tree_container" title="{$DIALOG_TITLE}" style="display: none;">
+            <div>
+                <div id="search_agent_q">
+                    <div class="ui-widget" style="margin-bottom: 5px;"><input type="text" id="agent_jstree_q" style="width:339px;" value="" class="searchBox detailedViewTextBox small" ></div>
+                    <div class="ui-widget" style="margin-bottom: 5px;"><select id="country_combobox" class="small">{$LV_COUNTRIES}</select></div>
+                </div>
+
+                <div id="agent_jstree">
+                    {$LV_USER_TREE}
+                </div>
+            </div>
+
+        </div>
+        <!-- danzi.tn@20150825e -->
     	{include file="ListViewEntriesByProduct.tpl" MOD=$MOD} {* danzi.tn@20130207 *}
     </div>
 

@@ -7,6 +7,7 @@ $Vtiger_Utils_Log = true;
 global $adb, $table_prefix;
 session_start();
 
+
 // Turn on debugging level
 $Vtiger_Utils_Log = true;
 include_once('vtlib/Vtiger/Menu.php');
@@ -16,6 +17,7 @@ $srcdir = 'modules/SDK/src/';
 $tmpldir = 'Smarty/templates/';
 $module = Vtiger_Module::getInstance('Accounts');
 // danzi.tn@20150825 tree on user array (for listview)
+// danzi.tn@20160104 passaggio in produzione albero utenti
 Vtiger_Link::deleteLink($module->id,'HEADERSCRIPT','USER_TREE_JS');
 Vtiger_Link::addLink($module->id,'HEADERSCRIPT','USER_TREE_JS',$srcdir.'js/user_tree.js');
 Vtiger_Link::deleteLink($module->id,'HEADERCSS','USER_TREE_CSS');

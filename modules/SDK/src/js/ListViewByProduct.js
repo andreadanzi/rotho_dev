@@ -8,8 +8,8 @@
  * All Rights Reserved.
  ********************************************************************************/
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
+// danzi.tn@20160104 passaggio in produzione albero utenti
  //crmv@add ajax control
- // danzi.tn@20160104 passaggio in produzione albero utenti
 var ajaxcall_list = null;
 var ajaxcall_count = null;
 
@@ -681,6 +681,9 @@ function update_filter_values(){
 	if( currentval_splitted.length > 1 ) {
 	    minval = valtotick[currentval_splitted[0]];
 	    maxval = valtotick[currentval_splitted[1]];
+	} else {
+		minval = 0;
+		maxval = 22;
 	}
 	jQuery( "#slider-range" ).slider({
 	    range: true,
@@ -697,13 +700,7 @@ function update_filter_values(){
     if(jQuery( "#slider-range" ).slider( "values", 1 )<22) upperVal = " - €" +ticktoval[jQuery( "#slider-range" ).slider( "values", 1 )];
     else upperVal = " - Max";
 	jQuery( "#amount" ).val( "€" + ticktoval[jQuery( "#slider-range" ).slider( "values", 0 )] + upperVal );
-	/*
-	jQuery( "#submit_search" ).button().click(function( event ) {
-	    var parms = "&lv_user_id=" + lv_user_id.val()+"&viewid=" + viewname.val() + "&filter_type=" +stdValueFilterField.val()+ "&filter_value="+ valueId.val()+ "&startdate="+ proddate_start.val()+ "&enddate="+ proddate_end.val()+ "&amountrange="+ amount_value.val();
-	    //alert(parms);
-	    submit_search.attr("href","index.php?module=Accounts&parenttab=Sales&action=ListViewByProduct"+parms);
 
-	});*/
 	Calendar.setup ({
 		inputField : "jscal_field_proddate_start", ifFormat :js_dateformat, showsTime : false, button : "jscal_trigger_proddate_start", singleClick : true, step : 1
 	});

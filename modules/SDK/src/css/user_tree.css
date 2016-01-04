@@ -1,7 +1,8 @@
 /* danzi.tn@20150825 user tree */
+/* danzi.tn@20160104 passaggio in produzione albero utenti */
 
 .jstree-default a.jstree-search {
-    color:#E7861B; 
+    color:#E7861B;
 }
 
 #search_agent_q {

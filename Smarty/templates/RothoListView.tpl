@@ -21,6 +21,7 @@
 <script type="text/javascript" src="modules/SDK/src/js/user_tree.js"></script>
 <link rel="stylesheet" href="modules/SDK/src/css/user_tree.css">
 danzi.tn@20150825e -->
+<!-- danzi.tn@20160104 passaggio in produzione albero utenti -->
 <input type="hidden" id="user_dateformat" name="user_dateformat" value="{$DATEFORMAT}">
 <textarea name="select_ids" id="select_ids" style="display:none;"></textarea>
 <!--//crmv@10760 e-->
@@ -111,19 +112,25 @@ danzi.tn@20150825e -->
 </div>
  <!-- crmv@8719e -->
 	<!-- PUBLIC CONTENTS STARTS-->
+    <input type="hidden" id="tree_ok" value="{$DIALOG_OK}"/>
+    <input type="hidden" id="tree_cancel"  value="{$DIALOG_CLEAR}"/>
+    <input type="hidden" id="tree_close"  value="{$DIALOG_CLOSE}"/>
+    <input type="hidden" id="treeFile" value="RothoListView"/>
 
     <div id="ListViewContents" class="small" style="width:100%;position:relative;">
         <!-- danzi.tn@20150922 filtro per stato danzi.tn@20150825 -->
-        <div id="agent_tree_container" title="Users" style="display: none;">
+        <div id="agent_tree_container" title="{$DIALOG_TITLE}" style="display: none;">
             <div>
                 <div id="search_agent_q">
                     <div class="ui-widget" style="margin-bottom: 5px;"><input type="text" id="agent_jstree_q" style="width:339px;" value="" class="searchBox detailedViewTextBox small" ></div>
                     <div class="ui-widget" style="margin-bottom: 5px;"><select id="country_combobox" class="small">{$LV_COUNTRIES}</select></div>
                 </div>
+
                 <div id="agent_jstree">
                     {$LV_USER_TREE}
                 </div>
             </div>
+
         </div>
         <!-- danzi.tn@20150825e -->
     	{include file="RothoListViewEntries.tpl" MOD=$MOD} {* crmv@vte10usersFix *}

@@ -1,4 +1,5 @@
 //crmv@23526
+// danzi.tn@20160104 passaggio in produzione albero utenti
 function set_extra_info(recordid,value,target_fieldname,acc_id,capoarea){
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
@@ -39,7 +40,7 @@ function set_helpdesk_info(recordid,value,target_fieldname,acc_id){
 		//agente riferimento
 		var agente_id = parent.document.QcEditView['agente_riferimento_rec'];
 		if(agente_id) agente_id.value = acc_id;
-		
+
 		return true;
 	}else if(parent.document.EditView) {
 		var domnode_id = parent.document.EditView[target_fieldname];
@@ -55,7 +56,7 @@ function set_helpdesk_info(recordid,value,target_fieldname,acc_id){
 		//agente riferimento
 		var agente_id = parent.document.EditView['agente_riferimento_rec'];
 		if(agente_id) agente_id.value = acc_id;
-		
+
 		return true;
 	} else {
 		return false;
@@ -63,7 +64,10 @@ function set_helpdesk_info(recordid,value,target_fieldname,acc_id){
 }
 //crmv@23526e
 
-function set_product_to_helpdesk(product_id, description, base_number, categoria = null) {
+function set_product_to_helpdesk(product_id, description, base_number, categoria) {
+	// danzi.tn@20151127 valore di default null se undefined
+	categoria = categoria || null;
+	// danzi.tn@20151127e
 	//crmv@29190
 	var formName = getReturnFormName();
 	var form = getReturnForm(formName);
@@ -86,16 +90,16 @@ function changeRichiedente(objFlag,destField){
 		getObj('contact').value = '';
 		getObj('parent_display').value = '';
 		getObj('contact_display').value = '';
-		
+
 		disableReferenceField(getObj('parent_display'));
 		disableReferenceField(getObj('contact_display'));
-		
+
 		jQuery('#parent').parent('td').children('img').hide();
 		jQuery('#parent').parent('td').children('input[type="image"]').hide();
-		
+
 		jQuery('#contact').parent('td').children('img').hide();
 		jQuery('#contact').parent('td').children('input[type="image"]').hide();
-		
+
 	} else {
 		//flag disattivo
 		if (getObj('parent').value == '') {
@@ -106,7 +110,7 @@ function changeRichiedente(objFlag,destField){
 		}
 		jQuery('#parent').parent('td').children('img').show();
 		jQuery('#parent').parent('td').children('input[type="image"]').show();
-		
+
 		jQuery('#contact').parent('td').children('img').show();
 		jQuery('#contact').parent('td').children('input[type="image"]').show();
 	}

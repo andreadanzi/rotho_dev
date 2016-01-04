@@ -2,6 +2,7 @@ var local_markersArray = [];
 var heatMapData = [];
 var local_circleArray = [];
 var markerCluster = null;
+var waypts = [];
 var infoPolyWindow;
 var clust_markers = [];
 var polyHullSet = {};
@@ -27,10 +28,12 @@ geocoder = new google.maps.Geocoder();
 // danzi.tn@20150331 modifica allo slider (updateMap), per step da 500 euro
 // danzi.tn@20150414 modifica alla infowindow e a circle
 // danzi.tn@20150618 aggiunto dati utente e heatMapData
+// danzi.tn@20151215 aggiunto waypts
+// danzi.tn@20160104 passaggio in produzione albero utenti
 function initialize() {
 	directionsDisplay = new google.maps.DirectionsRenderer();
-	
-	
+
+
 	// Create and Center a Map
     	var myOptions = {
       		zoom: 6,
@@ -48,13 +51,13 @@ function initialize() {
 
 	map = new google.maps.Map(document.getElementById("map-canvas"), myOptions);
 
-		
-	
+
+
 	directionsDisplay.setMap(map);
 	directionsDisplay.setPanel(document.getElementById("route"));
-    
+
 	checkMap('ND');
-	
+
 	var domElement = document.getElementById('type1');
 	google.maps.event.addDomListener(domElement, 'click',  function() { checkMap(this.id);} );
 	domElement = document.getElementById('type2');
@@ -65,6 +68,8 @@ function initialize() {
 	google.maps.event.addDomListener(domElement, 'click',  function() { checkMap(this.id);} );
 	domElement = document.getElementById('clust2');
 	google.maps.event.addDomListener(domElement, 'click',  function() { checkMap(this.id);} );
+	domElement = document.getElementById('clust3');
+	google.maps.event.addDomListener(domElement, 'click',  function() { toggleHeatmap(this.id);} );
 	//updateValueFilterContainer
 	domElement = document.getElementById('valueSel');
 	domElementND = document.getElementById('valueSelND');
@@ -72,24 +77,24 @@ function initialize() {
 	google.maps.event.addDomListener(domElement, 'click',  function() { updateValueFilterContainer(this);} );
 	google.maps.event.addDomListener(domElementND, 'click',  function() { updateValueFilterContainer(this);} );
 	google.maps.event.addDomListener(domElementPROD, 'click',  function() { updateValueFilterContainer(this);} );
-    
-    
-   
+
+
+
 }
 
-function initializeGmap() 
-{     
+function initializeGmap()
+{
 	var latlng = new google.maps.LatLng(coords.lat, coords.lng);
 	var myOptions = {
 	  zoom: 10,
 	  center: latlng
 	};
-	gmap = new google.maps.Map(document.getElementById("gmap_canvas"),  myOptions);                         
-}  
+	gmap = new google.maps.Map(document.getElementById("gmap_canvas"),  myOptions);
+}
 function showmap() {
 	var latlng = new google.maps.LatLng(coords.lat, coords.lng);
 	gmap.setCenter(latlng, 10);
-    
+
 	var marker = new google.maps.Marker({
 		map: gmap,
 		position: latlng
@@ -103,7 +108,7 @@ function clearClusters(e) {
 	markerCluster.clearMarkers();
 }
 
-   
+
 function getMarker2(pos, name, type, desc, icon, map_value) { // Andrea Danzi aggiunto type - 24.03.2012
 	var infowindow = new google.maps.InfoWindow({
     		content: desc
@@ -128,7 +133,7 @@ function getMarker2(pos, name, type, desc, icon, map_value) { // Andrea Danzi ag
 	  type: 'poly'
 	};
 
-	
+
 	var marker = null;
 	if(clusterRequest == 'Enable')
 	{
@@ -162,19 +167,19 @@ function getDescription(id, pos, name, type, map_value, city, extra, map_aurea,r
 	var html = "";
 	switch(module)
 	{
-		case "Accounts": 
+		case "Accounts":
 			html += "<br/><b><span><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>"+name+"</a></b>";
 			break;
-		case "Leads": 
+		case "Leads":
 			html += "<br/><b><span><a href='index.php?module="+module+"&action=DetailView&record="+id+"'>"+name+"</a></b>";
 			break;
-		case "SalesOrder": 
+		case "SalesOrder":
 			html += "<br/><b><span><a href='index.php?action=CallRelatedList&module=Accounts&selected_header=Sales Order&relation_id=4&record="+id+"'>"+name+"</a></b>";
 			break;
 		case "HelpDesk":
 			html += "<br/><b><span><a href='index.php?action=CallRelatedList&module=Contacts&selected_header=HelpDesk&relation_id=21&record="+id+"'>"+name+"</a></b>";
 			break;
-		case "Potentials": 
+		case "Potentials":
 			html += "<br/><b><span><a href='index.php?action=CallRelatedList&module=Accounts&selected_header=Potentials&relation_id=2&record="+id+"'>"+name+"</a></b>";
 			break;
 	}
@@ -184,13 +189,13 @@ function getDescription(id, pos, name, type, map_value, city, extra, map_aurea,r
 	}
 	if(map_value)
 	{
-		html += "<br/>"+numberToCurrency(map_value); // if(module!="HelpDesk") 
+		html += "<br/>"+numberToCurrency(map_value); // if(module!="HelpDesk")
 	}
 	if(map_aurea)
 	{
 	//	html += "<br/>" + map_aurea;
 	}
-	
+
 	if(extra)
 	{
 		html = html + "<br/><br/><div class='checkaddress'><a onClick='check_address(\""+id+"\",\""+resJson["street"]+"\",\""+resJson["code"]+"\",\""+resJson["city"]+"\",\""+resJson["state"]+"\",\""+resJson["country"]+"\");' href='javascript:void(0)'>"+extra+"</a></div>";
@@ -212,7 +217,7 @@ function check_address(ekey,street,code,city,state,country) {
 	document.getElementById('provincia').value = state;
 	document.getElementById('stato').value = country;
 	$( "#dialog-form" ).dialog( "open" );
-	return False;
+	return false;
 }
 
 function getMarkerFromResults(sType,sPot) { // Andrea Danzi aggiunto custom marker - 24.03.2012
@@ -228,7 +233,7 @@ function getMarkerFromResults(sType,sPot) { // Andrea Danzi aggiunto custom mark
 		{
 			switch(sType)
 			{
-				case "Reseller": // "RC / CARP" "RD / DIST" "RS / SAFE" "RP / PROG" "RE / ALTRO" "RC / DIST" "RC / PROG" "---" "-" 
+				case "Reseller": // "RC / CARP" "RD / DIST" "RS / SAFE" "RP / PROG" "RE / ALTRO" "RC / DIST" "RC / PROG" "---" "-"
 				  sIcon = "modules/Map/img/letter_r.png";
 				  if( sPot == sCheckpot ) sIcon = "modules/Map/img/letter_r-p.png";
 				  break;
@@ -286,7 +291,7 @@ function loadDirection(location,name,city)
 {
 	to = location;
 	var request = {
-    		origin:from, 
+    		origin:from,
     		destination:to,
     		travelMode: google.maps.DirectionsTravelMode.DRIVING
   	};
@@ -294,22 +299,22 @@ function loadDirection(location,name,city)
     		if (status == google.maps.DirectionsStatus.OK) {
       			directionsDisplay.setDirections(response);
   		}
-	});	
+	});
 	var ddesc = document.getElementById("desc");
 	ddesc.innerHTML = from_lbl+": <span style='font-weight: bold'>"+baseName+" - "+baseCity+"</span> <span style='color:grey; font-size: smaller'>)</span><br/>"+to_lbl+": &nbsp;<span style='font-weight: bold'>"+name+" - "+city+"</span>";
 }
 
 function loadDirectionFrom(location,name,city)
 {
-	gmfrom = location;
+	var gmfrom = location;
 	document.getElementById('gmfrom').value = gmfrom;
 	document.getElementById('accfrom').value = name + " - " + city;
-	gmto = document.getElementById('gmto').value;
-	accto = document.getElementById('accto').value;
+	var gmto = document.getElementById('gmto').value;
+	var accto = document.getElementById('accto').value;
 	if( gmto!='yyy' && gmfrom !='xxx')
 	{
 		var request = {
-	    		origin:gmfrom, 
+	    		origin:gmfrom,
 	    		destination:gmto,
 	    		travelMode: google.maps.DirectionsTravelMode.DRIVING
 	  	};
@@ -317,32 +322,54 @@ function loadDirectionFrom(location,name,city)
 	    		if (status == google.maps.DirectionsStatus.OK) {
 	      			directionsDisplay.setDirections(response);
 	  		}
-		});	
+		});
 		var ddesc = document.getElementById("desc");
 		ddesc.innerHTML = from_lbl+": <span style='font-weight: bold'>"+name+" - "+city+"</span>><br/>"+to_lbl+": &nbsp;<span style='font-weight: bold'>" + accto + "</span>";
 	}
 }
 
-
 function loadDirectionTo(location,name,city)
 {
-	gmto = location;
+    var gmto = location;
+    if( document.getElementById('gmto').value != 'yyy' ) {
+        if(gmto == document.getElementById('gmto').value ) {
+            if( waypts.length > 0 ) {
+                var gmto_object = waypts.pop();
+								gmto = gmto_object.location;
+            }
+        } else {
+						var pos = waypts.map(function(e) { return e.location; }).indexOf(gmto);
+            if( pos >= 0 ) {
+                waypts.splice(pos,1);
+								gmto = document.getElementById('gmto').value;
+            } else {
+                waypts.push({
+                    location: document.getElementById('gmto').value,
+                    stopover: true
+                  });
+            }
+        }
+    }
 	document.getElementById('gmto').value = gmto;
 	document.getElementById('accto').value = name + " - " + city;
-	gmfrom = document.getElementById('gmfrom').value;
-	accfrom = document.getElementById('accfrom').value;
+	var gmfrom = document.getElementById('gmfrom').value;
+	var accfrom = document.getElementById('accfrom').value;
 	if( gmto!='yyy' && gmfrom !='xxx')
 	{
 		var request = {
-	    		origin:gmfrom, 
+	    		origin:gmfrom,
 	    		destination:gmto,
 	    		travelMode: google.maps.DirectionsTravelMode.DRIVING
 	  	};
+        if( waypts.length > 0 ) {
+            request["waypoints"] = waypts;
+            request["optimizeWaypoints"] = true;
+	  	}
 	  	directionsService.route(request, function(response, status) {
 	    		if (status == google.maps.DirectionsStatus.OK) {
 	      			directionsDisplay.setDirections(response);
 	  		}
-		});	
+		});
 		var ddesc = document.getElementById("desc");
 		ddesc.innerHTML = from_lbl+": <span style='font-weight: bold'>"+accfrom+"</span><br/>"+to_lbl+": &nbsp;<span style='font-weight: bold'>"+name+" - "+city+"</span>";
 	}
@@ -350,11 +377,17 @@ function loadDirectionTo(location,name,city)
 
 function restore()
 {
+    waypts = [];
 	var ddesc = document.getElementById("desc");
 	ddesc.innerHTML = "";
-	directionsDisplay.setMap(null);
+
+    directionsDisplay.setDirections({routes: []});
 	var r = document.getElementById("route");
 	r.innerHTML = "";
+    document.getElementById('gmto').value = "yyy";
+    document.getElementById('gmfrom').value = "xxx";
+    document.getElementById('accto').value = "ND";
+    document.getElementById('accfrom').value = "ND";
 }
 
 function clearCircleArray() {
@@ -368,15 +401,17 @@ function clearCircleArray() {
 }
 
 
-function toggleHeatmap() {
+function toggleHeatmap(name) {
+	createArrays();
   clearMapCluster();
   deleteCircleArray();
   deleteMarkersArray();
+	clusterRequest = 'Disable';
   if(heatmap == null) {
     showHeatMapData();
   } else {
     if(heatmap.getMap()) {
-       checkMap();
+       checkMap(name);
     } else {
        heatmap.setMap(map);
        for(var key in polyHullSet) {
@@ -406,7 +441,7 @@ function clearMarkersArray() {
 	    local_markersArray[i].setVisible(false);
 	  }
     }
-  }	
+  }
 }
 
 function showCircleArray() {
@@ -461,12 +496,13 @@ function showHeatMapData() {
                 hullPointsLatLng = hullPoints.map(function (item) {
                     return new google.maps.LatLng(item.y, item.x);
                 });
+								var rndcol = getRandomColor();
                 polyHull = new google.maps.Polygon({
                     paths: hullPointsLatLng,
-                    strokeColor: '#000',
+                    strokeColor: "#000",
                     strokeOpacity: 0.8,
                     strokeWeight: 2,
-                    fillColor: '#000',
+                    fillColor: rndcol,
                     fillOpacity: 0.35
                 });
                 polyHull.set("hullpoints",hullPoints);
@@ -476,45 +512,55 @@ function showHeatMapData() {
                         var vertices = this.getPath();
                         var hp = this.get("hullpoints");
                         var polyName = this.getPolyName();
-                        var contentString = '<b>Agent Map</b><br>' +
-                          'Clicked '+polyName+' on location: <br>' + event.latLng.lat() + ',' + event.latLng.lng() +
-                          '<br>';
+												deleteMarkersArray();
+												if(polyName == $("#cluster_name").val()) {
+													$("#cluster_name").val("zzz");
+													infoPolyWindow.close();
+												} else {
+													$("#cluster_name").val(polyName);
 
-                        // Iterate over the vertices.
-                        for (var i =0; i < vertices.getLength(); i++) {
-                            var xy = vertices.getAt(i);
-                            // contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +    xy.lng();
-                        }
-                        var userName = "";
-                        // Iterate over the vertices.
-                        for (var i =0; i < hp.length; i++) {
-                            var hpoint = hp[i];
-                            userName = hpoint.info.user_name;
-                            // contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +    xy.lng();
-                        }
-                      contentString += userName;
-                      // Replace the info window's content and position.
-                      infoPolyWindow.setContent(contentString);
-                      infoPolyWindow.setPosition(event.latLng);
+	                        var contentString = 'Cluster' +
+	                          ' by <b>'+polyName+'</b> ';
 
-                      infoPolyWindow.open(map);
-                    });    
+	                        // Iterate over the vertices.
+	                        for (var i =0; i < vertices.getLength(); i++) {
+	                            var xy = vertices.getAt(i);
+	                            // contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +    xy.lng();
+	                        }
+	                        var userName = "";
+	                        // Iterate over the vertices.
+	                        for (var i =0; i < hp.length; i++) {
+	                            var hpoint = hp[i];
+	                            userName = hpoint.info.user_name;
+	                            // contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +    xy.lng();
+	                        }
+		                      // contentString += userName;
+		                      // Replace the info window's content and position.
+		                      infoPolyWindow.setContent(contentString);
+		                      infoPolyWindow.setPosition(event.latLng);
+
+		                      infoPolyWindow.open(map);
+													createArrays();
+												}
+                    });
             }
-            polyHull.setMap(map);    
+            polyHull.setMap(map);
             infoPolyWindow = new google.maps.InfoWindow();
         }
     }
     if (heatMapData) {
+
         heatmap = new google.maps.visualization.HeatmapLayer({
           data: heatMapData,
           radius: 20,
           maxIntensity: maxInt,
         });
         heatmap.setMap(map);
+
     }
-  
-   
-  
+
+
+
 }
 
 function showMarkersArray() {
@@ -533,7 +579,7 @@ function showMarkersArray() {
 		}
 	  }
     }
-  }	
+  }
 }
 
 function deleteCircleArray() {
@@ -545,7 +591,7 @@ function deleteCircleArray() {
     }
     local_circleArray.length = 0;
     local_circleArray = [];
-  }	
+  }
 }
 
 function deleteMarkersArray() {
@@ -557,7 +603,7 @@ function deleteMarkersArray() {
     }
     local_markersArray.length = 0;
 	local_markersArray = [];
-  }	
+  }
 }
 
 
@@ -570,8 +616,15 @@ function checkMap(name) {
 	clearMapCluster();
 	deleteCircleArray();
 	deleteMarkersArray();
-	if(name=='clust2') clusterRequest = 'Disable';
-	if(name=='clust1') clusterRequest = 'Enable';
+	if(name=='clust3') clusterRequest = 'Disable';
+	if(name=='clust2') {
+		clusterRequest = 'Disable';
+		$("#cluster_name").val("zzz");
+	}
+	if(name=='clust1') {
+		clusterRequest = 'Enable';
+		$("#cluster_name").val("zzz");
+	}
 	if(name=='type1') type_or_valueRequest = 'type';
 	if(name=='type2') type_or_valueRequest = 'value_and_type';
 	if(name=='type3') type_or_valueRequest = 'value';
@@ -579,21 +632,25 @@ function checkMap(name) {
 	if(clusterRequest=='Enable')
 	{
 		showMapCluster();
-	} 
+	}
 }
 
 function createArrays() {
-    
+
+	var polyName = $("#cluster_name").val();
     maxInt = 0;
-    
-	for (var j in resultLayer) 
+
+	for (var j in resultLayer)
 	{
 		var result = resultLayer[j];
+		if(polyName && polyName !='zzz' && polyName!= result.user_name ) {
+			continue;
+		}
 		// if(fusion_value > result["map_value"]) continue;
 		if( minval > result["map_value"] || result["map_value"] > maxval ) continue;
 		var pos = new google.maps.LatLng(result["pos"][0], result["pos"][1]);
         sType = result["last_name"] + " " + result["first_name"] + " ("+result["user_name"]+")<br/>"; //  danzi.tn@20150618 aggiunto dati utente
-        
+
         if(result["type_trans"])
         {
             sType += "<br/>"+result["type_trans"];
@@ -716,18 +773,18 @@ function stripDollarSign(s) {
 }
 
 function getCircle2(mapValue, pos, name, desc)
-{		
+{
 	var displayRadius = Math.log( mapValue + 0.0 ) * 1200;
 	//if (mapValue < 10) displayRadius = Math.log(10)*800;
 	switch(module) // TODO: qui bisogna decidere se allaragre solo il raggio dei nodi in caso di Ordini di Venita o anche il valore in ingresso map_value
 	{
-		case "Accounts": 
+		case "Accounts":
 			displayRadius = displayRadius;
 			break;
-		case "SalesOrder": 
+		case "SalesOrder":
 			displayRadius = displayRadius*2;
 			break;
-		case "Leads": 
+		case "Leads":
 			displayRadius = displayRadius*3;
 			break;
 	}
@@ -735,7 +792,7 @@ function getCircle2(mapValue, pos, name, desc)
 	var nFillOpacity = 0.35;
 	var fillColorForNumbers = "#D6FF2F";
 	var sStrokeColor = "#9F9745";
-	if( mapValue < 2000 ) 
+	if( mapValue < 2000 )
 	{
 		fillColorForNumbers = "#D6FF2F";
 		// sStrokeColor="#00AF07";
@@ -799,7 +856,7 @@ function getCircle2(mapValue, pos, name, desc)
 
 
 function initializeSlider() {
-	
+
 }
 
 function updateMap() {
@@ -818,3 +875,12 @@ function updateMap() {
 	checkMap();
 }
 
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}

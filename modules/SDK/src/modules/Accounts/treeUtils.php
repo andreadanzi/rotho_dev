@@ -1,9 +1,144 @@
 <?php
+// danzi.tn@20160104 passaggio in produzione albero utenti
 require_once('include/database/PearDatabase.php');
 require_once('include/utils/CommonUtils.php');
 require_once('modules/SDK/SDK.php');	//crmv@sdk
 require_once('include/utils/db_utils.php');	//crmv@26666
 
+
+function replaceSelectQueryByProduct($list_query_count,$parameter)
+
+{
+	return "SELECT " . $parameter . " FROM (".$list_query_count.") AS TOTSALES";
+}
+
+function get_allids_by_product($list_query_count,$ids_to_jump = false){
+	require_once('include/ListView/ListView.php');
+	global $adb,$app_strings,$list_max_entries_per_page,$currentModule,$current_user, $table_prefix;	//crmv@27096
+	$parameter = $table_prefix."_crmentity.crmid";
+	if (!$list_query_count)
+		return Zend_Json::encode(Array('all_ids'=>false));
+	//crmv@27096
+	$mod_obj = CRMEntity::getInstance($currentModule);
+	$mod_obj->getNonAdminAccessControlQuery($currentModule,$current_user);
+	//crmv@27096e
+	$query = str_replace("SELECT","SELECT ".$parameter. ",",$list_query_count );
+	$query = str_replace("GROUP BY","GROUP BY ".$parameter. ",",$query );
+	if ($ids_to_jump){
+		$ids_to_jump = array_filter(explode(",",$ids_to_jump));
+		$query.=" and crmid not in (".implode(",",$ids_to_jump).")";
+	}
+	$res = $adb->query($query);
+	//crmv@27096
+	$all_ids = array();
+	if ($res){
+		while($row = $adb->fetchByAssoc($res)){
+			$all_ids[] = $row['crmid'];
+		}
+	}
+	saveListViewCheck($currentModule,$all_ids);
+	return Zend_Json::encode(Array('all_ids'=>implode(';',$all_ids).';'));
+	//crmv@27096e
+}
+
+function get_navigation_values_by_product($list_query_count,$url_string,$currentModule,$type='',$forusers=false,$viewid = ''){
+	//crmv@17613
+	global $adb,$app_strings,$list_max_entries_per_page,$current_user;
+	$parameter = 'count(*) as cnt';
+	if (!$list_query_count)
+		return Zend_Json::encode(Array('nav_array'=>Array(),'rec_string'=>''));
+	if (!$forusers){
+		$mod_obj = CRMEntity::getInstance($currentModule);
+		$mod_obj->getNonAdminAccessControlQuery($currentModule,$current_user);
+	}
+	//crmv@17613 end
+	$new_query = replaceSelectQueryByProduct($list_query_count,$parameter); // DA RIVEDERE
+	//echo "<!-- NEWQUERY ".$new_query." -->";
+	$res = $adb->query($new_query);
+	if ($res){
+		$noofrows = $adb->query_result($res,0,'cnt');
+	}
+	//crmv@29617
+	if ($viewid != '') {
+		$reload_notification_count = checkListNotificationCount($list_query_count,$current_user->id,$viewid,$noofrows);
+	}
+	//crmv@29617e
+	$_REQUEST['noofrows'] = $noofrows;
+	$_SESSION["lvs"][$currentModule][$viewid]["noofrows"] = $noofrows;
+	if(isPermitted($currentModule,'EditView','') == 'yes')
+		$permitted = true;
+	else
+		$permitted = false;
+	if ($noofrows == 0)
+		return Zend_Json::encode(Array('nav_array'=>Array(),'rec_string'=>'','permitted'=>$permitted));
+	$list_max_entries_per_page=get_selection_options($noofrows,'list');
+	$queryMode = (isset($_REQUEST['query']) && $_REQUEST['query'] == 'true');
+	$start = ListViewSession::getRequestCurrentPage($currentModule, $list_query_count, $viewid, $queryMode);
+	//crmv@15530
+	if ($start > ceil($noofrows/$list_max_entries_per_page)){
+		$start-=1;
+	}
+	//crmv@15530 end
+	$navigation_array = VT_getSimpleNavigationValues($start,$list_max_entries_per_page,$noofrows);
+	$limit_start_rec = ($start-1) * $list_max_entries_per_page;
+	$record_string = getRecordRangeMessage($list_max_entries_per_page, $limit_start_rec,$noofrows);
+	if ($noofrows >  $list_max_entries_per_page)
+		$navigationOutput = getTableHeaderSimpleNavigation($navigation_array,$url_string,$currentModule,$type,$viewid);
+	else
+		$navigationOutput = Array();
+	return Zend_Json::encode(Array('nav_array'=>$navigationOutput,'rec_string'=>$record_string,'permitted'=>$permitted,'reload_notification_count'=>$reload_notification_count));	//crmv@29617
+}
+
+// danzi.tn@20140411 update product category
+function getProductCategoryTree()
+{
+	global $adb, $table_prefix;
+	$tree_string="";
+
+	$query = "SELECT DISTINCT class3 as categorycode, class1 as parentlevel1, class2 as parentlevel2, class_desc3 as categorydescr, class_desc1, class_desc2
+	FROM erp_temp_crm_classificazioni
+	JOIN {$table_prefix}_products ON {$table_prefix}_products.product_cat = erp_temp_crm_classificazioni.class3
+	JOIN {$table_prefix}_crmentity ON {$table_prefix}_crmentity.crmid  = {$table_prefix}_products.productid AND {$table_prefix}_crmentity.deleted = 0
+	ORDER BY parentlevel1 ASC, parentlevel2 ASC, categorycode ASC ";
+
+	$result = $adb->query($query);
+	$i_count = 0;
+	$i_count1 = 0;
+	$i_count2 = 0;
+	$i_count3 = 0;
+	$s_level1 = "x96x";
+	$s_level2 = "x96x";
+	$s_level3 = "x96x";
+	while($row=$adb->fetchByAssoc($result))
+	{
+		if($i_count1==0) $tree_string.="<ul>\n";
+		if($row['parentlevel1']!=$s_level1)
+		{
+			if($i_count1>0) $tree_string.="\t\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>\n";
+			$i_count2=0;
+			$s_level1=$row['parentlevel1'];
+			$s_desclevel1=$row['class_desc1'];
+			$tree_string.="\t<li title=\"".$s_desclevel1."\"  id=\"".$s_level1."\"><a title=\"".$s_desclevel1."\" href=\"#\">".$s_level1." (".$s_desclevel1.")</a>\n";
+			$i_count1++;
+		}
+		if($i_count2==0) $tree_string.="\t<ul>\n";
+		if($row['parentlevel2']!=$s_level2)
+		{
+			if($i_count2>0) $tree_string.="\t\t\t</ul>\n\t\t</li>\n";
+			$i_count3=0;
+			$s_level2=$row['parentlevel2'];
+			$s_desclevel2=$row['class_desc2'];
+			$tree_string.="\t\t<li title=\"".$s_desclevel2."\" id=\"".$s_level2."\"><a title=\"".$s_desclevel2."\"  href=\"#\">".$s_level2." (".$s_desclevel2.")</a>\n";
+			$i_count2++;
+		}
+		if($i_count3==0) $tree_string.="\t\t\t<ul>\n";
+		$tree_string.="\t\t\t\t<li title=\"".$row['categorydescr']."\" id=\"".$row['categorycode']."\"><a title=\"".$row['categorydescr']."\" href=\"#\">".$row['categorycode']." (".$row['categorydescr'].")</a></li>\n";
+		$i_count3++;
+	}
+	 $tree_string.="\t\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>\n";
+	 $tree_string.="</ul>\n	";
+	return $tree_string;
+}
 
 //crm@7634
 // return picklist on user array (for listview)

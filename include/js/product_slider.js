@@ -5,6 +5,7 @@
  ********************************************************************************/
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
 // danzi.tn@20150408 modifica all'albero delle categorie per abilitare la selezione multipla
+// danzi.tn@20160104 passaggio in produzione albero utenti
 var asv = { 0:"0", 1:"1", 2:"5", 3:"10", 4:"20", 5:"30", 6:"50", 7:"100" , 8:"500", 9:"1000", 10:"100000"};
 var sva = { "0":0, "1":1, "5":2, "10":3, "20":4, "30":5, "50":6, "100":7 , "500":8, "1000":9, "100000":10};
 
@@ -32,7 +33,7 @@ var ticktoval = {
         20:"10000",
         21:"100000",
         22:"250000",
-   };   
+   };
    var valtotick = {
        "0":0,
        "500":1,
@@ -72,7 +73,7 @@ jQuery(function() {
             viewname = jQuery("#viewname"),
             lv_user_id = jQuery("#lv_user_id"),
             allFields = jQuery( [] ).add( stdValueFilterField ).add( valueId ).add( proddate_start ).add( proddate_end ).add( slider_range );
-    
+
     var currentval = jQuery("#amount_value").val();
     if (currentval != undefined) {	//mycrmv@manuele
 	    var currentval_splitted = currentval.split('-');
@@ -100,12 +101,12 @@ jQuery(function() {
 	    jQuery("#amount_value").val(ticktoval[jQuery( "#slider-range" ).slider( "values", 0 )]+"-"+ticktoval[jQuery( "#slider-range" ).slider( "values", 1 )]);
 	    jQuery( "#submit_search" ).button().click(function( event ) {
 	        var parms = "&lv_user_id=" + lv_user_id.val()+"&viewid=" + viewname.val() + "&filter_type=" +stdValueFilterField.val()+ "&filter_value="+ valueId.val()+ "&startdate="+ proddate_start.val()+ "&enddate="+ proddate_end.val()+ "&amountrange="+ amount_value.val();
-	        //alert(parms);       
+	        //alert(parms);
 	        submit_search.attr("href","index.php?module=Accounts&parenttab=Sales&action=ListViewByProduct"+parms);
-	        
+
 	    });
     }	//mycrmv@manuele
-    
+
     jQuery( "#cat_prodotti").dialog({
             autoOpen: false,
 	    hide: "clip",
@@ -113,13 +114,13 @@ jQuery(function() {
             width: 400,
 	    position: [920,190],
             modal: false,
-            buttons: {                
+            buttons: {
                 "Chiudi": function() {
                     jQuery( this ).dialog( "close" );
                 }
             },
             close: function() {
-                
+
             }
         });
     /**/
@@ -127,7 +128,7 @@ jQuery(function() {
     jQuery("#categorytree")
 		.jstree({ "plugins" : ["themes","html_data","ui"] })
 		// 1) if using the UI plugin bind to select_node
-		.bind("select_node.jstree deselect_node.jstree", function (event, data) { 
+		.bind("select_node.jstree deselect_node.jstree", function (event, data) {
 			// `data.rslt.obj` is the jquery extended node that was clicked
             var i, j, r = [];
             var selected_data = data.inst.get_selected();
@@ -157,8 +158,8 @@ function updateValueFilterContainer(elem)
 	if(elem.value && elem.value=='cat' )
 	{
 		jQuery('#cat_prodotti').dialog("open");
-	}	
-	else 
+	}
+	else
 	{
 		document.getElementById("valueId").value = 'ND';
 		jQuery('#cat_prodotti').dialog("close");

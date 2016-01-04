@@ -8,7 +8,10 @@
  * All Rights Reserved.
  *************************************************************************************/
 
-global $adb; 
+// danzi.tn@20151210 gestione mappingdate e mappingstatus su Map JS
+// danzi.tn@20151214 set cf_871 = 1 in seguito ad aggiornamento indirizzo Map JS
+// danzi.tn@20160104 passaggio in produzione albero utenti
+global $adb;
 $ajaxaction = $_REQUEST["ajxaction"];
 if($ajaxaction == 'UPDATEADDRESS')
 {
@@ -27,19 +30,21 @@ if($ajaxaction == 'UPDATEADDRESS')
 		$result = $adb->query($query);
 		$row = $adb->fetchByAssoc($result);
 		if( $row ) {
-			$query = "UPDATE vtiger_map SET state = '$state' ,city = '$city', postalCode = '$postalCode', country = '$country', street = '$street', lat = '$lat', lng = '$lng' WHERE mapid = $mapid";
+			$query = "UPDATE vtiger_map SET state = ? ,city = ?, postalCode = ?, country = ?, street = ?, lat = ?, lng = ?,  mappingdate = GETDATE(), mappingstatus =1 WHERE mapid = ?";
 		} else {
-			$query = "INSERT INTO vtiger_map (mapid,state,city,postalCode,country,street,lat,lng) VALUES ($mapid,'$state','$city','$postalCode','$country','$street','$lat','$lng')";
+			$query = "INSERT INTO vtiger_map (state,city,postalCode,country,street,lat,lng,mapid,mappingdate,mappingstatus) VALUES (?,?,?,?,?,?,?,?,GETDATE(),1)";
 		}
-		$result = $adb->query($query);
+		$result = $adb->pquery($query,array($state,$city,$postalCode,$country,$street,$lat,$lng,$mapid));
 		if(!$result)
 		{
 			echo ':#:QUERY=' . $query;
 			echo ':#:FAILURE';
 		}else
 		{
+            $query = "UPDATE vtiger_accountscf SET cf_871 = '1' WHERE accountid = " . $mapid ;
+			$adb->query($query);
 			echo ':#:SUCCESS';
-		}   
+		}
 	}else
 	{
 		echo ':#:FAILURE';

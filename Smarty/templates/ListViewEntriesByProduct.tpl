@@ -9,7 +9,7 @@
   *
  ********************************************************************************/
 -->
-
+<!-- danzi.tn@20160104 passaggio in produzione albero utenti -->
 <link rel="stylesheet" type="text/css" media="all" href="jscalendar/calendar-win2k-cold-1.css">
 {$DATE_JS}
 <script type="text/javascript" src="jscalendar/calendar.js"></script>
@@ -17,8 +17,8 @@
 <script type="text/javascript" src="jscalendar/calendar-setup.js"></script>
 <script language="JavaScript" type="text/javascript" src="include/calculator/calc.js"></script>
 <script language="JavaScript">
-var js_dateformat = '{$JS_DATEFORMAT}';				
-				
+var js_dateformat = '{$JS_DATEFORMAT}';
+
 </script>
 
 {if $smarty.request.ajax neq ''}
@@ -262,6 +262,31 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 			<td width="33%" align="right">
 		        <!-- Filters -->
                 <table border=0 cellspacing=0 cellpadding=0 class="small"><tr>
+									<!-- danzi.tn@20150922 filtro per stato danzi.tn@20150825 -->
+									<td>
+
+									<table class="crmButton" style="background-color:#fff" cellspacing="0" cellpadding="0" border="0">
+											<tr>
+													<td style="padding-left:5px;">
+															<input type="text" class="small" style="border: none; width: 20px;" id="selected_country" name="selected_country_code" value="{$SELECTED_COUNTRY}" readonly> -
+													</td>
+													<td style="padding-left:5px;">
+															<input type="text" style="width:160px;" class="searchBox" id="selected_agent_ids_display" name="search_agent_display" value="{$SELECTED_AGENT_IDS_DISPLAY}" onclick="clearSelectedAgents(this)" readonly>
+															<input type="hidden" id="selected_agent_ids" name="search_agent_ids" value="{$SELECTED_AGENT_IDS}">
+													</td>
+													<td width="20" align="right" valign="bottom">
+															<img id="agent_search_icn_canc" style="display:none" border="0" alt="Reset" title="Reset" style="cursor:pointer" onclick="cancelSearchAgents('')" src="{'close_little.png'|@vtiger_imageurl:$THEME}" />&nbsp;
+													</td>
+													<td style="padding-right:5px;">
+															<span id="user_search">
+																	<img id="agent_search_icn_go" border="0" alt="{$APP.LBL_FIND}" title="{$APP.LBL_FIND}" style="cursor:pointer"  src="{'UnifiedSearchButton.png'|@vtiger_imageurl:$THEME}" onclick="open_tree_container();" />
+															</span>
+													</td>
+											</tr>
+									</table>
+
+									</td>
+									<!-- danzi.tn@20150825e -->
                     {* crmv@22259 *}
                     <td style="padding-left:5px;padding-right:5px">{$APP.LBL_VIEW}&nbsp;<SELECT NAME="viewname" id="viewname" class="small" onchange="showDefaultCustomView(this,'{$MODULE}','{$CATEGORY}', '{$FOLDERID}')">{$CUSTOMVIEW_OPTION}</SELECT></td> {* crmv@30967 *}
 					{* crmv@21723 crmv@21827 crmv@22622 *}
@@ -296,8 +321,8 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 		<tbody>
 		<tr>
 			<td>
-				<form name="filter-byproduct-form" action="index.php" method="POST"> 
-				
+				<form name="filter-byproduct-form" action="index.php" method="POST">
+
 				<table width='100%' class='small'>
 				<tbody>
 					<tr style='height:25px'>
@@ -307,7 +332,7 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 						<td class='dvtCellInfo'>
 							<select id="stdValueFilterField" name="stdValueFilterField" class="select small" onchange="updateValueFilterContainer(this);">
 							{foreach item=stdfilter key=type_id from=$STDVALUEFILTERS}
-								<option {$stdfilter.selected} value={$type_id}>{$stdfilter.text}</option>	
+								<option {$stdfilter.selected} value={$type_id}>{$stdfilter.text}</option>
 							{/foreach}
 						        </select>
 							<span id="stdValueFilterFieldAnchor"><a href="#">...</a></span>
@@ -354,10 +379,10 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 						<td class='dvtCellInfo'>
 								<div id="cat_prodotti" title="{$MOD.LBL_CAT}">
 								<div id='categorytree'>
-									{$PRODUCT_CATEGORY_TREE}				
-								</div>			
+									{$PRODUCT_CATEGORY_TREE}
 								</div>
-								
+								</div>
+
 						</td>
 					</tr>
 					<tr style='height:25px'>
@@ -366,14 +391,14 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 						</td>
 						<td class='dvtCellInfo'>
 
-						
+
 							<div id="slider-range" lang="it_it"></div>
 						</td>
 						<td class='dvtCellLabel' align='right'>
 							<span style='font-weight: bold ; font-size: 110%'><label for="amount">{$MOD.LBL_MAGG_DI}:</label></span>
 						</td>
-						<td class='dvtCellInfo'>							
-							<p>							
+						<td class='dvtCellInfo'>
+							<p>
 								<input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
 							</p>
 						</td>

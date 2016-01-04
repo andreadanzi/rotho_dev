@@ -251,6 +251,7 @@
 		        <!-- Filters -->
                 <table border=0 cellspacing=0 cellpadding=0 class="small"><tr>
                     <!-- danzi.tn@20150922 filtro per stato danzi.tn@20150825 -->
+                    <!-- danzi.tn@20160104 passaggio in produzione albero utenti -->
                     <td>
 
                     <table class="crmButton" style="background-color:#fff" cellspacing="0" cellpadding="0" border="0">
@@ -276,7 +277,7 @@
                     </td>
                     <!-- danzi.tn@20150825e -->
                     {* crmv@22259 *}
-                    <td style="padding-left:5px;padding-right:5px">{$APP.LBL_VIEW}&nbsp;<SELECT NAME="viewname" id="viewname" class="small" onchange="showDefaultCustomView(this,'{$MODULE}','{$CATEGORY}', '{$FOLDERID}')">{$CUSTOMVIEW_OPTION}</SELECT></td> {* crmv@30967 *}
+                    <td style="padding-left:5px;padding-right:5px">{$APP.LBL_VIEW}&nbsp;<SELECT NAME="viewname" id="viewname" class="small" onchange="showDefaultTreeCustomView(this,'{$MODULE}','{$CATEGORY}', '{$FOLDERID}')">{$CUSTOMVIEW_OPTION}</SELECT></td> {* crmv@30967 *}
 					{* crmv@21723 crmv@21827 crmv@22622 *}
 					{if $HIDE_CUSTOM_LINKS neq '1'}
 						<td onmouseover="fnDropDown(this,'customLinks',-18);" onmouseout="fnHideDrop('customLinks');" nowrap><a href="javascript:void(0);" style="text-decoration:none;"><img id="filter_option_img" src="{'gear_off.png'|@vtiger_imageurl:$THEME}" border=0 title="{$APP.LBL_FILTER_OPTIONS}"></a>&nbsp;</td>

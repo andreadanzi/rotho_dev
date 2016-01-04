@@ -10,9 +10,13 @@ $theme_path="themes/".$theme."/";
 $image_path=$theme_path."images/";
 include_once('modules/Map/lib/utils.inc.php');
 require('modules/Map/lib/GeoCoder.inc.php');
+require_once('modules/SDK/src/modules/Accounts/treeUtils.php');
 // danzi.tn@20150213 aggiornamento slider MAP conforme all'elenco Aziende
 // danzi.tn@20150331 modifica allo slider, per step da 500 euro
 // danzi.tn@20150408 modifica all'albero delle categorie per abilitare la selezione multipla
+// danzi.tn@20151127 integrazione filtro da albero degli utenti
+// danzi.tn@20151210 gestione cf_871 su Map JS
+// danzi.tn@20160104 passaggio in produzione albero utenti
 
 if(!$_REQUEST['show'])
 	$_REQUEST['show'] = "Accounts";
@@ -29,10 +33,11 @@ if(!$_REQUEST['type_or_value'])
 <link rel="stylesheet" href="modules/Map/js/closure-library/closure/goog/css/common.css">
 <link rel="stylesheet" href="modules/Map/js/closure-library/closure/goog/css/dialog.css">
 <!-- danzi.tn@20140902 modifica api -->
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
 
-<script src="modules/Map/js/markerclusterer_packed.js" type="text/javascript"></script>   
-<script src="modules/Map/js/gm.js" type="text/javascript"></script> 
+<script src="modules/Map/js/markerclusterer_packed.js" type="text/javascript"></script>
+<script src="modules/Map/js/graham_scan.js" type="text/javascript"></script>
+<script src="modules/Map/js/gm.js" type="text/javascript"></script>
 <!-- <script src="modules/Map/js/gm_packed.js" type="text/javascript"></script>  -->
 
 <script src="modules/Map/js/closure-library/closure/goog/base.js"></script>
@@ -72,24 +77,24 @@ if(!$_REQUEST['type_or_value'])
       height: 100%;
       top: 0;
     }
-	
+
 	.notavailable {
 		color: red;
 		font-weight: bold;
 	}
-	
+
     #feedback { font-size: 1.4em; }
     #selectable .ui-selecting { background: #FECA40; }
     #selectable .ui-selected { background: #E8891D; color: white; }
     #selectable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
     #selectable li { margin: 3px; padding: 0.4em; font-size: 0.8em; height: 12px; }
-    
+
 	.ui-widget-header {
 		background: url("modules/Map/img/ui-bg_highlight-soft_75_ed9229_1x100.png") repeat-x scroll 50% 50% #ED9229;
 		border: 1px solid #AAAAAA;
 		font-weight: bold;
 	}
-    
+
 </style>
 
 
@@ -99,7 +104,7 @@ function updateFilterCombo(elem)
 {
 	var module = encodeURIComponent(elem.options[elem.options.selectedIndex].value);
     $("#filterContainer").innerHTML = combos[module];
-	
+
 	domElementND = document.getElementById('valueSelND');
 	domElementPROD = document.getElementById('valueSelPROD');
 	domElement = document.getElementById('valueSel');
@@ -126,8 +131,8 @@ function updateValueFilterContainer(elem)
 	{
 		// $('#cat_prodotti').show('slow');
 		$( "#cat_prodotti").dialog('open');
-	}	
-	else 
+	}
+	else
 	{
 		document.getElementById("valueId").value = 'ND';
 		// $('#cat_prodotti').hide('slow');
@@ -142,7 +147,7 @@ var combos = new Array();
 
 <?php
 
-global $dbconfig; 
+global $dbconfig;
 global $adb;
 global $app_strings;
 define("DB_HOST",$dbconfig['db_server']);
@@ -163,7 +168,7 @@ foreach($modules as $module)
 
 ?>
 
-</script>   
+</script>
 <?php
 
 $oCustomView = new CustomView($_REQUEST['show']);
@@ -191,15 +196,54 @@ if(isset($_REQUEST['lv_user_id'])) {
 $select_assigneduser = getUserOptionsHTML($_REQUEST['lv_user_id'],$currentModule,"");
 
 if( $_REQUEST['lv_user_id'] == "all" || $_REQUEST['lv_user_id'] == "") { // all event (normal rule)
-	
+
 } else if ( $_REQUEST['lv_user_id'] == "mine") { // only assigned to me
 	$list_where .= " and vtiger_crmentity.smownerid = ".$current_user->id." ";
 } else if ( $_REQUEST['lv_user_id'] == "others") { // only assigneto others
 	$list_where .= " and vtiger_crmentity.smownerid <> ".$current_user->id." ";
-} else { // a selected userid 
+} else { // a selected userid
 	$list_where .= " and vtiger_crmentity.smownerid = ".$_REQUEST['lv_user_id']." ";
 }
-$where.=$list_where; 
+
+// danzi.tn@20150825 filtro per stato danzi.tn@20150825 come per lv_user_id, anche selected_agent_ids deve essere gestito lato js in ListView.js showDefaultCustomView
+if(isset($_REQUEST['selected_agent_ids'])) {
+	$_SESSION['selected_agent_ids'] = $_REQUEST['selected_agent_ids'];
+} else {
+	$_REQUEST['selected_agent_ids'] = $_SESSION['selected_agent_ids'];
+}
+
+
+if(isset($_REQUEST['selected_country'])) {
+	$_SESSION['selected_country'] = $_REQUEST['selected_country'];
+} else {
+	$_REQUEST['selected_country'] = $_SESSION['selected_country'];
+}
+
+$ret_array = getUserTreeAndCountryListHTML($_REQUEST['selected_agent_ids'],$_REQUEST['selected_country'],"Accounts","");
+// danzi.tn@20151126
+$SELECTED_AGENT_IDS = $_REQUEST['selected_agent_ids'];
+$SELECTED_COUNTRY = $_REQUEST['selected_country'];
+$SELECTED_AGENT_IDS_DISPLAY = getDisplaySelectedUser($_REQUEST['selected_agent_ids'],"Accounts","");
+
+
+$DIALOG_TITLE = $app_strings["LBL_USER_TITLE"];
+$DIALOG_OK = $app_strings["LBL_SELECT_BUTTON_LABEL"];
+$DIALOG_CLEAR = $app_strings["LBL_CANCEL_BUTTON_LABEL"];
+$DIALOG_CLOSE = $app_strings["LBL_CLOSE"];
+$LV_COUNTRIES = $ret_array["countries"];
+$LV_USER_TREE = $ret_array["users"];
+
+
+if( $SELECTED_AGENT_IDS ) { // a selected branch of user hierarchy
+	$list_where .= " and {$table_prefix}_crmentity.smownerid in ( ".$SELECTED_AGENT_IDS ." ) ";
+}
+
+if( $SELECTED_COUNTRY) { // a selected branch of user hierarchy
+    $list_where .= " and {$table_prefix}_accountbillads.bill_country = '".$SELECTED_COUNTRY."' ";
+}
+// danzi.tn@20150825e
+
+$where.=$list_where;
 //crmv@7634e
 if(isset($where) && $where != '') {
 	$_SESSION['export_where'] = $where;
@@ -224,82 +268,101 @@ echo '<script type="text/javascript">';
         echo "var baseCountry = '".addslashes($row['country'])."';\n";
 echo '</script>';
 
-if ($_REQUEST['ids']) //priority to request paramater
-	$retValues = getResults($_REQUEST['show'],$_REQUEST['ids']);
-else //calculate ids using filters
+
+
+
+global $currentModule;
+$extra_ids = null;
+$prod_id = null;
+$map_mindate = null;
+$map_maxdate = null;
+
+if($_REQUEST['valueId'] && $_REQUEST['valueSel']=='cat_prodotti' && $_REQUEST['valueId']!="ND") $extra_ids =  $_REQUEST['valueId'];
+if($_REQUEST['valueId'] && $_REQUEST['valueSel']=='prodotto' && $_REQUEST['valueId']!="ND") $prod_id =  $_REQUEST['valueId'];
+if($_REQUEST['map_mindate'] && $_REQUEST['map_mindate']!="") $map_mindate =  $_REQUEST['map_mindate'];
+if($_REQUEST['map_maxdate'] && $_REQUEST['map_maxdate']!="") $map_maxdate =  $_REQUEST['map_maxdate'];
+if($viewid)
 {
-	global $currentModule;
-	$extra_ids = null;
-	$prod_id = null;
-	$map_mindate = null;
-	$map_maxdate = null;
-
-	if($_REQUEST['valueId'] && $_REQUEST['valueSel']=='cat_prodotti' && $_REQUEST['valueId']!="ND") $extra_ids =  $_REQUEST['valueId'];
-	if($_REQUEST['valueId'] && $_REQUEST['valueSel']=='prodotto' && $_REQUEST['valueId']!="ND") $prod_id =  $_REQUEST['valueId'];
-	if($_REQUEST['map_mindate'] && $_REQUEST['map_mindate']!="") $map_mindate =  $_REQUEST['map_mindate'];
-	if($_REQUEST['map_maxdate'] && $_REQUEST['map_maxdate']!="") $map_maxdate =  $_REQUEST['map_maxdate'];
-	if($viewid)
-	{
-      		$listquery = getListQuery($_REQUEST['show']);
-       	 	$query = $oCustomView->getModifiedCvListQuery($viewid,$listquery,$_REQUEST['show']);
-	}else{
-		$query = getListQuery($_REQUEST['show']);
-	} 
-	$query .= $list_where;
-
-
-        $queryGenerator = new QueryGenerator($_REQUEST['show'], $current_user);
-
-
-	if ($viewid != "0") {
-        	$queryGenerator->initForCustomViewById($viewid);
-	} else {
-        	$queryGenerator->initForDefaultCustomView();
-	}	
-
-	$list_query_2 = $queryGenerator->getQuery();
-
-	$where_2 = $queryGenerator->getConditionalWhere();
-
-	$list_query_2 .= $list_where;
-        $res_2 = $adb->query($list_query_2);
-        echo "<!-- QUERY_2 IDS  ". $list_query_2 ." -->\n";
-        // echo "<!-- WHERE_2 IDS  ". $where ." -->";
-
-        // echo "<!-- QUERY IDS  ". $query ." -->";
-	// $list_result = $adb->pquery($query, array());
-    // danzi.tn@20150522 gestione tabella temporanea
-	$user_uids = uniqid();
-	while($row = $adb->fetch_array($res_2)) {
-		$ids[] = $row["accountid"];
-		$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid,insertdate,insertuserid) VALUES (?,?,GETDATE(),?)";
-		$adb->pquery($insert_sql, array($user_uids,$row["accountid"],$current_user->id));
-	}
-	/* MASSIVE INSERT
-	$insert_values = implode("),('".$user_uids."',",$ids);
-	$insert_values = "('".$user_uids."'," . $insert_values .")";
-	$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid) VALUES " . $insert_values;
-	echo "<!-- INSERT QUERY IDS  ". $insert_sql ." -->\n";
-	$adb->query($insert_sql);
-	*/
-	// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
-	$amountrange = "";
-	if($_REQUEST['amountrange'] && $_REQUEST['amountrange']!="") $amountrange = $_REQUEST['amountrange'];
-	if(count($ids)) 
-	{
-		$retValues = getResults($_REQUEST['show'],implode(",",$ids),($extra_ids==null?null:$extra_ids),($prod_id==null?null:$prod_id),($map_mindate==null?null:$map_mindate),($map_maxdate==null?null:$map_maxdate),$amountrange, $user_uids); //retrive map results
-		$skippedAccs = getSkippedAccounts(implode(",",$ids));
-	}
-	else
-	{
-		$retValues = array();
-	}
-	
-	$adb->pquery("DELETE FROM dnz_temp_account WHERE useruid=?",array($user_uids));
+        $listquery = getListQuery($_REQUEST['show']);
+        $query = $oCustomView->getModifiedCvListQuery($viewid,$listquery,$_REQUEST['show']);
+}else{
+    $query = getListQuery($_REQUEST['show']);
 }
+$query .= $list_where;
+
+
+    $queryGenerator = new QueryGenerator($_REQUEST['show'], $current_user);
+
+
+if ($viewid != "0") {
+        $queryGenerator->initForCustomViewById($viewid);
+} else {
+        $queryGenerator->initForDefaultCustomView();
+}
+
+$list_query_2 = $queryGenerator->getQuery();
+
+$where_2 = $queryGenerator->getConditionalWhere();
+
+$list_query_2 .= $list_where;
+    $res_2 = $adb->query($list_query_2);
+    echo "<!-- QUERY_2 IDS  ". $list_query_2 ." -->\n";
+    // echo "<!-- WHERE_2 IDS  ". $where ." -->";
+
+    // echo "<!-- QUERY IDS  ". $query ." -->";
+// $list_result = $adb->pquery($query, array());
+// danzi.tn@20150522 gestione tabella temporanea
+// danzi.tn@20151210 solo quelli id passati come parametro
+$request_ids=array();
+if ($_REQUEST['ids'] ) {
+    $request_ids = explode(";", $_REQUEST['ids']);
+}
+$fromAction="";
+if ($_REQUEST['from'] ) {
+    $fromAction = $_REQUEST['from'];
+}
+$user_uids = uniqid();
+while($row = $adb->fetch_array($res_2)) {
+    $accountid = $row["accountid"];
+    if( count($request_ids ) > 0 && !in_array($accountid , $request_ids )) {
+        continue;
+    }
+    $ids[] = $accountid;
+    $insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid,insertdate,insertuserid) VALUES (?,?,GETDATE(),?)";
+    $adb->pquery($insert_sql, array($user_uids,$accountid,$current_user->id));
+}
+// danzi.tn@20151210e
+/* MASSIVE INSERT
+$insert_values = implode("),('".$user_uids."',",$ids);
+$insert_values = "('".$user_uids."'," . $insert_values .")";
+$insert_sql = "INSERT INTO dnz_temp_account (useruid,accountid) VALUES " . $insert_values;
+echo "<!-- INSERT QUERY IDS  ". $insert_sql ." -->\n";
+$adb->query($insert_sql);
+*/
+// danzi.tn@20150204 gestione parametri passati da ListViewByProduct
+
+
+
+
+
+$amountrange = "";
+if($_REQUEST['amountrange'] && $_REQUEST['amountrange']!="") $amountrange = $_REQUEST['amountrange'];
+if(count($ids))
+{
+    $retValues = getResults($_REQUEST['show'],implode(",",$ids),($extra_ids==null?null:$extra_ids),($prod_id==null?null:$prod_id),($map_mindate==null?null:$map_mindate),($map_maxdate==null?null:$map_maxdate),$amountrange, $user_uids, $fromAction); //retrive map results
+    $skippedAccs = getSkippedAccounts(implode(",",$ids));
+}
+else
+{
+    $retValues = array();
+}
+
+$adb->pquery("DELETE FROM dnz_temp_account WHERE useruid=?",array($user_uids));
+
 
 ?>
 <!--18052012 Andrea INIZIO-->
+
 <table><tbody><tr><td>
 <!--18052012 Andrea FINE-->
 <div class='moduleName' style='padding: 10px'> <?php echo $app_strings['Tools']; ?> > <?php echo $mod_strings['Maps']; ?> > <a href='index.php?parenttab=Tools&action=index&module=Map&show=<?php echo $_REQUEST['show']; ?>'><?php echo $app_strings[$_REQUEST['show']];?></a></div>
@@ -318,7 +381,7 @@ echo "
 <tbody>
 <tr>
 <td>
-<form name='map-form' action='index.php' method='GET'> 
+<form name='map-form' action='index.php' method='GET'>
 <table width='900px' class='small'>
 <tbody>
 <tr>
@@ -327,6 +390,34 @@ echo "
         <b>&nbsp;". $mod_strings['Show Results']. " (".count($retValues["results"])." " .$mod_strings['Results'] .")</b>
 	</div>
         <!-- QUERY Map ".$retValues["query"] ." -->
+
+				<!-- danzi.tn@20151216 filtro per stato danzi.tn@20150825 -->
+
+
+	<div style='float:right;'>
+				<table class=\"crmButton\" style=\"background-color:#fff\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
+						<tr>
+								<td style=\"padding-left:5px;\">
+										<input type=\"text\" class=\"small\" style=\"border: none; width: 20px;\" id=\"selected_country\" name=\"selected_country\" value=\"{$SELECTED_COUNTRY}\" readonly> -
+								</td>
+								<td style=\"padding-left:5px;\">
+										<input type=\"text\" style=\"width:160px;\" class=\"searchBox\" id=\"selected_agent_ids_display\" name=\"search_agent_display\" value=\"{$SELECTED_AGENT_IDS_DISPLAY}\" onclick=\"clearSelectedAgents(this)\" readonly>
+										<input type=\"hidden\" id=\"selected_agent_ids\" name=\"selected_agent_ids\" value=\"{$SELECTED_AGENT_IDS}\">
+								</td>
+								<td width=\"20\" align=\"right\" valign=\"bottom\">
+										<img id=\"agent_search_icn_canc\" style=\"display:none\" border=\"0\" alt=\"Reset\" title=\"Reset\" style=\"cursor:pointer\" onclick=\"cancelSearchAgents('')\" src=\"themes/rothosofted/images/close_little.png\" />&nbsp;
+								</td>
+								<td style=\"padding-right:5px;\">
+										<span id=\"user_search\">
+												<img id=\"agent_search_icn_go\" border=\"0\" alt='Cerca' title='Cerca' style=\"cursor:pointer\"  src=\"themes/rothosofted/images/UnifiedSearchButton.png\" onclick='open_tree_container();' />
+										</span>
+								</td>
+						</tr>
+				</table>
+	</div>
+
+
+				<!-- danzi.tn@20151216e -->
 </td>
 </tr>
 <tr style='height:25px'>
@@ -346,6 +437,7 @@ echo "
 <span style='font-weight: bold ; font-size: 110%'>{$app_strings['LBL_VIEW']}</span>
 </td>
 <td class='dvtCellInfo'>
+
 <span id='filterContainer' style='float:left;'><select class='small' id='viewid' name='viewid' style='width:60px;'>";
 echo $customviewcombo_html;
 echo "</select></span><span id='ownerFlt' style='float:left;'> ";
@@ -371,7 +463,7 @@ echo $select_assigneduser ."</span>
 
 </td>
 <td class='dvtCellLabel' align='right'>
-<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Valuefilter']}:</span> 
+<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Valuefilter']}:</span>
 </td>
 <td class='dvtCellInfo'>
 <span id='valueFilterContainer'>
@@ -379,7 +471,7 @@ echo $select_assigneduser ."</span>
 </span>
 
 </td>
-</tr> 
+</tr>
 
 <!-- ricerca per data -->
 <tr style='height:25px'>
@@ -398,14 +490,14 @@ echo $select_assigneduser ."</span>
 		<img id='jscal_trigger_map_mindate' src='themes/rothosofted/images/btnL3Calendar.gif'>
 		</td>
 				<td>
-										
+
 		</td>
 		</tr>
-												
+
 		<tr>
 		<td colspan='2'>
 					<font size='1'><em old='(yyyy-mm-dd)'>(yyyy-mm-dd)</em></font>
-				
+
 		</td>
 		</tr>
 		</tbody>
@@ -421,7 +513,7 @@ echo $select_assigneduser ."</span>
 </td>
 <td class='dvtCellLabel' align='right'>
 
-<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Todate']}:</span> 
+<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Todate']}:</span>
 </td>
 <td class='dvtCellInfo' align='left'>
 
@@ -434,14 +526,14 @@ echo $select_assigneduser ."</span>
 		<img id='jscal_trigger_map_maxdate' src='themes/rothosofted/images/btnL3Calendar.gif'>
 		</td>
 				<td>
-										
+
 		</td>
 		</tr>
-												
+
 		<tr>
 		<td colspan='2'>
 					<font size='1'><em old='(yyyy-mm-dd)'>(yyyy-mm-dd)</em></font>
-				
+
 		</td>
 		</tr>
 		</tbody>
@@ -455,7 +547,7 @@ echo $select_assigneduser ."</span>
 <input type=\"image\" align=\"absmiddle\" style=\"cursor:hand;cursor:pointer;float:left;\" onclick=\"this.form.map_maxdate.value=''; this.form.map_maxdate.value='';return false;\" language=\"javascript\" title=\"Pulisci\" alt=\"Pulisci\" src=\"themes/rothosofted/images/clear_field.gif\" tabindex=\"\">
 
 </td>
-</tr> 
+</tr>
 
 <tr style='height:25px'>
 
@@ -468,11 +560,12 @@ echo $select_assigneduser ."</span>
 <input id='type3' type='radio' name='type_or_value' value='value' ".($_REQUEST['type_or_value']=='value'?'checked="true"':'')." /> {$mod_strings['onlyvalue']}
 </td>
 <td class='dvtCellLabel' align='right'>
-<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Clustering']}:</span> 
+<span style='font-weight: bold ; font-size: 110%; margin-left: 10px'>{$mod_strings['Clustering']}:</span>
 </td>
 <td class='dvtCellInfo'>
-<input id='clust1' type='radio' value='Enable' name='cluster' ".($_REQUEST['cluster']=='Enable'?'checked="true"':'')."/>{$mod_strings['Enable']}
-<input id='clust2' type='radio' value='Disable' name='cluster' ".($_REQUEST['cluster']=='Disable'?'checked="true"':'')."/>{$mod_strings['Disable']}
+<input id='clust1' type='radio' value='Enable' name='cluster' ".($_REQUEST['cluster']=='Enable'?'checked="true"':'')."/>{$mod_strings['Enable']}<br/>
+<input id='clust2' type='radio' value='Disable' name='cluster' ".($_REQUEST['cluster']=='Disable'?'checked="true"':'')."/>{$mod_strings['Disable']}<br/>
+<input id='clust3' type='radio' value='User' name='cluster' ".($_REQUEST['cluster']=='User'?'checked="true"':'')."/>cluster
 </td>
 <td class='dvtCellInfo'>
 
@@ -486,14 +579,14 @@ echo $select_assigneduser ."</span>
 	</td>
 	<td class='dvtCellInfo'>
 
-	
+
 		<div id='slider-range' lang='it_it'></div>
 	</td>
 	<td class='dvtCellLabel' align='right'>
 		<span style='font-weight: bold ; font-size: 110%'><label for='amount'>{$mod_strings['LBL_MAGG_DI']}:</label></span>
 	</td>
-	<td class='dvtCellInfo'>							
-		<p>							
+	<td class='dvtCellInfo'>
+		<p>
 			<input type='text' id='amount' style=\"border: 0; color: #f6931f; font-weight: bold;\" />
 		</p>
 	</td>
@@ -519,13 +612,14 @@ echo $select_assigneduser ."</span>
 <input type='hidden' name='accto' id='accto' value='ND'/>
 <input type='hidden' name='gmfrom' id='gmfrom' value='xxx'/>
 <input type='hidden' name='gmto' id='gmto' value='yyy'/>
-	
+<input type='hidden' name='cluster_name' id='cluster_name' value='zzz'/>
+
 
 <div style='float: left;  padding-bottom:70px;'>
 	<div id="map-canvas" style="margin-left: 10px; margin-right: 10px; width: 900px; height: 500px;  border: 1px solid black;  padding-bottom:40px; float: left"></div>
 	<div>
 	<input type="button" class="crmbutton small delete" style='margin-left: 10px' value="<?php echo $mod_strings['Clear directions'] ?>" onClick="restore();"/><br/>
-	
+
 	<div id="desc" name="desc" style="padding-top: 20px; float: left"></div><br/><br/><br/>
 	<div id="route"> </div>
 	</div>
@@ -535,11 +629,34 @@ echo $select_assigneduser ."</span>
 <!--18052012 Andrea FINE -->
 <!--18052012 Andrea INIZIO-->
 <?php
-echo "<div id='categorytree'>"; 
+echo "<div id='categorytree'>";
 echo getProductCategoryTree();
 echo "</div>";
+// danzi.tn@20151217 albero utenti
+echo "
+<input type=\"hidden\" id=\"tree_ok\" value=\"{$DIALOG_OK}\"/>
+<input type=\"hidden\" id=\"tree_cancel\"  value=\"{$DIALOG_CLEAR}\"/>
+<input type=\"hidden\" id=\"tree_close\"  value=\"{$DIALOG_CLOSE}\"/>
+<input type=\"hidden\" id=\"treeFile\" value=\"RothoListView\"/>
+<div id='agent_tree_container' title='{$DIALOG_TITLE}' style='display: none;'>
+		<div>
+				<div id=\"search_agent_q\">
+						<div class=\"ui-widget\" style=\"margin-bottom: 5px;\"><input type=\"text\" id=\"agent_jstree_q\" style=\"width:339px;\" value=\"\" class=\"searchBox detailedViewTextBox small\" ></div>
+						<div class=\"ui-widget\" style=\"margin-bottom: 5px;\"><select id=\"country_combobox\" class=\"small\">{$LV_COUNTRIES}</select></div>
+				</div>
+
+				<div id=\"agent_jstree\">
+						{$LV_USER_TREE}
+				</div>
+		</div>
+
+</div>
+
+
+";
+// danzi.tn@20151217e
 ?>
-</div></td></tr></tbody></table> 
+</div></td></tr></tbody></table>
 <!--18052012 Andrea FINE -->
 <script type="text/javascript">
 <?php echo "var module='".$_REQUEST['show']."';\n"; ?>
@@ -558,7 +675,7 @@ var local_circleArray = [];
 var directionDisplay;
 var directionsService = new google.maps.DirectionsService();
 var head_lbl = '<?php echo $mod_strings['Head office'] ?>' ;
-var from_lbl = '<?php echo $mod_strings['From'] ?>' ; 
+var from_lbl = '<?php echo $mod_strings['From'] ?>' ;
 var to_lbl = '<?php echo $mod_strings['To'] ?>';
 var direction_lbl = '<?php echo $mod_strings['Direction'] ?>';
 var reload_lbl = '<?php echo $mod_strings['Reload'] ?>';
@@ -575,7 +692,7 @@ else
 {
     $results = $retValues["results"];
     foreach($results as $key=>$retPoint)
-    { 
+    {
       echo "var home_center = new google.maps.LatLng(".$retPoint["lat"].",".$retPoint["lng"].");\n";
       break;
     }
@@ -590,9 +707,13 @@ else
 google.maps.event.addDomListener(window, 'load', initialize);
 
 </script>
+
+<!-- danzi.tn@20151127 USER TREE -->
+<script src="modules/SDK/src/js/user_tree.js" type="text/javascript"></script>
+<!-- danzi.tn@20151127 FINE -->
 <!--18052012 Andrea INIZIO -->
 <!-- danzi.tn@20140417 telefono (Account_phone) per infowindows aziende -->
-<script type="text/javascript" class="source below"> 
+<script type="text/javascript" class="source below">
 $(function () {
 	if(valueSelRequest && valueSelRequest=='cat_prodotti') $('#cat_prodotti').dialog('open')
 	else $('#cat_prodotti').dialog('close');
@@ -611,7 +732,7 @@ $(function () {
             entity_id = $( "#entity_id" ),
             allFields = $( [] ).add( indirizzo ).add( citta ).add( provincia ).add( cap ).add( stato ).add( account_phone ).add( do_geocode ),
             tips = $( ".validateTips" );
- 
+
         function updateTips( t ) {
             tips.text( t ).addClass( "ui-state-highlight" );
             setTimeout(function() {
@@ -627,8 +748,8 @@ $(function () {
 				ll = results[0].geometry.location;
 				coords.lat = ll.lat();
 				coords.lng = ll.lng();
-				lat_geocode.val(ll.lat());
-				lon_geocode.val(ll.lng());
+				$( "#lat_geocode" ).val(ll.lat());
+				$( "#lon_geocode" ).val(ll.lng());
 				$( "#dialog-map" ).dialog( "open" );
                 initializeGmap();
 				showmap();
@@ -637,7 +758,7 @@ $(function () {
 			}
 		});
 	}
- 
+
         function checkLength( o, n, min, max ) {
             if ( o.val().length > max || o.val().length < min ) {
                 o.addClass( "ui-state-error" );
@@ -648,10 +769,10 @@ $(function () {
                 return true;
             }
         }
-		
+
 		function updateSliderValues() {
 			var slider_range = $( "#slider-range" ),  amountrange = $("#amountrange");
-			
+
 			var currentval = $("#amountrange").val();
 			var currentval_splitted = currentval.split('-');
 			minval = 0;
@@ -660,7 +781,7 @@ $(function () {
 				minval = valtotick[currentval_splitted[0]];
 				maxval = valtotick[currentval_splitted[1]];
 			}
-			
+
 			$( "#slider-range" ).slider({
 				range: true,
 				min: 0,
@@ -675,14 +796,14 @@ $(function () {
 								sliderTimer = window.setTimeout(updateMap, 500);
 							 }
 			});
-			
+
 			if($( "#slider-range" ).slider( "values", 1 )<22) upperVal = " - €" +ticktoval[$( "#slider-range" ).slider( "values", 1 )];
             else upperVal = " - Max";
 			$( "#amount" ).val( "€" + ticktoval[$( "#slider-range" ).slider( "values", 0 )] +upperVal );
 			if (sliderTimer) window.clearTimeout(sliderTimer);
 			sliderTimer = window.setTimeout(updateMap, 500);
 		}
-		
+
 		updateSliderValues();
         $( "#dialog-map" ).dialog({
             autoOpen: false,
@@ -725,7 +846,13 @@ $(function () {
 					$.ajax({ type: "POST",  url: "index.php",
 							data: { action: "AccountsAjax", ajxaction: "DETAILVIEW",fieldValue: ok_fieldValue ,file: "DetailViewAjax", fldName: ok_fldName, module:"Accounts", record:ok_id,recordid : ok_id}
 					});
-					
+                    // danzi.tn@20151210
+					ok_fldName = "cf_871";
+					ok_fieldValue = "1";
+					$.ajax({ type: "POST",  url: "index.php",
+							data: { action: "AccountsAjax", ajxaction: "DETAILVIEW",fieldValue: ok_fieldValue ,file: "DetailViewAjax", fldName: ok_fldName, module:"Accounts", record:ok_id,recordid : ok_id}
+					});
+					// danzi.tn@20151210e
 					if (local_markersArray && local_markersArray.length > 0) {
 						for (i in local_markersArray) {
 							if(local_markersArray[i] && typeof local_markersArray[i] == "object" && typeof local_markersArray[i].setMap == "function"){
@@ -779,20 +906,20 @@ $(function () {
 							}
 						}
 					}
-					
+
                    	$( this ).dialog( "close" );
-			
+
                 },
                 "<?php echo $mod_strings['Cancel']?>": function() {
                     $( this ).dialog( "close" );
                 }
             },
             close: function() {
-                
+
             },
-	    open: function(event, ui) {google.maps.event.trigger(gmap, 'resize'); }  
+	    open: function(event, ui) {google.maps.event.trigger(gmap, 'resize'); }
         });
-		
+
 		$( "#cat_prodotti").dialog({
             autoOpen: false,
 			hide: "clip",
@@ -800,16 +927,16 @@ $(function () {
             width: 400,
 			position: [920,190],
             modal: false,
-            buttons: {                
+            buttons: {
                 "<?php echo $mod_strings['Cancel']?>": function() {
                     $( this ).dialog( "close" );
                 }
             },
             close: function() {
-                
+
             }
         });
-		
+
         $( "#dialog-form" ).dialog({
             autoOpen: false,
 			hide: "clip",
@@ -820,10 +947,10 @@ $(function () {
                 "<?php echo $mod_strings['UpdateAddress'] ?>": function() {
                     var bValid = true;
                     allFields.removeClass( "ui-state-error" );
- 
+
                     bValid = bValid && checkLength( citta, "citta", 3, 64 );
                     bValid = bValid && checkLength( stato, "stato", 2, 16 );
- 			
+
                     bGeocoded = false;
                     if ( bValid ) {
 			if(  do_geocode.attr('checked') == true )
@@ -848,7 +975,7 @@ $(function () {
             height: 600,
             width: 800,
             modal: false,
-            buttons: {   
+            buttons: {
 				"<?php echo $mod_strings['UpdateAddress'] ?>": function() {
 					/* SET THE FAVULES IN THE FORM like this DISTINGUISH BETWEEN NEW OR EXISTING ADDRESS
 					document.getElementById('entity_id').value = ekey;
@@ -892,7 +1019,7 @@ $(function () {
 	$("#categorytree")
 		.jstree({ "plugins" : ["themes","html_data","ui"] })
 		// 1) if using the UI plugin bind to select_node
-		.bind("select_node.jstree deselect_node.jstree", function (event, data) { 
+		.bind("select_node.jstree deselect_node.jstree", function (event, data) {
 			// `data.rslt.obj` is the jquery extended node that was clicked
             var i, j, r = [];
             var selected_data = data.inst.get_selected();
@@ -913,8 +1040,6 @@ $(function () {
 
 </script>
 <!--18052012 Andrea FINE -->
-
-
 <!--2012.12.19 danzi.tn INIZIO -->
 <div id="dialog-form" title="<?php echo $mod_strings['Address'] ?>">
     <form>
@@ -956,18 +1081,19 @@ $(function () {
 	<ol id="selectable">
 <?php
     $results = $retValues["not_found"];
-    foreach($results as $key=>$retItem)
-    { 
-		echo "<li class=\"ui-widget-content\" value=\"".$key."\">".$retItem['name'].
-		" &rArr; ".($retItem['city']==''?'<span class="notavailable">City: NA</span>':'City:'.$retItem['city']).
-		"; ".($retItem['street']==''?'<span class="notavailable">Street: NA</span>':'Street:'.$retItem['street']).
-		"; ".($retItem['code']==''?'<span class="notavailable">ZIP: NA</span>':'ZIP:'.$retItem['code']).
-		"; ".($retItem['state']==''?'<span class="notavailable">State: NA</span>':'State:'.$retItem['state']).
-		"; ".($retItem['country']==''?'<span class="notavailable">Country: NA</span>':'Country:'.$retItem['country']). ";" .
-		"</li>";
-    }
+		if($results) {
+	    foreach($results as $key=>$retItem)
+	    {
+			echo "<li class=\"ui-widget-content\" value=\"".$key."\">".$retItem['name'].
+			" &rArr; ".($retItem['city']==''?'<span class="notavailable">City: NA</span>':'City:'.$retItem['city']).
+			"; ".($retItem['street']==''?'<span class="notavailable">Street: NA</span>':'Street:'.$retItem['street']).
+			"; ".($retItem['code']==''?'<span class="notavailable">ZIP: NA</span>':'ZIP:'.$retItem['code']).
+			"; ".($retItem['state']==''?'<span class="notavailable">State: NA</span>':'State:'.$retItem['state']).
+			"; ".($retItem['country']==''?'<span class="notavailable">Country: NA</span>':'Country:'.$retItem['country']). ";" .
+			"</li>";
+	    }
+		}
 ?>
 	</ol>
-	
-</div>
 
+</div>

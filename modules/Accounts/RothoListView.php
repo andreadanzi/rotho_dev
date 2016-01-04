@@ -8,7 +8,8 @@
  * Portions created by CRMVILLAGE.BIZ are Copyright (C) CRMVILLAGE.BIZ.
  * All Rights Reserved.
  ************************************************************************************/
-
+// danzi.tn@20151127 gestione filtri albero utenti
+// danzi.tn@20160104 passaggio in produzione albero utenti
 global $app_strings, $mod_strings, $current_language, $currentModule, $theme, $table_prefix, $list_max_entries_per_page;
 
 require_once('Smarty_setup.php');
@@ -213,6 +214,12 @@ $ret_array = getUserTreeAndCountryListHTML($_REQUEST['selected_agent_ids'],$_REQ
 $smarty->assign("SELECTED_AGENT_IDS",$_REQUEST['selected_agent_ids']);
 $smarty->assign("SELECTED_COUNTRY",$_REQUEST['selected_country']);
 $smarty->assign("SELECTED_AGENT_IDS_DISPLAY",getDisplaySelectedUser($_REQUEST['selected_agent_ids'],$currentModule,""));
+
+
+$smarty->assign("DIALOG_TITLE",$app_strings["LBL_USER_TITLE"]);
+$smarty->assign("DIALOG_OK",$app_strings["LBL_SELECT_BUTTON_LABEL"]);
+$smarty->assign("DIALOG_CLEAR",$app_strings["LBL_CANCEL_BUTTON_LABEL"]);
+$smarty->assign("DIALOG_CLOSE",$app_strings["LBL_CLOSE"]);
 $smarty->assign("LV_COUNTRIES",$ret_array["countries"]);
 $smarty->assign("LV_USER_TREE",$ret_array["users"]);
 
@@ -336,6 +343,7 @@ if (isset($focus->IsCustomModule)){
 }else{
 	$custom_module = false;
 }
+
 $smarty->assign('CUSTOM_MODULE', $custom_module);
 if($viewinfo['viewname'] == 'All') $smarty->assign('ALL', 'All');
 $smarty->assign("VIEWID", $viewid);
@@ -374,7 +382,7 @@ $customlink_params = Array('MODULE'=>$currentModule, 'ACTION'=>vtlib_purify($_RE
 $smarty->assign('CUSTOM_LINKS', Vtiger_Link::getAllByType(getTabid($currentModule), Array('LISTVIEWBASIC','LISTVIEW'), $customlink_params));
 // END
 if(isset($_REQUEST['ajax']) && $_REQUEST['ajax'] != '')
-	$smarty->display("ListViewEntries.tpl");
+	$smarty->display("RothoListViewEntries.tpl");
 else
 	$smarty->display('ListView.tpl');
 ?>
