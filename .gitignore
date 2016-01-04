@@ -3,3 +3,6 @@ themes/rothosofted/images
 *.log
 plugins/erpconnector/SalesOrder_import/ordini.txt
 *.csv
+todo.txt
+prod/
+modules/Map/lib/Query4Map.sql
