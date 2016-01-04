@@ -294,49 +294,54 @@ if( $_REQUEST['lv_user_id'] == "all" || $_REQUEST['lv_user_id'] == "") { // all 
 } else { // a selected userid
 	$list_where .= " and {$table_prefix}_crmentity.smownerid = ".$_REQUEST['lv_user_id']." ";
 }
+// danzi.tn@20160104 visibility albero utenti
+$is_usertree_visible = "no";
+if(isPermitted($currentModule,"Users") == 'yes') {
+	$is_usertree_visible = "yes";
+	$smarty->assign("DISPLAY_USERTREE",$is_usertree_visible);
+	// danzi.tn@20150922 filtro per stato danzi.tn@20150825 come per lv_user_id, anche selected_agent_ids deve essere gestito lato js in ListView.js showDefaultCustomView
+	if(isset($_REQUEST['selected_agent_ids'])) {
+		$_SESSION['selected_agent_ids'] = $_REQUEST['selected_agent_ids'];
+	} else {
+		$_REQUEST['selected_agent_ids'] = $_SESSION['selected_agent_ids'];
+	}
 
-// danzi.tn@20150922 filtro per stato danzi.tn@20150825 come per lv_user_id, anche selected_agent_ids deve essere gestito lato js in ListView.js showDefaultCustomView
-if(isset($_REQUEST['selected_agent_ids'])) {
-	$_SESSION['selected_agent_ids'] = $_REQUEST['selected_agent_ids'];
-} else {
-	$_REQUEST['selected_agent_ids'] = $_SESSION['selected_agent_ids'];
+
+	if(isset($_REQUEST['selected_country'])) {
+		$_SESSION['selected_country'] = $_REQUEST['selected_country'];
+	} else {
+		$_REQUEST['selected_country'] = $_SESSION['selected_country'];
+	}
+
+	$ret_array = getUserTreeAndCountryListHTML($_REQUEST['selected_agent_ids'],$_REQUEST['selected_country'],$currentModule,"");
+	// danzi.tn@20151126
+	$smarty->assign("SELECTED_AGENT_IDS",$_REQUEST['selected_agent_ids']);
+	$smarty->assign("SELECTED_COUNTRY",$_REQUEST['selected_country']);
+	$smarty->assign("SELECTED_AGENT_IDS_DISPLAY",getDisplaySelectedUser($_REQUEST['selected_agent_ids'],$currentModule,""));
+
+
+	$smarty->assign("DIALOG_TITLE",$app_strings["LBL_USER_TITLE"]);
+	$smarty->assign("DIALOG_OK",$app_strings["LBL_SELECT_BUTTON_LABEL"]);
+	$smarty->assign("DIALOG_CLEAR",$app_strings["LBL_CANCEL_BUTTON_LABEL"]);
+	$smarty->assign("DIALOG_CLOSE",$app_strings["LBL_CLOSE"]);
+
+	$smarty->assign("LV_COUNTRIES",$ret_array["countries"]);
+	$smarty->assign("LV_USER_TREE",$ret_array["users"]);
+
+
+	if( $_REQUEST['selected_agent_ids'] == "") { // all event (normal rule)
+
+	} else { // a selected branch of user hierarchy
+		$list_where .= " and {$table_prefix}_crmentity.smownerid in ( ".$_REQUEST['selected_agent_ids']." ) ";
+	}
+
+	if( $_REQUEST['selected_country'] == "") { // all event (normal rule)
+
+	} else if( $currentModule == 'Accounts' ) { // a selected branch of user hierarchy
+	    $list_where .= " and {$table_prefix}_accountbillads.bill_country = '".$_REQUEST['selected_country']."' ";
+	}
+	// danzi.tn@20150825e
 }
-
-
-if(isset($_REQUEST['selected_country'])) {
-	$_SESSION['selected_country'] = $_REQUEST['selected_country'];
-} else {
-	$_REQUEST['selected_country'] = $_SESSION['selected_country'];
-}
-
-$ret_array = getUserTreeAndCountryListHTML($_REQUEST['selected_agent_ids'],$_REQUEST['selected_country'],$currentModule,"");
-// danzi.tn@20151126
-$smarty->assign("SELECTED_AGENT_IDS",$_REQUEST['selected_agent_ids']);
-$smarty->assign("SELECTED_COUNTRY",$_REQUEST['selected_country']);
-$smarty->assign("SELECTED_AGENT_IDS_DISPLAY",getDisplaySelectedUser($_REQUEST['selected_agent_ids'],$currentModule,""));
-
-
-$smarty->assign("DIALOG_TITLE",$app_strings["LBL_USER_TITLE"]);
-$smarty->assign("DIALOG_OK",$app_strings["LBL_SELECT_BUTTON_LABEL"]);
-$smarty->assign("DIALOG_CLEAR",$app_strings["LBL_CANCEL_BUTTON_LABEL"]);
-$smarty->assign("DIALOG_CLOSE",$app_strings["LBL_CLOSE"]);
-
-$smarty->assign("LV_COUNTRIES",$ret_array["countries"]);
-$smarty->assign("LV_USER_TREE",$ret_array["users"]);
-
-
-if( $_REQUEST['selected_agent_ids'] == "") { // all event (normal rule)
-
-} else { // a selected branch of user hierarchy
-	$list_where .= " and {$table_prefix}_crmentity.smownerid in ( ".$_REQUEST['selected_agent_ids']." ) ";
-}
-
-if( $_REQUEST['selected_country'] == "") { // all event (normal rule)
-
-} else if( $currentModule == 'Accounts' ) { // a selected branch of user hierarchy
-    $list_where .= " and {$table_prefix}_accountbillads.bill_country = '".$_REQUEST['selected_country']."' ";
-}
-// danzi.tn@20150825e
 
 $list_query.=$list_where . $extra_where_clause;
 $where.=$list_where;

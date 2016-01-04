@@ -250,6 +250,7 @@
 			<td width="33%" align="right">
 		        <!-- Filters -->
                 <table border=0 cellspacing=0 cellpadding=0 class="small"><tr>
+                  {if $DISPLAY_USERTREE eq 'yes'}
                     <!-- danzi.tn@20150922 filtro per stato danzi.tn@20150825 -->
                     <!-- danzi.tn@20160104 passaggio in produzione albero utenti -->
                     <td>
@@ -276,6 +277,7 @@
 
                     </td>
                     <!-- danzi.tn@20150825e -->
+                	{/if}
                     {* crmv@22259 *}
                     <td style="padding-left:5px;padding-right:5px">{$APP.LBL_VIEW}&nbsp;<SELECT NAME="viewname" id="viewname" class="small" onchange="showDefaultTreeCustomView(this,'{$MODULE}','{$CATEGORY}', '{$FOLDERID}')">{$CUSTOMVIEW_OPTION}</SELECT></td> {* crmv@30967 *}
 					{* crmv@21723 crmv@21827 crmv@22622 *}

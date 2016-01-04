@@ -262,6 +262,7 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 			<td width="33%" align="right">
 		        <!-- Filters -->
                 <table border=0 cellspacing=0 cellpadding=0 class="small"><tr>
+                  {if $DISPLAY_USERTREE eq 'yes'}
 									<!-- danzi.tn@20150922 filtro per stato danzi.tn@20150825 -->
 									<td>
 
@@ -286,6 +287,7 @@ var js_dateformat = '{$JS_DATEFORMAT}';
 									</table>
 
 									</td>
+                  {/if}
 									<!-- danzi.tn@20150825e -->
                     {* crmv@22259 *}
                     <td style="padding-left:5px;padding-right:5px">{$APP.LBL_VIEW}&nbsp;<SELECT NAME="viewname" id="viewname" class="small" onchange="showDefaultCustomView(this,'{$MODULE}','{$CATEGORY}', '{$FOLDERID}')">{$CUSTOMVIEW_OPTION}</SELECT></td> {* crmv@30967 *}

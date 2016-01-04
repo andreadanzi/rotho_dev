@@ -204,45 +204,45 @@ if( $_REQUEST['lv_user_id'] == "all" || $_REQUEST['lv_user_id'] == "") { // all 
 } else { // a selected userid
 	$list_where .= " and vtiger_crmentity.smownerid = ".$_REQUEST['lv_user_id']." ";
 }
+if(isPermitted($currentModule,"Users") == 'yes') {
+	// danzi.tn@20150825 filtro per stato danzi.tn@20150825 come per lv_user_id, anche selected_agent_ids deve essere gestito lato js in ListView.js showDefaultCustomView
+	if(isset($_REQUEST['selected_agent_ids'])) {
+		$_SESSION['selected_agent_ids'] = $_REQUEST['selected_agent_ids'];
+	} else {
+		$_REQUEST['selected_agent_ids'] = $_SESSION['selected_agent_ids'];
+	}
 
-// danzi.tn@20150825 filtro per stato danzi.tn@20150825 come per lv_user_id, anche selected_agent_ids deve essere gestito lato js in ListView.js showDefaultCustomView
-if(isset($_REQUEST['selected_agent_ids'])) {
-	$_SESSION['selected_agent_ids'] = $_REQUEST['selected_agent_ids'];
-} else {
-	$_REQUEST['selected_agent_ids'] = $_SESSION['selected_agent_ids'];
+
+	if(isset($_REQUEST['selected_country'])) {
+		$_SESSION['selected_country'] = $_REQUEST['selected_country'];
+	} else {
+		$_REQUEST['selected_country'] = $_SESSION['selected_country'];
+	}
+
+	$ret_array = getUserTreeAndCountryListHTML($_REQUEST['selected_agent_ids'],$_REQUEST['selected_country'],"Accounts","");
+	// danzi.tn@20151126
+	$SELECTED_AGENT_IDS = $_REQUEST['selected_agent_ids'];
+	$SELECTED_COUNTRY = $_REQUEST['selected_country'];
+	$SELECTED_AGENT_IDS_DISPLAY = getDisplaySelectedUser($_REQUEST['selected_agent_ids'],"Accounts","");
+
+
+	$DIALOG_TITLE = $app_strings["LBL_USER_TITLE"];
+	$DIALOG_OK = $app_strings["LBL_SELECT_BUTTON_LABEL"];
+	$DIALOG_CLEAR = $app_strings["LBL_CANCEL_BUTTON_LABEL"];
+	$DIALOG_CLOSE = $app_strings["LBL_CLOSE"];
+	$LV_COUNTRIES = $ret_array["countries"];
+	$LV_USER_TREE = $ret_array["users"];
+
+
+	if( $SELECTED_AGENT_IDS ) { // a selected branch of user hierarchy
+		$list_where .= " and {$table_prefix}_crmentity.smownerid in ( ".$SELECTED_AGENT_IDS ." ) ";
+	}
+
+	if( $SELECTED_COUNTRY) { // a selected branch of user hierarchy
+	    $list_where .= " and {$table_prefix}_accountbillads.bill_country = '".$SELECTED_COUNTRY."' ";
+	}
+	// danzi.tn@20150825e
 }
-
-
-if(isset($_REQUEST['selected_country'])) {
-	$_SESSION['selected_country'] = $_REQUEST['selected_country'];
-} else {
-	$_REQUEST['selected_country'] = $_SESSION['selected_country'];
-}
-
-$ret_array = getUserTreeAndCountryListHTML($_REQUEST['selected_agent_ids'],$_REQUEST['selected_country'],"Accounts","");
-// danzi.tn@20151126
-$SELECTED_AGENT_IDS = $_REQUEST['selected_agent_ids'];
-$SELECTED_COUNTRY = $_REQUEST['selected_country'];
-$SELECTED_AGENT_IDS_DISPLAY = getDisplaySelectedUser($_REQUEST['selected_agent_ids'],"Accounts","");
-
-
-$DIALOG_TITLE = $app_strings["LBL_USER_TITLE"];
-$DIALOG_OK = $app_strings["LBL_SELECT_BUTTON_LABEL"];
-$DIALOG_CLEAR = $app_strings["LBL_CANCEL_BUTTON_LABEL"];
-$DIALOG_CLOSE = $app_strings["LBL_CLOSE"];
-$LV_COUNTRIES = $ret_array["countries"];
-$LV_USER_TREE = $ret_array["users"];
-
-
-if( $SELECTED_AGENT_IDS ) { // a selected branch of user hierarchy
-	$list_where .= " and {$table_prefix}_crmentity.smownerid in ( ".$SELECTED_AGENT_IDS ." ) ";
-}
-
-if( $SELECTED_COUNTRY) { // a selected branch of user hierarchy
-    $list_where .= " and {$table_prefix}_accountbillads.bill_country = '".$SELECTED_COUNTRY."' ";
-}
-// danzi.tn@20150825e
-
 $where.=$list_where;
 //crmv@7634e
 if(isset($where) && $where != '') {
@@ -390,35 +390,33 @@ echo "
         <b>&nbsp;". $mod_strings['Show Results']. " (".count($retValues["results"])." " .$mod_strings['Results'] .")</b>
 	</div>
         <!-- QUERY Map ".$retValues["query"] ." -->
-
-				<!-- danzi.tn@20151216 filtro per stato danzi.tn@20150825 -->
-
-
-	<div style='float:right;'>
-				<table class=\"crmButton\" style=\"background-color:#fff\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
-						<tr>
-								<td style=\"padding-left:5px;\">
-										<input type=\"text\" class=\"small\" style=\"border: none; width: 20px;\" id=\"selected_country\" name=\"selected_country\" value=\"{$SELECTED_COUNTRY}\" readonly> -
-								</td>
-								<td style=\"padding-left:5px;\">
-										<input type=\"text\" style=\"width:160px;\" class=\"searchBox\" id=\"selected_agent_ids_display\" name=\"search_agent_display\" value=\"{$SELECTED_AGENT_IDS_DISPLAY}\" onclick=\"clearSelectedAgents(this)\" readonly>
-										<input type=\"hidden\" id=\"selected_agent_ids\" name=\"selected_agent_ids\" value=\"{$SELECTED_AGENT_IDS}\">
-								</td>
-								<td width=\"20\" align=\"right\" valign=\"bottom\">
-										<img id=\"agent_search_icn_canc\" style=\"display:none\" border=\"0\" alt=\"Reset\" title=\"Reset\" style=\"cursor:pointer\" onclick=\"cancelSearchAgents('')\" src=\"themes/rothosofted/images/close_little.png\" />&nbsp;
-								</td>
-								<td style=\"padding-right:5px;\">
-										<span id=\"user_search\">
-												<img id=\"agent_search_icn_go\" border=\"0\" alt='Cerca' title='Cerca' style=\"cursor:pointer\"  src=\"themes/rothosofted/images/UnifiedSearchButton.png\" onclick='open_tree_container();' />
-										</span>
-								</td>
-						</tr>
-				</table>
-	</div>
-
-
-				<!-- danzi.tn@20151216e -->
-</td>
+";
+if(isPermitted("Accounts","Users") == 'yes') {
+	echo "<!-- danzi.tn@20151216 filtro per stato danzi.tn@20150825 -->
+	 		<div style='float:right;'>
+						<table class=\"crmButton\" style=\"background-color:#fff\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">
+								<tr>
+										<td style=\"padding-left:5px;\">
+												<input type=\"text\" class=\"small\" style=\"border: none; width: 20px;\" id=\"selected_country\" name=\"selected_country\" value=\"{$SELECTED_COUNTRY}\" readonly> -
+										</td>
+										<td style=\"padding-left:5px;\">
+												<input type=\"text\" style=\"width:160px;\" class=\"searchBox\" id=\"selected_agent_ids_display\" name=\"search_agent_display\" value=\"{$SELECTED_AGENT_IDS_DISPLAY}\" onclick=\"clearSelectedAgents(this)\" readonly>
+												<input type=\"hidden\" id=\"selected_agent_ids\" name=\"selected_agent_ids\" value=\"{$SELECTED_AGENT_IDS}\">
+										</td>
+										<td width=\"20\" align=\"right\" valign=\"bottom\">
+												<img id=\"agent_search_icn_canc\" style=\"display:none\" border=\"0\" alt=\"Reset\" title=\"Reset\" style=\"cursor:pointer\" onclick=\"cancelSearchAgents('')\" src=\"themes/rothosofted/images/close_little.png\" />&nbsp;
+										</td>
+										<td style=\"padding-right:5px;\">
+												<span id=\"user_search\">
+														<img id=\"agent_search_icn_go\" border=\"0\" alt='Cerca' title='Cerca' style=\"cursor:pointer\"  src=\"themes/rothosofted/images/UnifiedSearchButton.png\" onclick='open_tree_container();' />
+												</span>
+										</td>
+								</tr>
+						</table>
+			</div>
+		  <!-- danzi.tn@20151216e -->";
+}
+echo "</td>
 </tr>
 <tr style='height:25px'>
 <td class='dvtCellLabel' align='right'>
