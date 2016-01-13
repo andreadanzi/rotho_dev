@@ -5,13 +5,16 @@ $log_active = true;
 //modulo da importare:
 $module = 'Contacts';
 //array mappaggio campi: nome campo tabella di appoggio => fieldname di vtiger
-// danzi.tn@20140213 IMPORTFLAG Per distinguere i record modificati/creati dalla procedura di import produzione è cf_1229 in _test è cf_1239
+// danzi.tn@20140213 IMPORTFLAG Per distinguere i record modificati/creati dalla procedura di import produzione ï¿½ cf_1229 in _test ï¿½ cf_1239
 // danzi.tn@20140412 ORIG_PERSON_PARENT Per salvarsi il person_parent del contatto che va in cf_1249
+// danzi.tn@20151222 cambiato mapping tra PERSON_FULLNAME e PERSON_GIVENNAME + PERSON_SURNAME
 $mapping = Array(
 'PERSON_PARENT'=>'account_id',
 'PERSON_PARENT1'=>'assigned_user_id', //campo ghost
 'PERSON_NUMBER'=>'ext_code',
-'PERSON_FULLNAME'=>'lastname',
+// 'PERSON_FULLNAME'=>'lastname',
+'PERSON_GIVENNAME'=>'firstname',
+'PERSON_SURNAME'=>'lastname',
 'PERSON_JOBDESC'=>'title',
 'PERSON_CITY'=>'mailingcity',
 'PERSON_POSTALCODE'=>'mailingcode',
@@ -24,10 +27,10 @@ $mapping = Array(
 'PERSON_EMAILDUNNING'=>'cf_1017',
 'PERSON_EMAILTRACKING'=>'cf_1018',
 'INSERTDATE'=>'cf_1170',
-'IMPORTFLAG'=>'cf_1229', 
+'IMPORTFLAG'=>'cf_1229',
 'ORIG_PERSON_PARENT'=>'cf_1249',
 );
-//campo nella tabella di appoggio per identificare il codice esterno (sul quale l'import effettuerà la creazione/aggiornamento dei dati)
+//campo nella tabella di appoggio per identificare il codice esterno (sul quale l'import effettuerï¿½ la creazione/aggiornamento dei dati)
 $external_code = 'PERSON_NUMBER';
 //tabella di appoggio
 $table = "erp_temp_crm_contatti";

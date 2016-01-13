@@ -748,8 +748,8 @@ $(function () {
 				coords.lng = ll.lng();
 				$( "#lat_geocode" ).val(ll.lat());
 				$( "#lon_geocode" ).val(ll.lng());
-				$( "#dialog-map" ).dialog( "open" );
                 initializeGmap();
+				$( "#dialog-map" ).dialog( "open" );
 				showmap();
 			} else {
 				alert('Geocode was not successful for the following reason: ' + status);

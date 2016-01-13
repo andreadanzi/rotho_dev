@@ -10,7 +10,8 @@ include_once("modules/Users/Users.php");
 $active_agent_username = array('HANNESB','KONRADF','THOMASG','FRANZR','FRANCESCOT');
 $current_user= new Users();
 $current_user->id = 1;
-global $adb;
+// danzi.tn@20151215 default_timezone per creazione agenti
+global $adb, $default_timezone;
 // danzi.tn@20141217 nuova classificazione
 $query="SELECT 
       AGENT_NUMBER
@@ -105,6 +106,8 @@ while($row=$adb->fetchByAssoc($res,-1,false)){
 		$user->column_fields["defhomeview"] = 'home_metrics';
 		$user->column_fields["description"] = '';
         $user->column_fields["sem_importdate"] = date("Y-m-d H:i:s");
+        $user->column_fields["user_timezone"] = $default_timezone;
+		
 		
 	}
 	//danzi.tn@20150924 agente AM0018 compare con due usernames PETERICA e PETERDCA...quest'ultimo non deve essere collegato a capoarea
