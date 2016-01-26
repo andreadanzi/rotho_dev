@@ -31,6 +31,8 @@
 // danzi.tn@20150414 nuovo corso 564  - RFCACN - Progettazione edifici legno: statica, sismica, can
 // danzi.tn@2015617 personalizzazione per corso 586
 // danzi.tn@210151009 modifica Leadsource da 'Richiesta Consulenze (Form)' a 'Technical Consulting Request'
+// danzi.tn@20160119 costo corso non formattato correttamente
+// danzi.tn@20160125 aggiunto corso Progettazione connessioni per strutture in legno" con pid=590 e 596
 
 include_once 'include/Zend/Json.php';
 include_once 'vtlib/Vtiger/Module.php';
@@ -56,7 +58,7 @@ class RothoBus {
 	var $uids_array_safe_tt_address_skipped = Array();
 	var $mapping = Array();
 	var $group_mapping = Array();
-	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504,515,535,564,586);
+	var $pids_list_corso = Array(308,309,314,315,316,317,328,329,330,331,332,333,377,433,392,440,444,456,504,515,535,564,586,588,590,593,596);
 	var $pids_list_download = Array(137,139,141,143,200,205);
 	var $pids_list_forms = Array(505);
 	var $pids_list_newsletter = Array(124);
@@ -652,6 +654,8 @@ class RothoBus {
 				if( substr($item,0,7) == "formula" ) {
 					$formula_corso = trim(substr($item,8));
 					$costo_corso = substr($formula_corso,strrpos($formula_corso,'costo ')+6);
+                    $costo_corso = trim($costo_corso);
+                    if(empty($costo_corso)) $costo_corso =  trim($formula_corso);
 					if( preg_match("/\b(corso|kurs|curso|incontro formativo)\b/i",$formula_corso) )	{
 						$formula = "Corso";
 					}
@@ -750,6 +754,8 @@ class RothoBus {
 			// danzi.tn@20140417 default newsletter permission a True
 			$newLead->column_fields['newsletter_permission'] = '1';
 			// danzi.tn@20140417e
+            if($this->log_active) "Before saving new Lead with email ". $newLead->column_fields["email"]."\n";
+            // if($this->log_active) print_r($newLead);
 			$newLead->save($module_name='Leads',$longdesc=false);
 			$this->ids_tt_address_array_lead_insert[] = array('id'=> $newLead->id , 'uid'=>$tt_address['uid']);
 			$this->_create_event($newLead,$activitysubject,$activitytype,$activitydescr,$activitydatetime);
